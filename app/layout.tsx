@@ -13,9 +13,31 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Jeruto Movie Intelligence",
+  metadataBase: new URL("https://jeruto.com"),
+
+  title: {
+    default: "Jeruto Movie Intelligence",
+    template: "%s | Jeruto Movie Intelligence",
+  },
+
   description:
     "India's movie intelligence platform for movies, box office, people, companies, industries and markets.",
+
+  
+
+  openGraph: {
+    title: "Jeruto Movie Intelligence",
+    description:
+      "India's movie intelligence platform for movies, box office, people, companies, industries and markets.",
+    
+    siteName: "Jeruto Movie Intelligence",
+    type: "website",
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
