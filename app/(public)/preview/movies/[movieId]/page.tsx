@@ -1,7 +1,67 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PublicHeader from "../../../components/PublicHeader";
 import { supabase } from "@/lib/supabase";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ movieId: string }>;
+}): Promise<Metadata> {
+  const { movieId } = await params;
+
+  const { data: movie } = await supabase
+    .from("movies")
+    .select("id, title, original_title, release_year, synopsis, poster_url")
+    .eq("id", movieId)
+    .maybeSingle();
+
+  if (!movie) {
+    return {
+      title: "Movie Not Found",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const movieTitle = movie.title || movie.original_title || "Movie";
+
+  const description =
+    movie.synopsis?.trim() ||
+    `${movieTitle}${movie.release_year ? ` (${movie.release_year})` : ""} — box office, cast, crew, business and movie intelligence from Jeruto Movie Intelligence.`;
+
+  const metadata: Metadata = {
+    title: `${movieTitle} — Box Office, Cast & Business`,
+    description,
+    alternates: {
+      canonical: `https://jeruto.com/preview/movies/${movie.id}`,
+    },
+    openGraph: {
+      title: `${movieTitle} — Box Office, Cast & Business`,
+      description,
+      url: `https://jeruto.com/preview/movies/${movie.id}`,
+      siteName: "Jeruto Movie Intelligence",
+      type: "website",
+    },
+  };
+
+  if (movie.poster_url) {
+    metadata.openGraph = {
+      ...metadata.openGraph,
+      images: [
+        {
+          url: movie.poster_url,
+          alt: `${movieTitle} poster`,
+        },
+      ],
+    };
+  }
+
+  return metadata;
+}
 
 export default async function MovieIntelligencePage({
   params,
