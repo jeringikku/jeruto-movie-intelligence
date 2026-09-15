@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
+import { supabase } from "@/lib/supabase";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://jeruto.com";
 
-  return [
+  const staticPages: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/preview`,
       lastModified: new Date(),
@@ -71,4 +72,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
   ];
+
+  const { data: movies, error } = await supabase
+    .from("movies")
+    .select("id, updated_at")
+    .eq("is_active", true);
+
+  if (error || !movies) {
+    return staticPages;
+  }
+
+  const moviePages: MetadataRoute.Sitemap = movies.map((movie) => ({
+    url: `${baseUrl}/preview/movies/${movie.id}`,
+    lastModified: movie.updated_at
+      ? new Date(movie.updated_at)
+      : new Date(),
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...moviePages];
 }
