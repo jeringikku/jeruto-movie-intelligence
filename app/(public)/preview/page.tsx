@@ -1,6 +1,9 @@
 import Link from "next/link";
 import PublicHeader from "../components/PublicHeader";
 import HomepageBannerStrip from "../components/HomepageBannerStrip";
+import MovieSearch from "../components/MovieSearch";
+import TicketBookingBanner from "../components/TicketBookingBanner";
+import ComparisonIntelligenceBanner from "../components/ComparisonIntelligenceBanner";
 import { supabase } from "@/lib/supabase";
 
 export default async function PublicPreview() {
@@ -237,31 +240,8 @@ export default async function PublicPreview() {
               {/* Search */}
 
               <div className="mx-auto mt-7 max-w-xl">
-
-                <div className="flex h-11 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950">
-
-                  <div className="flex min-w-0 flex-1 items-center px-4">
-
-                    <span className="mr-2 text-sm text-zinc-500">
-                      🔎
-                    </span>
-
-                    <span className="truncate text-left text-xs text-zinc-400">
-                      Search movies, people, companies...
-                    </span>
-
-                  </div>
-
-                  <button
-                    type="button"
-                    className="bg-yellow-400 px-5 text-[11px] font-semibold text-black transition hover:bg-yellow-300"
-                  >
-                    Search
-                  </button>
-
-                </div>
-
-              </div>
+  <MovieSearch />
+</div>
 
 
               <p className="mt-2 text-[10px] text-green-400">
@@ -442,6 +422,8 @@ export default async function PublicPreview() {
           </div>
 
         </section>
+
+        <TicketBookingBanner />
 
         {/* =====================================================
     WHAT JMI PROVIDES
@@ -649,169 +631,7 @@ export default async function PublicPreview() {
     JMI COMPARISON INTELLIGENCE — PREMIUM CTA
 ===================================================== */}
 
-<div className="mt-6 flex flex-col items-center">
-
-  <Link
-    href="/preview/compare"
-    className="
-      group
-      relative
-      inline-flex
-      overflow-hidden
-      rounded-xl
-      border
-      border-violet-400/30
-      bg-gradient-to-r
-      from-violet-500/10
-      via-zinc-950
-      to-yellow-500/10
-      p-[1px]
-      transition-all
-      duration-300
-      hover:border-violet-400/60
-      hover:shadow-[0_0_28px_rgba(139,92,246,0.15)]
-    "
-  >
-
-    <div
-      className="
-        relative
-        flex
-        items-center
-        gap-3
-        rounded-[11px]
-        bg-zinc-950/95
-        px-4
-        py-3
-      "
-    >
-
-      {/* Intelligence Icon */}
-
-      <div
-        className="
-          flex
-          h-8
-          w-8
-          items-center
-          justify-center
-          rounded-lg
-          border
-          border-violet-400/20
-          bg-violet-500/10
-          text-sm
-          text-violet-300
-          transition-transform
-          duration-300
-          group-hover:scale-105
-        "
-      >
-        ⚔️
-      </div>
-
-
-      {/* CTA Information */}
-
-      <div className="text-left">
-
-        <div className="flex items-center gap-2">
-
-          <span
-            className="
-              text-[8px]
-              font-semibold
-              uppercase
-              tracking-[0.2em]
-              text-yellow-400
-            "
-          >
-            JMI Exclusive
-          </span>
-
-          <span className="h-1 w-1 rounded-full bg-zinc-700" />
-
-          <span
-            className="
-              text-[7px]
-              uppercase
-              tracking-[0.15em]
-              text-zinc-600
-            "
-          >
-            Intelligence
-          </span>
-
-        </div>
-
-        <p
-          className="
-            mt-1
-            text-[11px]
-            font-semibold
-            tracking-tight
-            text-zinc-100
-          "
-        >
-          Comparison Intelligence
-        </p>
-
-      </div>
-
-
-      {/* Arrow */}
-
-      <span
-        className="
-          ml-1
-          text-sm
-          text-violet-300
-          transition-transform
-          duration-300
-          group-hover:translate-x-1
-        "
-      >
-        →
-      </span>
-
-
-      {/* Hover light sweep */}
-
-      <div
-        className="
-          pointer-events-none
-          absolute
-          inset-0
-          -translate-x-full
-          bg-gradient-to-r
-          from-transparent
-          via-white/[0.04]
-          to-transparent
-          transition-transform
-          duration-700
-          group-hover:translate-x-full
-        "
-      />
-
-    </div>
-
-  </Link>
-
-
-  <p
-    className="
-      mt-2
-      text-[8px]
-      uppercase
-      tracking-[0.14em]
-      text-zinc-700
-    "
-  >
-    Movies • People • Companies • Industries
-  </p>
-
-</div>
-
-
+<ComparisonIntelligenceBanner />
 
         {/* =====================================================
     RECENT MOVIES
@@ -918,7 +738,7 @@ export default async function PublicPreview() {
         overflow-hidden
         rounded-2xl
         border
-        border-violet-400/20
+        border-violet-400/50
         bg-zinc-950
       "
             >
@@ -981,7 +801,7 @@ export default async function PublicPreview() {
             text-[12px]
             leading-6
             tracking-[-0.005em]
-            text-zinc-200
+            text-zinc-400/80
 
             sm:text-sm
             sm:leading-8
@@ -1000,33 +820,23 @@ export default async function PublicPreview() {
 
                   {/* Founder mark */}
 
-                  <div
-                    className="
-              flex
-              h-9
-              w-9
-              items-center
-              justify-center
-              rounded-full
-              border
-              border-violet-400/30
-              bg-violet-500/[0.06]
-              text-[10px]
-              font-medium
-              text-violet-300
-            "
-                  >
-                    JG
-                  </div>
-
+                  
 
                   <div>
 
-                    <p className="text-[11px] font-medium text-zinc-200">
-                      Jerin Georgekutty
+                    <p className="text-[8px] font-medium text-yellow-500">
+                      — JERIN GEORGEKUTTY - MA | MBA | PGDAS | PDDS
                     </p>
 
-                    <p className="mt-0.5 text-[8px] uppercase tracking-[0.18em] text-zinc-600">
+                    <div className="mt-2 h-[85px] w-[85px] overflow-hidden rounded-full border-round border-zinc-500 bg-zinc-950 sm:h-[135px] sm:w-[140px]">
+  <img
+    src="https://jeringeorgekutty.weebly.com/uploads/1/1/9/9/119991850/img-20250301-102847_orig.jpg"
+    alt="Jerin Georgekutty"
+    className="h-full w-full object-cover"
+  />
+</div>
+
+                    <p className="mt-2 text-[8px] uppercase tracking-[0.18em] text-pink-500">
                       Founder & CEO · Jeruto Group
                     </p>
 
@@ -1035,26 +845,8 @@ export default async function PublicPreview() {
                 </div>
 
 
-                {/* Philosophy points */}
-
-                <div className="mt-8 grid gap-2 sm:grid-cols-3">
-
-                  <PrincipleCard
-                    title="Transparent"
-                    description="Data presented with clarity and context."
-                  />
-
-                  <PrincipleCard
-                    title="Unbiased"
-                    description="No preference for language, star or industry."
-                  />
-
-                  <PrincipleCard
-                    title="Data-driven"
-                    description="Structured information behind every insight."
-                  />
-
-                </div>
+              
+                
 
               </div>
 
@@ -1089,7 +881,7 @@ export default async function PublicPreview() {
                   More than a database.
                 </h2>
 
-                <p className="mt-3 max-w-2xl text-[11px] leading-6 text-zinc-600 sm:text-xs sm:leading-6">
+                <p className="mt-3 max-w-2xl text-[11px] leading-6 text-zinc-500 sm:text-xs sm:leading-6">
                   JMI is evolving into a complete movie intelligence
                   ecosystem where structured data, analytics and
                   intelligent tools come together to help understand
@@ -1100,17 +892,17 @@ export default async function PublicPreview() {
                 <div className="mt-7 grid gap-2 md:grid-cols-3">
 
                   <FutureCard
-                    title="Live Tracking"
+                    title="Live Tracking 🚨"
                     description="Real-time India and overseas market intelligence."
                   />
 
                   <FutureCard
-                    title="JMI Compare"
-                    description="Compare movies, people, companies and markets."
+                    title="JMI Game Zone 🎮"
+                    description="Engage in Cinema oriented Games and entertainments."
                   />
 
                   <FutureCard
-                    title="JMI AI"
+                    title="JMI AI 👨‍🔧"
                     description="Ask questions and explore the intelligence inside JMI."
                   />
 
@@ -2144,13 +1936,13 @@ function FutureCard({
   description: string;
 }) {
   return (
-    <div className="rounded-lg border border-zinc-800 bg-black/60 px-4 py-4">
+    <div className="rounded-lg border border-violet-500/60 bg-black/60 px-4 py-4">
 
-      <p className="text-[11px] font-medium text-zinc-300">
+      <p className="text-[11px] font-medium text-pink-400">
         {title}
       </p>
 
-      <p className="mt-1.5 text-[9px] leading-5 text-zinc-700">
+      <p className="mt-1.5 text-[9px] leading-5 text-zinc-500">
         {description}
       </p>
 

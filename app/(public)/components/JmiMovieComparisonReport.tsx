@@ -888,18 +888,18 @@ const automatedReport = generateAutomatedReport(
             <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/[0.06]">
 
               <span className="text-sm">
-                ✦
+                ✍🏻
               </span>
 
             </div>
 
             <div>
 
-              <p className="text-[8px] font-semibold uppercase tracking-[0.28em] text-violet-400">
+              <p className="text-[8px] font-semibold uppercase tracking-[0.28em] text-red-400">
                 JMI Automated Report
               </p>
 
-              <p className="mt-1 text-[8px] text-zinc-600">
+              <p className="mt-1 text-[8px] text-zinc-500">
                 Machine-generated interpretation of the comparison
               </p>
 
@@ -927,11 +927,11 @@ const automatedReport = generateAutomatedReport(
 
       <section className="rounded-xl border border-zinc-900 bg-black px-5 py-5">
 
-        <p className="text-[8px] font-semibold uppercase tracking-[0.25em] text-zinc-500">
+        <p className="text-[8px] font-semibold uppercase tracking-[0.25em] text-green-500">
           JMI Methodology
         </p>
 
-        <p className="mt-2 text-[9px] leading-5 text-zinc-700">
+        <p className="mt-2 text-[9px] leading-5 text-zinc-500">
           JMI Compare uses structured information available in
           the JMI intelligence database. JMI trade collections
           are used for comparison, while unavailable information
@@ -1712,9 +1712,15 @@ function MovieHeader({
 
       <div className="min-w-0">
 
-        <p className="text-[7px] font-medium uppercase tracking-[0.22em] text-violet-400/60">
-          Movie {side}
-        </p>
+        <p
+  className={
+    side === "A"
+      ? "text-[7px] font-medium uppercase tracking-[0.22em] text-violet-400"
+      : "text-[7px] font-medium uppercase tracking-[0.22em] text-pink-400"
+  }
+>
+  Movie {side}
+</p>
 
         <h3 className="mt-1 text-[13px] font-semibold text-zinc-100">
           {movie.title}
@@ -1777,7 +1783,7 @@ function ComparisonSection({
             {firstMovieName}
           </p>
 
-          <p className="truncate text-[9px] font-semibold text-violet-300">
+          <p className="truncate text-[9px] font-semibold text-pink-300">
             {secondMovieName}
           </p>
 
@@ -1849,17 +1855,19 @@ function MetricRow({
         {label}
       </p>
 
-      <MetricValue
-        value={firstValue}
-        format={format}
-        highlighted={winnerSide === "A"}
-      />
+     <MetricValue
+  value={firstValue}
+  format={format}
+  highlighted={winnerSide === "A"}
+  side="A"
+/>
 
-      <MetricValue
-        value={secondValue}
-        format={format}
-        highlighted={winnerSide === "B"}
-      />
+<MetricValue
+  value={secondValue}
+  format={format}
+  highlighted={winnerSide === "B"}
+  side="B"
+/>
 
     </div>
   );
@@ -1870,10 +1878,12 @@ function MetricValue({
   value,
   format,
   highlighted,
+  side,
 }: {
   value: number | null;
   format: (value: number | null) => string;
   highlighted: boolean;
+  side: "A" | "B";
 }) {
   return (
     <div className="flex min-w-0 items-center gap-1.5">
@@ -1885,14 +1895,16 @@ function MetricValue({
       )}
 
       <p
-        className={
-          highlighted
-            ? "truncate text-[9px] font-semibold text-violet-300"
-            : "truncate text-[9px] text-zinc-300"
-        }
-      >
-        {format(value)}
-      </p>
+  className={
+    highlighted
+      ? side === "A"
+        ? "truncate text-[9px] font-semibold text-violet-300"
+        : "truncate text-[9px] font-semibold text-pink-300"
+      : "truncate text-[9px] text-zinc-300"
+  }
+>
+  {format(value)}
+</p>
 
     </div>
   );
@@ -2033,11 +2045,11 @@ function VisualComparisonRow({
         <div className="mb-1.5 flex items-center justify-between gap-2">
 
           <span
-            className={
-              winnerSide === "A"
-                ? "max-w-[55%] truncate text-[8px] font-semibold text-violet-300"
-                : "max-w-[55%] truncate text-[8px] text-zinc-500"
-            }
+           className={
+  winnerSide === "A"
+    ? "max-w-[55%] truncate text-[8px] font-semibold text-violet-300"
+    : "max-w-[55%] truncate text-[8px] text-violet-400/60"
+}
           >
             {firstName}
           </span>
@@ -2053,10 +2065,10 @@ function VisualComparisonRow({
 
           <div
             className={
-              winnerSide === "A"
-                ? "h-full rounded-full bg-violet-400"
-                : "h-full rounded-full bg-zinc-600"
-            }
+  winnerSide === "A"
+    ? "h-full rounded-full bg-violet-400"
+    : "h-full rounded-full bg-violet-400/30"
+}
             style={{
               width: `${firstWidth}%,`
             }}
@@ -2074,11 +2086,11 @@ function VisualComparisonRow({
         <div className="mb-1.5 flex items-center justify-between gap-2">
 
           <span
-            className={
-              winnerSide === "B"
-                ? "max-w-[55%] truncate text-[8px] font-semibold text-violet-300"
-                : "max-w-[55%] truncate text-[8px] text-zinc-500"
-            }
+           className={
+  winnerSide === "B"
+    ? "max-w-[55%] truncate text-[8px] font-semibold text-pink-300"
+    : "max-w-[55%] truncate text-[8px] text-pink-400/60"
+}
           >
             {secondName}
           </span>
@@ -2094,10 +2106,10 @@ function VisualComparisonRow({
 
           <div
             className={
-              winnerSide === "B"
-                ? "h-full rounded-full bg-violet-400"
-                : "h-full rounded-full bg-zinc-600"
-            }
+  winnerSide === "B"
+    ? "h-full rounded-full bg-pink-400"
+    : "h-full rounded-full bg-pink-400/30"
+}
             style={{
               width: `${secondWidth}%,`
             }}

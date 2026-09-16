@@ -1,7 +1,37 @@
 import Link from "next/link";
 import PublicHeader from "../../components/PublicHeader";
+import { supabase } from "@/lib/supabase";
 
-export default function BoxOfficePage() {
+export default async function BoxOfficePage() {
+  /* ============================================================
+     LIVE BOX OFFICE COVERAGE
+  ============================================================ */
+
+  const { data: indiaBoxOffice } = await supabase
+    .from("movie_state_box_office")
+    .select("gross_jmi");
+
+  const { data: overseasBoxOffice } = await supabase
+    .from("movie_overseas_box_office")
+    .select("gross_inr");
+
+  const indiaGross =
+    indiaBoxOffice?.reduce(
+      (total, row) => total + Number(row.gross_jmi || 0),
+      0
+    ) ?? 0;
+
+  const overseasGross =
+    overseasBoxOffice?.reduce(
+      (total, row) => total + Number(row.gross_inr || 0),
+      0
+    ) ?? 0;
+
+  const worldwideGross = indiaGross + overseasGross;
+
+  const formatCrores = (value: number) =>
+    `₹${(value / 10000000).toFixed(2)} Cr;`
+
   return (
     <div className="min-h-screen bg-black text-white">
 
@@ -57,7 +87,7 @@ export default function BoxOfficePage() {
 
                 <button
                   type="button"
-                  className="px-4 text-[10px] font-medium text-black bg-pink-400 transition hover:bg-pink-300"
+                  className="bg-pink-400 px-4 text-[10px] font-medium text-black transition hover:bg-pink-300"
                 >
                   Search
                 </button>
@@ -83,17 +113,17 @@ export default function BoxOfficePage() {
 
               <BoxOfficeStat
                 label="India"
-                value="₹937+ Cr"
+                value={formatCrores(indiaGross)}
               />
 
               <BoxOfficeStat
                 label="Overseas"
-                value="₹396+ Cr"
+                value={formatCrores(overseasGross)}
               />
 
               <BoxOfficeStat
                 label="Worldwide"
-                value="₹1,333+ Cr"
+                value={formatCrores(worldwideGross)}
                 highlight
               />
 

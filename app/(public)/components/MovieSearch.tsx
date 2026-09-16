@@ -158,7 +158,7 @@ export default function MovieSearch({
 
         <button
           type="submit"
-          className="bg-violet-400 px-4 text-[10px] font-medium text-black transition hover:bg-violet-300"
+          className="bg-yellow-500 px-4 text-[10px] font-medium text-black transition hover:bg-yellow-300"
         >
           Search
         </button>

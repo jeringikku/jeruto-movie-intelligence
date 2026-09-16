@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 
 type Props = {
@@ -281,6 +282,79 @@ function CareerChart({
       </div>
     </div>
   );
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ personId: string; roleId: string }>;
+}): Promise<Metadata> {
+  const { personId, roleId } = await params;
+
+  const [{ data: person }, { data: role }] = await Promise.all([
+    supabase
+      .from("people")
+      .select("id, full_name, original_name, profile_image_url")
+      .eq("id", personId)
+      .maybeSingle(),
+
+    supabase
+      .from("person_roles")
+      .select("id, name")
+      .eq("id", roleId)
+      .maybeSingle(),
+  ]);
+
+  if (!person || !role) {
+    return {
+      title: "Person Profile Not Found",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const personName =
+    person.full_name || person.original_name || "Person";
+
+  const roleName = role.name || "Film Industry";
+
+  const title = `${personName} — ${roleName} Career & Box Office Intelligence`;
+
+  const description =
+    `${personName} — ${roleName} career, movies, box office performance, ` +
+    `regional markets, business and film industry intelligence from ` +
+    `Jeruto Movie Intelligence.`;
+
+  const metadata: Metadata = {
+    title,
+    description,
+    alternates: {
+      canonical: `https://jeruto.com/preview/people/${person.id}/${role.id}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `https://jeruto.com/preview/people/${person.id}/${role.id}`,
+      siteName: "Jeruto Movie Intelligence",
+      type: "website",
+    },
+  };
+
+  if (person.profile_image_url) {
+    metadata.openGraph = {
+      ...metadata.openGraph,
+      images: [
+        {
+          url: person.profile_image_url,
+          alt: `${personName} profile,`
+        },
+      ],
+    };
+  }
+
+  return metadata;
 }
 
 export default async function PersonRoleIntelligencePage({

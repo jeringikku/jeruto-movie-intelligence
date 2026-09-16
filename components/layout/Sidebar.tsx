@@ -16,6 +16,7 @@ export default function Sidebar() {
   { href: "/admin/industries", label: "🍿 Industries" },
   { href: "/admin/movie-business", label: "💵 Movie Business" },
   { href: "/admin/box-office", label: "💰 Box Office" },
+  { href: "/admin/site-assets", label: "🖼️ Site Assets" },
   { href: "#", label: "🌍 Geography" },
 ];
 

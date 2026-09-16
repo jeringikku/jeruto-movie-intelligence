@@ -2,6 +2,7 @@ import Link from "next/link";
 import PublicHeader from "../../components/PublicHeader";
 import { supabase } from "@/lib/supabase";
 import MovieSearch from "../../components/MovieSearch";
+import MoviesPageBanner from "../../components/MoviesPageBanner";
 
 type Props = {
   searchParams: Promise<{
@@ -145,6 +146,8 @@ export default async function MoviesPage({
     .eq("is_active", true)
 .eq("movie_languages.is_primary", true);
 
+
+
   /* =========================================================
      SEARCH
   ========================================================= */
@@ -266,7 +269,19 @@ export default async function MoviesPage({
 
       <PublicHeader />
 
-      <main>
+      
+
+ <main>
+<div className="mx-auto max-w-6xl px-5 pt-5 sm:px-6 lg:px-8">
+  <Link
+    href="/preview"
+    className="inline-flex items-center gap-1 text-[9px] font-medium tracking-[0.16em] text-violet-400 transition hover:text-violet-400"
+  >
+    <span>←</span>
+    <span>Back to Home</span>
+  </Link>
+</div>
+        
 
         {/* =====================================================
             MOVIES HERO
@@ -278,7 +293,7 @@ export default async function MoviesPage({
 
             <div className="max-w-3xl">
 
-              <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-violet-400">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-yellow-400">
                 JMI Movies
               </p>
 
@@ -292,6 +307,13 @@ export default async function MoviesPage({
               </p>
 
             </div>
+
+            {/* =================================================
+    MOVIES PAGE BANNER
+================================================= */}
+
+
+<MoviesPageBanner/>
 
             {/* =================================================
                 SEARCH
@@ -330,11 +352,11 @@ export default async function MoviesPage({
             DATABASE SNAPSHOT
         ===================================================== */}
 
-        <section className="border-b border-zinc-900">
+        <section className="border-b border-zinc-600">
 
           <div className="mx-auto max-w-6xl px-5 py-8 sm:px-6 lg:px-8">
 
-            <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
+            <div className="overflow-hidden rounded-xl border border-violet-500/50 bg-zinc-950">
 
               <div className="grid grid-cols-3 divide-x divide-zinc-800">
 
@@ -585,7 +607,7 @@ export default async function MoviesPage({
 
           <div className="mx-auto max-w-6xl px-5 py-10 sm:px-6 sm:py-14 lg:px-8">
 
-            <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-violet-400">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-green-400">
               Historical Records
             </p>
 
@@ -952,7 +974,7 @@ function RecordCard({
     return (
       <Link
         href={href}
-        className="block rounded-xl border border-zinc-600 bg-zinc-950 p-5 transition hover:border-violet-500/30"
+        className="block rounded-xl border border-green-400/50 bg-zinc-950 p-5 transition hover:border-violet-500/30"
       >
         {content}
       </Link>

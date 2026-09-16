@@ -1,4 +1,5 @@
 import JmiComparisonWorkspace from "../../components/JmiComparisonWorkspace";
+import Link from "next/link";
 
 import PublicHeader from "../../components/PublicHeader";
 
@@ -10,6 +11,15 @@ export default function ComparePage() {
       <PublicHeader />
 
       <main>
+<div className="mx-auto max-w-6xl px-5 pt-5 sm:px-6 lg:px-8">
+  <Link
+    href="/preview"
+    className="inline-flex items-center gap-2 text-[9px] font-medium tracking-[0.16em] text-violet-400 transition hover:text-violet-400"
+  >
+    <span>←</span>
+    <span>Back to Home</span>
+  </Link>
+</div>
 
         {/* =====================================================
             HERO
@@ -32,11 +42,11 @@ export default function ComparePage() {
 
               {/* Eyebrow */}
 
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-400/15 bg-violet-400/[0.035] px-3 py-1.5">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-400/70 bg-violet-400/[0.035] px-3 py-1.5">
 
-                <span className="h-1 w-1 rounded-full bg-violet-400" />
+                <span className="h-1 w-1 rounded-full bg-red-400" />
 
-                <span className="text-[9px] font-medium uppercase tracking-[0.28em] text-violet-300">
+                <span className="text-[9px] font-medium uppercase tracking-[0.28em] text-green-300">
                   JMI Intelligence Tool
                 </span>
 
@@ -47,12 +57,12 @@ export default function ComparePage() {
 
               <h1 className="font-serif leading-[0.95] tracking-[-0.045em]">
 
-                <span className="block text-[2.35rem] font-medium text-zinc-100 sm:text-5xl lg:text-6xl">
-                  JMI
+                <span className="block text-[2.35rem] font-medium text-violet-400 sm:text-5xl lg:text-6xl">
+                  JMI Compare
                 </span>
 
                 <span className="mt-1 block text-[2.1rem] font-medium text-violet-400 sm:text-[2.9rem] lg:text-5xl">
-                  Compare
+                  ⚔️
                 </span>
 
               </h1>
@@ -91,7 +101,7 @@ export default function ComparePage() {
                 Choose what you want to compare.
               </h2>
 
-              <p className="mx-auto mt-2 max-w-lg text-[10px] leading-5 text-zinc-600 sm:text-[11px]">
+              <p className="mx-auto mt-2 max-w-lg text-[10px] leading-5 text-zinc-500 sm:text-[11px]">
                 JMI Compare will analyse structured information
                 already available inside the JMI intelligence database.
               </p>
@@ -136,36 +146,6 @@ export default function ComparePage() {
               </p>
 
             </div>
-
-
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-
-              <CompareLayer
-                number="01"
-                title="Performance"
-                description="Box office and theatrical performance."
-              />
-
-              <CompareLayer
-                number="02"
-                title="Markets"
-                description="State, regional and overseas performance."
-              />
-
-              <CompareLayer
-                number="03"
-                title="Business"
-                description="Business, recovery and financial intelligence."
-              />
-
-              <CompareLayer
-                number="04"
-                title="Records"
-                description="Milestones and historical achievements."
-              />
-
-            </div>
-
           </div>
 
         </section>
@@ -252,13 +232,13 @@ export default function ComparePage() {
                 </span>
               </p>
 
-              <p className="mt-1 text-[9px] text-zinc-700">
+              <p className="mt-1 text-[9px] text-zinc-500">
                 India's Next Generation Movie Intelligence Platform
               </p>
 
             </div>
 
-            <p className="text-[9px] text-zinc-700">
+            <p className="text-[9px] text-zinc-500">
               JMI · Comparison Intelligence
             </p>
 
@@ -291,7 +271,7 @@ function CompareLayer({
 
       <div className="flex items-center justify-between">
 
-        <span className="text-[8px] tracking-[0.2em] text-violet-400/50">
+        <span className="text-[8px] tracking-[0.2em] text-violet-400/90">
           {number}
         </span>
 
@@ -324,13 +304,13 @@ function EntityCard({
   description: string;
 }) {
   return (
-    <div className="rounded-lg border border-zinc-800 bg-black/40 px-4 py-3">
+    <div className="rounded-lg border border-violet-400/50 bg-black/40 px-4 py-3">
 
-      <p className="text-[11px] font-medium text-zinc-300">
+      <p className="text-[11px] font-medium text-zinc-400">
         {title}
       </p>
 
-      <p className="mt-1 text-[8px] text-zinc-600">
+      <p className="mt-1 text-[8px] text-zinc-500">
         {description}
       </p>
 
