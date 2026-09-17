@@ -8,7 +8,7 @@ type SiteAsset = {
   alt_text: string | null;
 };
 
-export default function MoviesPageBanner() {
+export default function MoviesHistoricalRecordsBanner() {
   const [banner, setBanner] = useState<SiteAsset | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -17,13 +17,16 @@ export default function MoviesPageBanner() {
       const { data, error } = await supabase
         .from("jmi_site_assets")
         .select("asset_url, alt_text")
-        .eq("asset_key", "movies_page_banner")
+        .eq("asset_key", "movies_historical_records_banner")
         .eq("is_active", true)
         .limit(1)
         .maybeSingle();
 
       if (error) {
-        console.error("Movies page banner error:", error);
+        console.error(
+          "Movies historical records banner error:",
+          error
+        );
         setBanner(null);
       } else {
         setBanner(data as SiteAsset | null);
@@ -37,8 +40,8 @@ export default function MoviesPageBanner() {
 
   if (loading) {
     return (
-      <div className="mt-7 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950">
-        <div className="aspect-[16/7] w-full animate-pulse bg-zinc-900/60" />
+      <div className="mt-6 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950">
+        <div className="aspect-[16/9] w-full animate-pulse bg-zinc-900/60" />
       </div>
     );
   }
@@ -48,23 +51,31 @@ export default function MoviesPageBanner() {
   }
 
   return (
-    <div className="group relative mt-7 overflow-hidden rounded-2xl border border-zinc-800 bg-black shadow-2xl">
+    <div className="group relative mt-3 overflow-hidden rounded-2xl border border-yellow-700 bg-black shadow-2xl">
 
       {/* Ambient violet glow */}
+
       <div className="pointer-events-none absolute -inset-20 bg-violet-500/[0.035] blur-3xl" />
 
-      <div className="relative aspect-[16/7] w-full">
+      <div className="relative aspect-[16/8] w-full">
+
         <img
           src={banner.asset_url}
-          alt={banner.alt_text || "JMI Movies"}
+          alt={
+            banner.alt_text ||
+            "JMI Historical Records"
+          }
           className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.005]"
         />
+
       </div>
 
       {/* Cinematic overlay */}
+
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/20" />
 
       {/* Bottom fade */}
+
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent" />
 
     </div>

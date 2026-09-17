@@ -165,6 +165,11 @@ export default async function AdvanceBookingPublicPage({
 
   const stateList: State[] = states || [];
 
+  const latestUpdatedAt =
+  records.length > 0
+    ? records[0].updated_at
+    : null;
+
   /* ---------------------------------------------------------
      STATE NAME
   --------------------------------------------------------- */
@@ -324,12 +329,59 @@ export default async function AdvanceBookingPublicPage({
 
         </section>
 
-        {/* -------------------------------------------------
-            OVERVIEW
+       {/* -------------------------------------------------
+            LIVE UPDATE STATUS
         ------------------------------------------------- */}
 
         <section className="mt-6">
 
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-900 bg-zinc-950 px-4 py-3">
+
+            <div className="flex items-center gap-2">
+
+              {/* LIVE INDICATOR */}
+
+              <span className="relative flex h-2 w-2">
+
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500/40" />
+
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+
+              </span>
+
+              <span className="text-[8px] font-semibold uppercase tracking-[0.16em] text-red-400">
+                Live Tracking
+              </span>
+
+            </div>
+
+
+            {/* LAST UPDATED */}
+
+            <div className="flex items-center gap-1.5">
+
+              <span className="text-[7px] uppercase tracking-[0.12em] text-green-400">
+                Last updated
+              </span>
+
+              <span className="text-[8.5px] font-medium text-zinc-400">
+                {latestUpdatedAt
+                  ? formatUpdatedAt(latestUpdatedAt)
+                  : "—"}
+              </span>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        {/* -------------------------------------------------
+            OVERVIEW
+        ------------------------------------------------- */}
+
+        <section className="mt-5">
           <div className="mb-4">
 
             <p className="text-[8px] uppercase tracking-[0.18em] text-violet-400">

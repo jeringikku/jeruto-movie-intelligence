@@ -573,12 +573,12 @@ export default async function PublicPreview() {
               />
 
               <ExploreCard
-                number="02"
-                icon="boxoffice"
-                title="Box Office"
-                description="Collections, theatrical performance, territories and markets."
-                href="/preview/box-office"
-              />
+  number="02"
+  icon="boxoffice"
+  title="Historic Records"
+  description="Explore landmark performances, industry milestones and cinema records."
+  href="/preview/movies#historical-records"
+/>
 
               <ExploreCard
                 number="03"

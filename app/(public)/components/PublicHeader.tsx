@@ -36,12 +36,7 @@ export default function PublicHeader() {
             Movies
           </Link>
 
-          <Link
-            href="/preview/box-office"
-            className="text-sm text-zinc-300 transition hover:text-yellow-400"
-          >
-            Box Office
-          </Link>
+          
 
           <Link
             href="/preview/people"

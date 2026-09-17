@@ -3,6 +3,7 @@ import PublicHeader from "../../components/PublicHeader";
 import { supabase } from "@/lib/supabase";
 import MovieSearch from "../../components/MovieSearch";
 import MoviesPageBanner from "../../components/MoviesPageBanner";
+import MoviesHistoricalRecordsBanner from "../../components/MoviesHistoricalRecordsBanner";
 
 type Props = {
   searchParams: Promise<{
@@ -599,11 +600,17 @@ export default async function MoviesPage({
 
         </section>
 
+
+
         {/* =====================================================
             HISTORICAL RECORDS
         ===================================================== */}
 
-        <section className="border-b border-zinc-800">
+        <section
+  id="historical-records"
+  className="border-b border-zinc-800"
+>
+    
 
           <div className="mx-auto max-w-6xl px-5 py-10 sm:px-6 sm:py-14 lg:px-8">
 
@@ -620,22 +627,35 @@ export default async function MoviesPage({
               records that have shaped the history of Indian cinema.
             </p>
 
-            <div className="mt-6 grid gap-2 sm:grid-cols-3 border=violet-400">
 
-             <RecordCard
-  number="01"
-  title="Highest Grossing Movies"
-  description="Explore India's biggest theatrical performances."
-  href="/preview/records/highest-grossing"
-/>
 
-<RecordCard
-  number="02"
-  title="Industry Wise Records"
-  description="Historic milestones across individual industries."
-    href="/preview/records/industry-wise"
-/>
+            {/* =================================================
+                HISTORICAL RECORDS BANNER
+            ================================================= */}
 
+            <MoviesHistoricalRecordsBanner/>
+
+
+
+            {/* =================================================
+                HISTORICAL RECORDS
+            ================================================= */}
+
+            <div className="mt-6 grid gap-2 sm:grid-cols-3">
+
+              <RecordCard
+                number="01"
+                title="Highest Grossing Movies"
+                description="Explore India's biggest theatrical performances."
+                href="/preview/records/highest-grossing"
+              />
+
+              <RecordCard
+                number="02"
+                title="Industry Wise Records"
+                description="Historic milestones across individual industries."
+                href="/preview/records/industry-wise"
+              />
 
             </div>
 
@@ -955,36 +975,93 @@ function RecordCard({
   href?: string;
 }) {
   const content = (
-    <>
-      <div className="text-[8px] tracking-[0.2em] text-green-500">
+    <div className="flex items-center gap-4">
+
+      {/* NUMBER */}
+
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-400 bg-black text-[8px] font-medium tracking-[0.16em] text-violet-400 transition-colors duration-300 group-hover:border-violet-400/30 group-hover:text-violet-300">
         {number}
       </div>
 
-      <h3 className="mt-5 text-[12px] font-medium text-yellow-400">
-        {title}
-      </h3>
 
-      <p className="mt-2 text-[10px] leading-5 text-zinc-500">
-        {description}
-      </p>
-    </>
+      {/* CONTENT */}
+
+      <div className="min-w-0 flex-1">
+
+        <div className="flex items-center gap-2">
+
+          <span className="h-1.5 w-1.5 rounded-full bg-violet-400/70 transition-all duration-300 group-hover:bg-violet-300 group-hover:shadow-[0_0_8px_rgba(167,139,250,0.7)]" />
+
+          <span className="text-[8px] font-medium uppercase tracking-[0.2em] text-zinc-400 group-hover:text-violet-400/70">
+            JMI Records
+          </span>
+
+        </div>
+
+        <h3 className="mt-1.5 truncate text-[12px] font-medium tracking-[-0.015em] text-pink-400 transition-colors duration-300 group-hover:text-white sm:text-[13px]">
+          {title}
+        </h3>
+
+        <p className="mt-0.5 truncate text-[8px] text-zinc-500 transition-colors duration-300 group-hover:text-zinc-500">
+          {description}
+        </p>
+
+      </div>
+
+
+      {/* ARROW */}
+
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-pink-400 text-[12px] text-pink-400 transition-all duration-300 group-hover:border-violet-400/40 group-hover:bg-violet-400/[0.06] group-hover:text-violet-300 group-hover:translate-x-0.5">
+        →
+      </div>
+
+    </div>
   );
 
   if (href) {
     return (
       <Link
         href={href}
-        className="block rounded-xl border border-green-400/50 bg-zinc-950 p-5 transition hover:border-violet-500/30"
+        className="
+          group
+          relative
+          block
+          overflow-hidden
+          rounded-xl
+          border
+          border-zinc-500
+          bg-zinc-950
+          px-4
+          py-3.5
+          transition-all
+          duration-300
+          hover:border-violet-400/30
+          hover:bg-zinc-900/70
+          active:scale-[0.99]
+          sm:px-5
+          sm:py-4
+        "
       >
-        {content}
+
+        {/* SUBTLE LIGHT SWEEP */}
+
+        <div className="pointer-events-none absolute inset-y-0 -left-24 w-24 bg-gradient-to-r from-transparent via-violet-400/[0.05] to-transparent skew-x-[-20deg] transition-all duration-700 group-hover:left-[110%]" />
+
+        {/* TOP ACCENT */}
+
+        <div className="pointer-events-none absolute left-4 right-4 top-0 h-px bg-gradient-to-r from-transparent via-violet-400/50 to-transparent opacity-40 transition-opacity duration-300 group-hover:opacity-100" />
+
+        <div className="relative">
+          {content}
+        </div>
+
       </Link>
     );
   }
 
   return (
-    <div className="rounded-xl border border-zinc-600 bg-zinc-950 p-5">
+    <div className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3.5 sm:px-5 sm:py-4">
       {content}
     </div>
   );
 }
- 
