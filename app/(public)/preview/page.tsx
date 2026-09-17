@@ -580,13 +580,13 @@ export default async function PublicPreview() {
   href="/preview/movies#historical-records"
 />
 
-              <ExploreCard
-                number="03"
-                icon="market"
-                title="Market Intelligence"
-                description="South Indian state markets, regional performance and analytics."
-                href="/preview/market-intelligence"
-              />
+             <ExploreCard
+  number="03"
+  icon="market"
+  title="Audience Behavior"
+  description="Audience preferences, genre trends and market-wise viewing patterns."
+  href="/preview/audience-behavior"
+/>
 
               <ExploreCard
                 number="04"

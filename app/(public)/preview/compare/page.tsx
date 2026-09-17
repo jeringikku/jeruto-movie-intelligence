@@ -2,6 +2,7 @@ import JmiComparisonWorkspace from "../../components/JmiComparisonWorkspace";
 import Link from "next/link";
 
 import PublicHeader from "../../components/PublicHeader";
+import ComparePageBanner from "../../components/ComparePageBanner";
 
 
 export default function ComparePage() {
@@ -58,14 +59,16 @@ export default function ComparePage() {
               <h1 className="font-serif leading-[0.95] tracking-[-0.045em]">
 
                 <span className="block text-[2.35rem] font-medium text-violet-400 sm:text-5xl lg:text-6xl">
-                  JMI Compare
+                  JMI Compare ⚔️
                 </span>
 
                 <span className="mt-1 block text-[2.1rem] font-medium text-violet-400 sm:text-[2.9rem] lg:text-5xl">
-                  ⚔️
+                  
                 </span>
 
               </h1>
+
+              <ComparePageBanner />
 
 
               {/* Description */}

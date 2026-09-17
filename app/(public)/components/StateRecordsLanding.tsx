@@ -24,7 +24,7 @@ function RecordOption({
   return (
     <Link
       href={href}
-      className="group block rounded-xl border border-zinc-900 bg-zinc-950/60 p-5 transition hover:border-violet-500/30 hover:bg-zinc-900/60"
+      className="group block rounded-xl border border-violet-500/60 bg-zinc-950/60 p-5 transition hover:border-violet-500/30 hover:bg-zinc-900/60"
     >
       <div className="flex items-start justify-between gap-4">
 
