@@ -798,15 +798,15 @@ const highestWorldwideMovie =
     : null;
 
 const movies100CrPlus = allTopMovies.filter(
-  (movie) => movie.worldwideGross >= 1000000000
+  (movie) => movie.worldwideGross >= 10000000000
 ).length;
 
 const movies50CrPlus = allTopMovies.filter(
-  (movie) => movie.worldwideGross >= 500000000
+  (movie) => movie.worldwideGross >= 5000000000
 ).length;
 
 const movies10CrPlus = allTopMovies.filter(
-  (movie) => movie.worldwideGross >= 100000000
+  (movie) => movie.worldwideGross >= 1000000000
 ).length;
 
 setPerformanceMetrics({

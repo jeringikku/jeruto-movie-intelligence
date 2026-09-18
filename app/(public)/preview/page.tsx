@@ -4,6 +4,7 @@ import HomepageBannerStrip from "../components/HomepageBannerStrip";
 import MovieSearch from "../components/MovieSearch";
 import TicketBookingBanner from "../components/TicketBookingBanner";
 import ComparisonIntelligenceBanner from "../components/ComparisonIntelligenceBanner";
+import JmiLiveTicker from "../components/JmiLiveTicker";
 import { supabase } from "@/lib/supabase";
 
 export default async function PublicPreview() {
@@ -183,6 +184,8 @@ export default async function PublicPreview() {
     <div className="min-h-screen bg-black text-white">
 
       <PublicHeader />
+
+      <JmiLiveTicker />
 
       <main>
 
@@ -591,7 +594,7 @@ export default async function PublicPreview() {
               <ExploreCard
                 number="04"
                 icon="people"
-                title="People"
+                title="People Analytics"
                 description="Actors, directors, producers and film industry professionals."
                 href="/preview/people"
               />
@@ -612,13 +615,7 @@ export default async function PublicPreview() {
                 href="/preview/industries"
               />
 
-              <ExploreCard
-                number="07"
-                icon="insights"
-                title="Insights"
-                description="Data-driven intelligence and deeper perspectives on cinema."
-                href="/preview/insights"
-              />
+             
 
             </div>
 
@@ -1455,8 +1452,7 @@ function ExploreCard({
   | "market"
   | "people"
   | "company"
-  | "industry"
-  | "insights";
+  | "industry";
 }) {
   return (
     <Link
@@ -1466,7 +1462,7 @@ function ExploreCard({
         min-h-[132px]
         overflow-hidden
         rounded-xl
-        border border-violet-600/25
+        border border-violet-500/45
         bg-zinc-950
         p-3.5
 
