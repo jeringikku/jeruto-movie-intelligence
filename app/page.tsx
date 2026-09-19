@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import JmiHomepage from "./(public)/preview/page";
 
 export default function Home() {
-  redirect("/preview");
+  return <JmiHomepage />;
 }

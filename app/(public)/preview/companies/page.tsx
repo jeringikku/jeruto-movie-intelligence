@@ -56,7 +56,7 @@ export default function CompaniesPage() {
         {/* BACK TO HOME */}
 
         <Link
-          href="/preview"
+          href="/"
           className="
             inline-flex
             items-center

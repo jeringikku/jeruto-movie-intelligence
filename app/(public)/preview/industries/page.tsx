@@ -424,7 +424,7 @@ export default function IndustriesPage() {
         ================================================== */}
 
         <Link
-          href="/preview"
+          href="/"
           className="inline-flex items-center gap-1.5 text-[9px] tracking-[0.16em] text-violet-500 transition hover:text-violet-400"
         >
           ← Back to Home

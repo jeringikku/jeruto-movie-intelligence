@@ -275,7 +275,7 @@ export default async function MoviesPage({
  <main>
 <div className="mx-auto max-w-6xl px-5 pt-5 sm:px-6 lg:px-8">
   <Link
-    href="/preview"
+    href="/"
     className="inline-flex items-center gap-1 text-[9px] font-medium tracking-[0.16em] text-violet-400 transition hover:text-violet-400"
   >
     <span>←</span>
@@ -683,8 +683,7 @@ export default async function MoviesPage({
 
               <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-400">
                 JMI is continuously expanding its movie database across
-                languages, industries, markets and generations of Indian cinema & a new data is added on each single hour. JMI currently process around 2 Terabytes of data on each single second on its intelligence engine.
-              </p>
+                languages, industries, markets and generations of Indian cinema & a new data is added on each single hour.</p>
 
               <div className="mt-5 flex items-center gap-3">
 

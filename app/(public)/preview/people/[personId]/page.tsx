@@ -341,7 +341,7 @@ export default async function PersonIntelligencePage({
 <section className="mt-6 space-y-2">
 
   <Link
-    href="/preview"
+    href="/"
     className="block rounded-lg border border-violet-900/40 bg-violet-950/10 px-4 py-3 text-center text-[9px] text-violet-400 transition hover:border-violet-800 hover:bg-violet-950/20 hover:text-violet-300"
   >
     ← Back to JMI Home

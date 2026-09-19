@@ -1546,7 +1546,7 @@ export default async function CompanyIntelligencePage({
           </Link>
 
           <Link
-            href="/preview"
+            href="/"
             className="block rounded-lg border border-zinc-900 bg-zinc-950 px-4 py-3 text-center text-[9px] text-zinc-500 transition hover:border-zinc-700 hover:text-zinc-300"
           >
             Back to JMI Home

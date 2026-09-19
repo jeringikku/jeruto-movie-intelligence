@@ -77,7 +77,7 @@ export default function BookTicketsPage() {
 
         <div className="mb-5">
   <Link
-    href="/preview"
+    href="/"
     className="inline-flex items-center gap-2 text-[9px] font-medium tracking-[0.16em] text-violet-500 transition hover:text-violet-400"
   >
     <span>←</span>

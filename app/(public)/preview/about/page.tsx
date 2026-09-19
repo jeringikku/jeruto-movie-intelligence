@@ -22,7 +22,7 @@ export default function AboutJmiPage() {
           <div className="relative mx-auto max-w-6xl px-5 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-20">
 
             <Link
-              href="/preview"
+              href="/"
               className="text-[9px] font-medium tracking-[0.18em] text-violet-500 transition hover:text-violet-400"
             >
               ← Back to JMI

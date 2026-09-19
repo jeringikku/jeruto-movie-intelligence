@@ -245,7 +245,7 @@ export default function PrivacyPolicyPage() {
 
           <div className="mt-10 border-t border-zinc-900 pt-8">
             <Link
-              href="/preview"
+              href="/"
               className="text-[9px] font-semibold tracking-[0.18em] text-violet-500 transition hover:text-zinc-300"
             >
               ← Back to JMI

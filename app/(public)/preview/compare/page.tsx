@@ -14,7 +14,7 @@ export default function ComparePage() {
       <main>
 <div className="mx-auto max-w-6xl px-5 pt-5 sm:px-6 lg:px-8">
   <Link
-    href="/preview"
+    href="/"
     className="inline-flex items-center gap-2 text-[9px] font-medium tracking-[0.16em] text-violet-400 transition hover:text-violet-400"
   >
     <span>←</span>

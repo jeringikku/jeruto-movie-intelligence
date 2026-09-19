@@ -683,7 +683,7 @@ export default async function AudienceBehaviorPage() {
         {/* BACK */}
         <div className="mb-8">
           <Link
-            href="/preview"
+            href="/"
             className="text-[9px] tracking-[0.16em] text-violet-400 transition hover:text-violet-400"
           >
             ← Back to Home

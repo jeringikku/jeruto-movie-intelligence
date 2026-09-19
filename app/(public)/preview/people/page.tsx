@@ -128,7 +128,7 @@ export default async function PeoplePage() {
 
         <div className="mb-7">
           <Link
-            href="/preview"
+            href="/"
             className="text-[9px] font-medium tracking-[0.18em] text-violet-500 transition hover:text-violet-400"
           >
             ← Back to Home
