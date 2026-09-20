@@ -49,7 +49,7 @@ export default function PublicHeader() {
   const primaryNavigation = [
     {
       label: "Home",
-      href: "/preview",
+      href: "/",
     },
     {
       label: "Movies",
@@ -117,7 +117,7 @@ export default function PublicHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-zinc-800 bg-charcoal-black/95 backdrop-blur">
+      <header className="sticky top-0 z-50 border-b border-zinc-800 bg-[#050507]/95 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
           {/* MOBILE MENU BUTTON */}

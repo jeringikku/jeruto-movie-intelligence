@@ -43,17 +43,34 @@ export default function AdminLayout({
   }, [pathname, router]);
 
   async function checkAuthentication() {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-    if (!session) {
-      router.replace("/admin/login");
-      return;
-    }
-
-    setCheckingAuth(false);
+  // No authenticated session
+  if (!session) {
+    router.replace("/admin/login");
+    return;
   }
+
+  // Check whether the authenticated user is an admin
+  const { data: roleData, error: roleError } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", session.user.id)
+    .maybeSingle();
+
+  // If role lookup fails or user is not an admin,
+  // do not allow access to the admin panel.
+  if (roleError || roleData?.role !== "admin") {
+    console.warn("Admin access denied.");
+    router.replace("/");
+    return;
+  }
+
+  // Authenticated admin
+  setCheckingAuth(false);
+}
 
   // --------------------------------------------------
   // LOGIN PAGE
