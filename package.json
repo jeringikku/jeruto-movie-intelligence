@@ -13,6 +13,7 @@
     "deploy:vinext": "vinext-cloudflare deploy --config dist/server/wrangler.json"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.110.8",
     "@vinext/cloudflare": "^1.0.0-beta.7",
     "@vnedyalk0v/react19-simple-maps": "^2.0.10",
