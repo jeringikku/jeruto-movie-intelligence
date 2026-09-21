@@ -263,7 +263,7 @@ export default async function CastCrewPage({
 
         <section className="mt-5 rounded-lg border border-zinc-900 bg-zinc-950 px-4 py-3">
 
-          <p className="text-[8px] uppercase tracking-[0.16em] text-zinc-600">
+          <p className="text-[8px] uppercase tracking-[0.16em] text-yellow-500">
             Current Credits
           </p>
 
