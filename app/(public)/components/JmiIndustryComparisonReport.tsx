@@ -975,7 +975,7 @@ async function loadIndustry(
           ) === 1 ||
           Number(
             row.credit_type_id
-          ) === 2
+          ) === 1
         )
     )
     .forEach((row) => {

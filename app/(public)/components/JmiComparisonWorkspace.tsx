@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 import JmiComparisonSelector from "./JmiComparisonSelector";
 import JmiMovieComparisonReport from "./JmiMovieComparisonReport";
 import JmiPersonComparisonReport from "./JmiPersonComparisonReport";
@@ -30,6 +32,15 @@ export default function JmiComparisonWorkspace() {
   const [comparisonStarted, setComparisonStarted] =
     useState(false);
 
+    const [comparisonMessage, setComparisonMessage] =
+  useState("");
+
+const [comparisonRemaining, setComparisonRemaining] =
+  useState<number | null>(null);
+
+const [comparisonChecking, setComparisonChecking] =
+  useState(false);
+
   const handleSelectionChange = useCallback(
     (
       firstEntity: Entity | null,
@@ -50,21 +61,128 @@ export default function JmiComparisonWorkspace() {
     []
   );
 
-  const handleCompare = useCallback(() => {
-    if (!first || !second) {
+ const handleCompare = useCallback(async () => {
+  if (!first || !second) {
+    return;
+  }
+
+  if (first.id === second.id) {
+    return;
+  }
+
+  setComparisonChecking(true);
+  setComparisonMessage("");
+  setComparisonRemaining(null);
+
+  try {
+    /*
+     * =====================================================
+     * JMI COMPARISON ENTITLEMENT
+     * =====================================================
+     *
+     * Free users:
+     *   5 comparisons per calendar month.
+     *
+     * Pro / Premium / Enterprise:
+     *   Unlimited comparisons.
+     *
+     * The database function is the source of truth.
+     */
+
+    const { data, error } = await supabase.rpc(
+      "jmi_consume_comparison"
+    );
+
+    if (error) {
+      console.error(
+        "JMI comparison entitlement check failed:",
+        error
+      );
+
+      setComparisonMessage(
+        "We couldn't verify your comparison access. Please try again."
+      );
+
       return;
     }
 
-    if (first.id === second.id) {
+    /*
+     * =====================================================
+     * NOT AUTHENTICATED
+     * =====================================================
+     */
+
+    if (data?.reason === "not_authenticated") {
+      setComparisonMessage(
+        "Please sign in to use JMI Compare."
+      );
+
       return;
     }
+
+    /*
+     * =====================================================
+     * FREE LIMIT REACHED
+     * =====================================================
+     */
+
+    if (
+      data?.allowed === false &&
+      data?.reason === "monthly_limit_reached"
+    ) {
+      setComparisonStarted(false);
+      setComparisonRemaining(0);
+
+      setComparisonMessage(
+        "You've reached your monthly Free comparison limit. Subscribe to JMI Pro for unlimited comparisons."
+      );
+
+      return;
+    }
+
+    /*
+     * =====================================================
+     * OTHER ENTITLEMENT FAILURE
+     * =====================================================
+     */
+
+    if (data?.allowed !== true) {
+      setComparisonMessage(
+        "This comparison is currently unavailable. Please try again."
+      );
+
+      return;
+    }
+
+    /*
+     * =====================================================
+     * COMPARISON ALLOWED
+     * =====================================================
+     */
 
     setComparisonStarted(true);
+
+    /*
+     * Free users receive a remaining count.
+     *
+     * Pro / Premium / Enterprise return null because
+     * their comparison access is unlimited.
+     */
+
+    if (
+      data?.unlimited !== true &&
+      typeof data?.remaining === "number"
+    ) {
+      setComparisonRemaining(data.remaining);
+    } else {
+      setComparisonRemaining(null);
+    }
 
     /*
      * Give React a moment to render the report,
      * then bring the user to it.
      */
+
     setTimeout(() => {
       document
         .getElementById("jmi-comparison-report")
@@ -73,8 +191,21 @@ export default function JmiComparisonWorkspace() {
           block: "start",
         });
     }, 100);
-  }, [first, second]);
 
+  } catch (error) {
+    console.error(
+      "Unexpected JMI comparison error:",
+      error
+    );
+
+    setComparisonMessage(
+      "Something went wrong while starting the comparison. Please try again."
+    );
+
+  } finally {
+    setComparisonChecking(false);
+  }
+}, [first, second]);
   return (
     <div className="space-y-10">
 
@@ -87,10 +218,72 @@ export default function JmiComparisonWorkspace() {
         onCompare={handleCompare}
       />
 
+      {comparisonRemaining !== null && (
+  <div className="text-center">
+
+    <p className="text-[8px] uppercase tracking-[0.22em] text-zinc-600">
+      Free comparison usage
+    </p>
+
+    <p className="mt-1 text-[10px] text-zinc-400">
+      {comparisonRemaining} comparison
+      {comparisonRemaining === 1 ? "" : "s"} remaining this month
+    </p>
+
+  </div>
+)}
+
+
 
       {/* =====================================================
           RESULT
       ===================================================== */}
+
+      {/* =====================================================
+    COMPARISON ACCESS STATUS
+===================================================== */}
+
+{comparisonMessage && (
+  <div className="rounded-xl border border-violet-400/15 bg-violet-500/[0.035] px-4 py-3">
+
+    <div className="flex items-start gap-3">
+
+      <div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-400" />
+
+      <div className="min-w-0">
+
+        <p className="text-[9px] leading-5 text-zinc-300">
+          {comparisonMessage}
+        </p>
+
+        {comparisonMessage.includes(
+          "Subscribe to JMI Pro"
+        ) && (
+          <Link
+            href="/account"
+            className="mt-2 inline-flex text-[8px] font-semibold uppercase tracking-[0.16em] text-violet-400 transition hover:text-violet-300"
+          >
+            View My Account →
+          </Link>
+        )}
+
+        {comparisonMessage.includes(
+          "Please sign in"
+        ) && (
+          <Link
+            href="/account/login"
+            className="mt-2 inline-flex text-[8px] font-semibold uppercase tracking-[0.16em] text-violet-400 transition hover:text-violet-300"
+          >
+            Sign In →
+          </Link>
+        )}
+
+      </div>
+
+    </div>
+
+  </div>
+)}
 
      {comparisonStarted && first && second && (
   entityType === "movies" ? (
