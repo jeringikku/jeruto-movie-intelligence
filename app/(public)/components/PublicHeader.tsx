@@ -67,10 +67,7 @@ export default function PublicHeader() {
       label: "Industries",
       href: "/preview/industries",
     },
-    {
-      label: "Markets",
-      href: "/preview/market-intelligence",
-    },
+   
     {
       label: "Book Tickets With JMI",
       href: "/preview/book-tickets",
