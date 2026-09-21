@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 import PublicHeader from "@/app/(public)/components/PublicHeader";
 
 export default function LoginPage() {
@@ -26,10 +26,10 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: trimmedEmail,
-      password,
-    });
+    const { error } = await supabaseBrowser.auth.signInWithPassword({
+  email,
+  password,
+});
 
     if (error) {
       console.error("Login error:", error);
@@ -48,7 +48,8 @@ export default function LoginPage() {
       return;
     }
 
-    window.location.href = "/account";
+
+window.location.href = "/account";
   }
 
   return (

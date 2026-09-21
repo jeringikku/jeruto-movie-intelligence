@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 import PublicHeader from "@/app/(public)/components/PublicHeader";
 
 /* ============================================================
@@ -309,7 +309,7 @@ export default function AccountPage() {
 
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } = await supabaseBrowser.auth.getUser();
 
       if (!user) {
         router.replace("/account/login");
@@ -331,7 +331,7 @@ export default function AccountPage() {
       const {
         data: profileData,
         error: profileError,
-      } = await supabase
+      } = await supabaseBrowser
         .from("profiles")
         .select(
           `
@@ -394,7 +394,7 @@ export default function AccountPage() {
       const {
         data: subscriptionData,
         error: subscriptionError,
-      } = await supabase
+      } = await supabaseBrowser
         .from("user_subscriptions")
         .select(
           `
@@ -514,7 +514,7 @@ export default function AccountPage() {
   const {
     data: refreshedSession,
     error: refreshError,
-  } = await supabase.auth.refreshSession();
+  } = await supabaseBrowser.auth.refreshSession();
 
   if (refreshError || !refreshedSession.session) {
     console.error(
@@ -633,7 +633,7 @@ export default function AccountPage() {
   const {
     data: updatedProfile,
     error: updateError,
-  } = await supabase
+  } = await supabaseBrowser
     .from("profiles")
     .update(profilePayload)
     .eq("user_id", freshUser.id)
@@ -677,7 +677,7 @@ export default function AccountPage() {
   if (!updatedProfile) {
     const {
       error: insertError,
-    } = await supabase
+    } = await supabaseBrowser
       .from("profiles")
       .insert(profilePayload);
 
@@ -785,7 +785,7 @@ function handleAvatarSelect(
     setLoggingOut(true);
 
     const { error } =
-      await supabase.auth.signOut();
+      await supabaseBrowser.auth.signOut();
 
     if (error) {
       console.error(
