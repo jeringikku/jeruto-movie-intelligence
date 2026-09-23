@@ -501,7 +501,7 @@ export default async function MovieIntelligencePage({
               Theatrical performance.
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-600">
+            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-400">
               JMI tracks the movie's theatrical performance across
               India and overseas markets.
             </p>
@@ -518,7 +518,7 @@ export default async function MovieIntelligencePage({
                   Official Collection
                 </p>
 
-                <p className="mt-1 text-[10px] text-zinc-500">
+                <p className="mt-1 text-[10px] text-zinc-400">
                   Producer / production-house announced figures
                 </p>
 
@@ -553,13 +553,13 @@ export default async function MovieIntelligencePage({
 
               ) : (
 
-                <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-950 px-5 py-5">
+                <div className="rounded-xl border border-dashed border-zinc-600 bg-zinc-950 px-5 py-5">
 
-                  <p className="text-[9px] font-medium text-zinc-500">
+                  <p className="text-[9px] font-medium text-red-400">
                     Official collection not available.
                   </p>
 
-                  <p className="mt-1 text-[9px] leading-4 text-zinc-700">
+                  <p className="mt-1 text-[9px] leading-4 text-zinc-400">
                     No producer-announced box-office figure has been
                     recorded by JMI for this movie.
                   </p>
@@ -583,7 +583,7 @@ export default async function MovieIntelligencePage({
                 </p>
 
                 <p className="mt-1 text-[10px] text-zinc-400">
-                  Independently tracked theatrical performance
+                  Trade numbers are Independently tracked theatrical performance and estimates, JMI does not claim 100% accuracy for the trade numbers.
                 </p>
 
               </div>
@@ -895,11 +895,11 @@ function IntelligenceCard({
         {icon}
       </span>
 
-      <p className="mt-2 text-[9px] font-medium text-zinc-300">
+      <p className="mt-2 text-[10px] font-medium text-zinc-300">
         {title}
       </p>
 
-      <p className="mt-1 text-[8px] leading-4 text-zinc-700">
+      <p className="mt-1 text-[9px] leading-4 text-zinc-500">
         {description}
       </p>
 
@@ -936,7 +936,7 @@ function BoxOfficeCard({
       `}
     >
 
-      <p className="text-[8px] uppercase tracking-[0.18em] text-zinc-400">
+      <p className="text-[8px] uppercase tracking-[0.18em] text-green-400">
         {label}
       </p>
 

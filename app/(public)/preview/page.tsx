@@ -5,6 +5,7 @@ import MovieSearch from "../components/MovieSearch";
 import TicketBookingBanner from "../components/TicketBookingBanner";
 import ComparisonIntelligenceBanner from "../components/ComparisonIntelligenceBanner";
 import JmiLiveTicker from "../components/JmiLiveTicker";
+import JmiLiveTrackingBanner from "../components/JmiLiveTrackingBanner";
 import { supabase } from "@/lib/supabase";
 
 export default async function PublicPreview() {
@@ -427,6 +428,8 @@ export default async function PublicPreview() {
         </section>
 
         <TicketBookingBanner />
+
+        <JmiLiveTrackingBanner />
 
         {/* =====================================================
     WHAT JMI PROVIDES
@@ -935,7 +938,7 @@ export default async function PublicPreview() {
                 </span>
               </p>
 
-              <p className="mt-1 text-[9px] text-zinc-700">
+              <p className="mt-1 text-[9px] text-zinc-500">
                 India's Next Generation Movie Intelligence Platform
               </p>
 
@@ -1946,3 +1949,4 @@ function FutureCard({
   );
 
 }
+

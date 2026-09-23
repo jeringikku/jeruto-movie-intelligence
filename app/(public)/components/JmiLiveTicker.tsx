@@ -346,46 +346,123 @@ export default function JmiLiveTicker() {
 
 
       /* ============================================================
-         ADVANCE BOOKING UPDATES
+         LIVE ADVANCE BOOKING INTELLIGENCE
+         
+         NEW SYSTEM:
+         - advance_booking_intelligence
+         - movie_advance_booking_daily
+
+         OLD SYSTEM:
+         - movie_advance_booking
+
+         The old table is no longer used here.
       ============================================================ */
 
-      const {
-        data: bookingRecords,
-        error: bookingError,
-      } = await supabase
-        .from("movie_advance_booking")
-        .select(`
-          id,
-          movie_id,
-          gross,
-          admissions,
-          updated_at
-        `)
-        .order("updated_at", {
-          ascending: false,
-        })
-        .limit(8);
+      /*
+        First get the movies that are currently enabled
+        for the public Advance Booking Intelligence page.
+      */
 
-      if (bookingError) {
+      const {
+        data: activeBookingMovies,
+        error: activeBookingError,
+      } = await supabase
+        .from("advance_booking_intelligence")
+        .select(`
+          movie_id,
+          tracking_status
+        `)
+        .eq("is_active", true)
+        .in("tracking_status", [
+          "LIVE",
+          "PAUSED",
+          "COMPLETED",
+        ]);
+
+      if (activeBookingError) {
         console.error(
-          "JMI Live Ticker booking error:",
-          bookingError
+          "JMI Live Ticker advance booking intelligence error:",
+          activeBookingError
         );
       }
 
 
+      const activeBookingMovieIds =
+        Array.from(
+          new Set(
+            (activeBookingMovies ?? [])
+              .map(
+                (record) =>
+                  Number(record.movie_id)
+              )
+              .filter(
+                (id) => id > 0
+              )
+          )
+        );
+
+
+      let bookingRecords: any[] = [];
+
+
+      /*
+        Only load daily booking data when
+        there are active intelligence movies.
+      */
+
+      if (activeBookingMovieIds.length > 0) {
+
+        const {
+          data,
+          error,
+        } = await supabase
+          .from("movie_advance_booking_daily")
+          .select(`
+            id,
+            movie_id,
+            booking_day,
+            booking_date,
+            coverage_type,
+            state_id,
+            gross,
+            admissions,
+            show_count,
+            updated_at
+          `)
+          .in(
+            "movie_id",
+            activeBookingMovieIds
+          )
+          .order("updated_at", {
+            ascending: false,
+          })
+          .limit(200);
+
+        if (error) {
+          console.error(
+            "JMI Live Ticker new advance booking error:",
+            error
+          );
+        }
+
+        bookingRecords = data ?? [];
+      }
+
+
+      /* ============================================================
+         MOVIE TITLES FOR ADVANCE BOOKINGS
+      ============================================================ */
+
       const bookingMovieIds =
         Array.from(
           new Set(
-            (bookingRecords ?? [])
+            bookingRecords
               .map(
                 (record) =>
-                  record.movie_id
+                  Number(record.movie_id)
               )
               .filter(
-                (id) =>
-                  id !== null &&
-                  id !== undefined
+                (id) => id > 0
               )
           )
         );
@@ -410,66 +487,225 @@ export default function JmiLiveTicker() {
         new Map(
           (bookingMovies ?? []).map(
             (movie) => [
-              movie.id,
+              Number(movie.id),
               movie.title,
             ]
           )
         );
 
 
+      /* ============================================================
+         AGGREGATE DAILY ADVANCE BOOKING DATA
+         
+         Multiple territory rows for the same movie/day
+         are combined into ONE live ticker update.
+      ============================================================ */
+
+      const bookingDayMap = new Map<
+        string,
+        {
+          movieId: number;
+          title: string;
+          bookingDay: number;
+          bookingDate: string | null;
+          gross: number;
+          admissions: number;
+          shows: number;
+          updatedAt: string;
+        }
+      >();
+
+
+      bookingRecords.forEach((record) => {
+
+        const movieId =
+          Number(record.movie_id);
+
+        if (!movieId) {
+          return;
+        }
+
+        const title =
+          bookingMovieMap.get(movieId);
+
+        if (!title) {
+          return;
+        }
+
+        const bookingDay =
+          Number(record.booking_day || 0);
+
+        const bookingDate =
+          record.booking_date || null;
+
+        /*
+          Use movie + booking day as the
+          aggregation key.
+        */
+
+        const key =
+          `${movieId}-${bookingDay}`;
+
+
+        if (!bookingDayMap.has(key)) {
+
+          bookingDayMap.set(key, {
+            movieId,
+            title,
+            bookingDay,
+            bookingDate,
+            gross: 0,
+            admissions: 0,
+            shows: 0,
+            updatedAt:
+              record.updated_at ||
+              "",
+          });
+
+        }
+
+
+        const item =
+          bookingDayMap.get(key)!;
+
+
+        item.gross +=
+          Number(record.gross || 0);
+
+        item.admissions +=
+          Number(record.admissions || 0);
+
+        item.shows +=
+          Number(record.show_count || 0);
+
+
+        /*
+          Keep the most recent update time.
+        */
+
+        if (
+          String(record.updated_at || "") >
+          String(item.updatedAt || "")
+        ) {
+          item.updatedAt =
+            record.updated_at || "";
+        }
+
+      });
+
+
+      /* ============================================================
+         CREATE ADVANCE BOOKING TICKER UPDATES
+      ============================================================ */
+
       const bookingUpdates: TickerItem[] =
-        (bookingRecords ?? [])
+        Array.from(
+          bookingDayMap.values()
+        )
+          .sort(
+            (a, b) =>
+              new Date(
+                b.updatedAt || 0
+              ).getTime() -
+              new Date(
+                a.updatedAt || 0
+              ).getTime()
+          )
           .map((record) => {
 
-            const movieTitle =
-              bookingMovieMap.get(
-                record.movie_id
-              );
+            const parts: string[] = [];
 
-            if (!movieTitle) {
-              return null;
-            }
 
-            const gross =
-              Number(
-                record.gross || 0
-              );
+            /*
+              Day label
+            */
 
-            const admissions =
-              Number(
-                record.admissions || 0
-              );
-
-            let value =
-              "Advance booking updated";
-
-            if (gross > 0) {
-
-              value =
-                `Advance booking ${formatCrores(
-                  gross
-                )}`;
-
-            } else if (
-              admissions > 0
+            if (
+              record.bookingDay === 0
             ) {
 
-              value =
-                `Advance booking ${admissions.toLocaleString(
-                  "en-IN"
-                )} admissions`;
+              parts.push(
+                "Premiere Day"
+              );
+
+            } else {
+
+              parts.push(
+                `Day ${record.bookingDay}`
+              );
+
             }
 
+
+            /*
+              Gross
+            */
+
+            if (record.gross > 0) {
+
+              parts.push(
+                formatCrores(
+                  record.gross
+                )
+              );
+
+            }
+
+
+            /*
+              Admissions
+            */
+
+            if (
+              record.admissions > 0
+            ) {
+
+              parts.push(
+                `${record.admissions.toLocaleString(
+                  "en-IN"
+                )} admissions`
+              );
+
+            }
+
+
+            /*
+              Shows
+            */
+
+            if (record.shows > 0) {
+
+              parts.push(
+                `${record.shows.toLocaleString(
+                  "en-IN"
+                )} shows`
+              );
+
+            }
+
+
+            /*
+              Fallback
+            */
+
+            if (parts.length === 1) {
+
+              parts.push(
+                "Advance booking updated"
+              );
+
+            }
+
+
             return {
-              id: `booking-${record.id}`,
+              id: `booking-${record.movieId}-${record.bookingDay}-${record.updatedAt}`,
               type: "booking" as const,
-              title: movieTitle,
-              value,
-              href: `/preview/movies/${record.movie_id}/box-office/advance-booking`,
+              title: record.title,
+              value: parts.join(" · "),
+              href: `/preview/movies/${record.movieId}/advance-booking`,
             };
 
-          })
-         .filter((item) => item !== null) as TickerItem[];
+          });
 
 
       /* ============================================================
@@ -479,7 +715,13 @@ export default function JmiLiveTicker() {
       const combinedUpdates = [
         ...dailyUpdates.slice(0, 6),
         ...verdictUpdates.slice(0, 5),
+
+        /*
+          New live advance booking intelligence.
+        */
+
         ...bookingUpdates.slice(0, 5),
+
         ...movieUpdates.slice(0, 4),
       ];
 

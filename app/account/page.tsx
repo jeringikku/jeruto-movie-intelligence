@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
@@ -500,196 +501,159 @@ export default function AccountPage() {
      SAVE PROFILE
      ========================================================== */
 
- async function handleSaveProfile() {
-  if (!user) return;
+  async function handleSaveProfile() {
+    if (!user) return;
 
-  setSaving(true);
-  setMessage("");
-  setErrorMessage("");
+    setSaving(true);
+    setMessage("");
+    setErrorMessage("");
 
-  /* ==========================================================
-     REFRESH SUPABASE SESSION
-     ========================================================== */
+    /* ==========================================================
+       REFRESH SUPABASE SESSION
+       ========================================================== */
 
-  const {
-    data: refreshedSession,
-    error: refreshError,
-  } = await supabaseBrowser.auth.refreshSession();
+    const {
+      data: refreshedSession,
+      error: refreshError,
+    } = await supabaseBrowser.auth.refreshSession();
 
-  if (refreshError || !refreshedSession.session) {
-    console.error(
-      "Session refresh error:",
-      refreshError
-    );
-
-    setErrorMessage(
-      "Your session has expired. Please log in again."
-    );
-
-    setSaving(false);
-
-    return;
-  }
-
-  /* ==========================================================
-     USE THE FRESH AUTH USER
-     ========================================================== */
-
-  const freshUser =
-    refreshedSession.session.user;
-
-  if (!freshUser) {
-    setErrorMessage(
-      "Your session has expired. Please log in again."
-    );
-
-    setSaving(false);
-
-    return;
-  }
-
-  /* ==========================================================
-     VALIDATE PROFILE
-     ========================================================== */
-
-  const trimmedName =
-    editProfile.fullName.trim();
-
-  if (!trimmedName) {
-    setErrorMessage(
-      "Please enter your full name."
-    );
-
-    setSaving(false);
-
-    return;
-  }
-
-  if (
-    editProfile.age !== null &&
-    (
-      !Number.isInteger(editProfile.age) ||
-      editProfile.age < 13 ||
-      editProfile.age > 120
-    )
-  ) {
-    setErrorMessage(
-      "Please enter a valid age between 13 and 120."
-    );
-
-    setSaving(false);
-
-    return;
-  }
-
-  /* ==========================================================
-     FIND SELECTED AVATAR
-     ========================================================== */
-
-  const avatar =
-    avatarOptions.find(
-      (item) =>
-        item.id === editProfile.avatarId
-    );
-
-  const avatarUrl =
-    avatar?.url ||
-    editProfile.avatarUrl ||
-    "";
-
-  /* ==========================================================
-     PROFILE PAYLOAD
-     ========================================================== */
-
-  const profilePayload = {
-    user_id: freshUser.id,
-
-    full_name:
-      trimmedName,
-
-    age:
-      editProfile.age,
-
-    gender:
-      editProfile.gender || null,
-
-    state:
-      editProfile.state || null,
-
-    country:
-      editProfile.country || null,
-
-    avatar_id:
-      editProfile.avatarId || null,
-
-    avatar_url:
-      avatarUrl || null,
-  };
-
-  /* ==========================================================
-     UPDATE EXISTING PROFILE
-     ========================================================== */
-
-  const {
-    data: updatedProfile,
-    error: updateError,
-  } = await supabaseBrowser
-    .from("profiles")
-    .update(profilePayload)
-    .eq("user_id", freshUser.id)
-    .select()
-    .maybeSingle();
-
-  /* ==========================================================
-     HANDLE EXPIRED SESSION / UPDATE ERROR
-     ========================================================== */
-
-  if (updateError) {
-    console.error(
-      "Profile update error:",
-      updateError
-    );
-
-    if (
-      updateError.code === "PGRST303" ||
-      updateError.message
-        ?.toLowerCase()
-        .includes("jwt expired")
-    ) {
-      setErrorMessage(
-        "Your session expired. Please log in again."
+    if (refreshError || !refreshedSession.session) {
+      console.error(
+        "Session refresh error:",
+        refreshError
       );
-    } else {
+
       setErrorMessage(
-        "Unable to save your profile. Please try again."
+        "Your session has expired. Please log in again."
       );
+
+      setSaving(false);
+
+      return;
     }
 
-    setSaving(false);
+    /* ==========================================================
+       USE THE FRESH AUTH USER
+       ========================================================== */
 
-    return;
-  }
+    const freshUser =
+      refreshedSession.session.user;
 
-  /* ==========================================================
-     FALLBACK INSERT
-     ========================================================== */
+    if (!freshUser) {
+      setErrorMessage(
+        "Your session has expired. Please log in again."
+      );
 
-  if (!updatedProfile) {
+      setSaving(false);
+
+      return;
+    }
+
+    /* ==========================================================
+       VALIDATE PROFILE
+       ========================================================== */
+
+    const trimmedName =
+      editProfile.fullName.trim();
+
+    if (!trimmedName) {
+      setErrorMessage(
+        "Please enter your full name."
+      );
+
+      setSaving(false);
+
+      return;
+    }
+
+    if (
+      editProfile.age !== null &&
+      (
+        !Number.isInteger(editProfile.age) ||
+        editProfile.age < 13 ||
+        editProfile.age > 120
+      )
+    ) {
+      setErrorMessage(
+        "Please enter a valid age between 13 and 120."
+      );
+
+      setSaving(false);
+
+      return;
+    }
+
+    /* ==========================================================
+       FIND SELECTED AVATAR
+       ========================================================== */
+
+    const avatar =
+      avatarOptions.find(
+        (item) =>
+          item.id === editProfile.avatarId
+      );
+
+    const avatarUrl =
+      avatar?.url ||
+      editProfile.avatarUrl ||
+      "";
+
+    /* ==========================================================
+       PROFILE PAYLOAD
+       ========================================================== */
+
+    const profilePayload = {
+      user_id: freshUser.id,
+
+      full_name:
+        trimmedName,
+
+      age:
+        editProfile.age,
+
+      gender:
+        editProfile.gender || null,
+
+      state:
+        editProfile.state || null,
+
+      country:
+        editProfile.country || null,
+
+      avatar_id:
+        editProfile.avatarId || null,
+
+      avatar_url:
+        avatarUrl || null,
+    };
+
+    /* ==========================================================
+       UPDATE EXISTING PROFILE
+       ========================================================== */
+
     const {
-      error: insertError,
+      data: updatedProfile,
+      error: updateError,
     } = await supabaseBrowser
       .from("profiles")
-      .insert(profilePayload);
+      .update(profilePayload)
+      .eq("user_id", freshUser.id)
+      .select()
+      .maybeSingle();
 
-    if (insertError) {
+    /* ==========================================================
+       HANDLE EXPIRED SESSION / UPDATE ERROR
+       ========================================================== */
+
+    if (updateError) {
       console.error(
-        "Profile insert error:",
-        insertError
+        "Profile update error:",
+        updateError
       );
 
       if (
-        insertError.code === "PGRST303" ||
-        insertError.message
+        updateError.code === "PGRST303" ||
+        updateError.message
           ?.toLowerCase()
           .includes("jwt expired")
       ) {
@@ -698,7 +662,7 @@ export default function AccountPage() {
         );
       } else {
         setErrorMessage(
-          "Unable to create your profile. Please try again."
+          "Unable to save your profile. Please try again."
         );
       }
 
@@ -706,77 +670,115 @@ export default function AccountPage() {
 
       return;
     }
+
+    /* ==========================================================
+       FALLBACK INSERT
+       ========================================================== */
+
+    if (!updatedProfile) {
+      const {
+        error: insertError,
+      } = await supabaseBrowser
+        .from("profiles")
+        .insert(profilePayload);
+
+      if (insertError) {
+        console.error(
+          "Profile insert error:",
+          insertError
+        );
+
+        if (
+          insertError.code === "PGRST303" ||
+          insertError.message
+            ?.toLowerCase()
+            .includes("jwt expired")
+        ) {
+          setErrorMessage(
+            "Your session expired. Please log in again."
+          );
+        } else {
+          setErrorMessage(
+            "Unable to create your profile. Please try again."
+          );
+        }
+
+        setSaving(false);
+
+        return;
+      }
+    }
+
+    /* ==========================================================
+       UPDATE LOCAL PROFILE STATE
+       ========================================================== */
+
+    const savedProfile: ProfileInfo = {
+      fullName:
+        trimmedName,
+
+      age:
+        editProfile.age,
+
+      gender:
+        editProfile.gender,
+
+      state:
+        editProfile.state,
+
+      country:
+        editProfile.country,
+
+      avatarId:
+        editProfile.avatarId,
+
+      avatarUrl,
+    };
+
+    setProfile(savedProfile);
+
+    setEditProfile(savedProfile);
+
+    setEditing(false);
+
+    setShowAvatars(false);
+
+    setMessage(
+      "Profile updated successfully."
+    );
+
+    setSaving(false);
   }
 
   /* ==========================================================
-     UPDATE LOCAL PROFILE STATE
+     CANCEL PROFILE EDITING
      ========================================================== */
 
-  const savedProfile: ProfileInfo = {
-    fullName:
-      trimmedName,
+  function handleCancelEdit() {
+    setEditProfile(profile);
+    setEditing(false);
+    setShowAvatars(false);
+    setMessage("");
+    setErrorMessage("");
+  }
 
-    age:
-      editProfile.age,
+  /* ==========================================================
+     AVATAR SELECT
+     ========================================================== */
 
-    gender:
-      editProfile.gender,
+  function handleAvatarSelect(
+    avatarId: string,
+    avatarUrl: string
+  ) {
+    setEditProfile((current) => ({
+      ...current,
+      avatarId,
+      avatarUrl,
+    }));
 
-    state:
-      editProfile.state,
+    setShowAvatars(false);
+  }
 
-    country:
-      editProfile.country,
-
-    avatarId:
-      editProfile.avatarId,
-
-    avatarUrl,
-  };
-
-  setProfile(savedProfile);
-
-  setEditProfile(savedProfile);
-
-  setEditing(false);
-
-  setShowAvatars(false);
-
-  setMessage(
-    "Profile updated successfully."
-  );
-
-  setSaving(false);
-}
-
-/* ==========================================================
-   CANCEL PROFILE EDITING
-   ========================================================== */
-
-function handleCancelEdit() {
-  setEditProfile(profile);
-  setEditing(false);
-  setShowAvatars(false);
-  setMessage("");
-  setErrorMessage("");
-}
-
-/* ==========================================================
-   AVATAR SELECT
-   ========================================================== */
-
-function handleAvatarSelect(
-  avatarId: string,
-  avatarUrl: string
-) {
-  setEditProfile((current) => ({
-    ...current,
-    avatarId,
-    avatarUrl,
-  }));
-
-  setShowAvatars(false);
-}
   /* ==========================================================
      LOGOUT
      ========================================================== */
@@ -869,6 +871,7 @@ function handleAvatarSelect(
         <PublicHeader />
 
         <main className="min-h-screen bg-[#050507] px-4 pb-20 pt-28 text-zinc-100">
+
           <div className="mx-auto max-w-4xl">
 
             <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-8 text-center shadow-2xl">
@@ -882,6 +885,7 @@ function handleAvatarSelect(
             </div>
 
           </div>
+
         </main>
       </>
     );
@@ -911,9 +915,29 @@ function handleAvatarSelect(
               PAGE HEADER
           ================================================== */}
 
-          <div className="mb-8">
+          <div className="mb-1">
 
-            <div className="mb-4 inline-flex items-center gap-3 rounded-full border border-violet-400/20 bg-violet-500/[0.08] px-3 py-1">
+            {/* ==================================================
+                BACK TO JMI HOME
+            ================================================== */}
+
+            <div className="mb-6">
+
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 text-[9px] text-violet-400 transition hover:text-zinc-300"
+              >
+                <span>←</span>
+
+                <span>
+                  Back to JMI Home
+                </span>
+
+              </Link>
+
+            </div>
+
+            <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-violet-400/20 bg-violet-500/[0.08] px-3 py-1">
 
               <span className="h-1.5 w-1.5 rounded-full bg-violet-400 shadow-[0_0_10px_rgba(167,139,250,0.9)]" />
 
@@ -923,11 +947,11 @@ function handleAvatarSelect(
 
             </div>
 
-            <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+            <h1 className="text-2xl font-semibold tracking-tight text-yellow-500 sm:text-3xl">
               My Account
             </h1>
 
-            <p className="mt-1.5 max-w-xl text-xs leading-5 text-zinc-500">
+            <p className="mt-1.5 max-w-xl text-xs leading-5 text-zinc-400">
               Manage your JMI profile, subscription and
               entertainment activity from one place.
             </p>
@@ -938,7 +962,7 @@ function handleAvatarSelect(
               PROFILE HERO
           ================================================== */}
 
-          <section className="relative mb-5 overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-violet-500/[0.10] via-white/[0.025] to-transparent p-5 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:p-6">
+          <section className="relative mb-8 overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-violet-500/[0.10] via-white/[0.025] to-transparent p-5 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:p-6">
 
             <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-violet-500/10 blur-3xl" />
 
@@ -1016,13 +1040,13 @@ function handleAvatarSelect(
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-violet-600 via-violet-400 to-fuchsia-300 shadow-[0_0_12px_rgba(167,139,250,0.55)] transition-all duration-700"
                     style={{
-                      width: `${profileCompletion}%,`
+                      width: `${profileCompletion}%`,
                     }}
                   />
 
                 </div>
 
-                <p className="mt-2 text-[9px] text-zinc-600">
+                <p className="mt-2 text-[9px] text-zinc-400">
                   Complete your profile for a better JMI experience.
                 </p>
 
@@ -1058,11 +1082,11 @@ function handleAvatarSelect(
 
               <div>
 
-                <h2 className="text-sm font-semibold text-white">
+                <h2 className="text-sm font-semibold text-pink-500">
                   Profile
                 </h2>
 
-                <p className="mt-0.5 text-[10px] text-zinc-600">
+                <p className="mt-0.5 text-[10px] text-zinc-400">
                   Keep your JMI member information up to date.
                 </p>
 
@@ -1445,8 +1469,6 @@ function handleAvatarSelect(
             
           </section>
 
-          
-
           {/* ==================================================
               SUBSCRIPTION
           ================================================== */}
@@ -1675,7 +1697,6 @@ function handleAvatarSelect(
             </div>
 
           </section>
-          
 
           {/* ==================================================
               LOGOUT
@@ -1702,35 +1723,37 @@ function handleAvatarSelect(
 
           <footer className="border-t border-zinc-900">
 
-        <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
+            <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
 
-          <div className="flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+              <div className="flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
 
-            <div>
+                <div>
 
-              <p className="font-serif text-sm font-medium text-zinc-300">
-                Jeruto{" "}
-                <span className="text-yellow-400">
-                  Movie Intelligence
-                </span>
-              </p>
+                  <p className="font-serif text-sm font-medium text-zinc-300">
+                    Jeruto{" "}
+                    <span className="text-yellow-400">
+                      Movie Intelligence
+                    </span>
+                  </p>
 
-              <p className="mt-1 text-[9px] text-zinc-500">
-                India's Next Generation Movie Intelligence Platform
-              </p>
+                  <p className="mt-1 text-[9px] text-zinc-500">
+                    India's Next Generation Movie Intelligence Platform
+                  </p>
+
+                </div>
+
+                <p className="text-[9px] text-zinc-500">
+                  JMI · People Intelligence
+                </p>
+
+              </div>
 
             </div>
 
-            <p className="text-[9px] text-zinc-500">
-              JMI · People Intelligence
-            </p>
-
-          </div>
+          </footer>
 
         </div>
 
-      </footer>
-        </div>
       </main>
     </>
   );

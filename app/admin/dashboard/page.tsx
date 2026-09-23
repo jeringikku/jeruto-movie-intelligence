@@ -352,6 +352,71 @@ setStats({
             </p>
           </button>
 
+          {/* Live Advance Booking Intelligence */}
+
+          <button
+            onClick={() => {
+              window.location.href =
+                "/admin/live-tracking/advance-bookings";
+            }}
+            className="group rounded-xl border border-zinc-800 bg-zinc-900 p-5 text-left transition hover:border-red-500 hover:bg-zinc-800"
+          >
+
+            <div className="flex items-center justify-between">
+
+              <span className="text-2xl">
+                🔴
+              </span>
+
+              <span className="text-xs text-zinc-500 group-hover:text-red-400">
+                Track →
+              </span>
+
+            </div>
+
+            <h3 className="mt-4 font-semibold">
+              Live Advance Bookings
+            </h3>
+
+            <p className="mt-2 text-xs leading-5 text-zinc-500">
+              Manually track live advance bookings with
+              day-wise and territory-level performance data.
+            </p>
+
+          </button>
+
+          {/* Advance Booking Intelligence */}
+
+<button
+  onClick={() => {
+    window.location.href =
+      "/admin/live-tracking/advance-booking-intelligence";
+  }}
+  className="group rounded-xl border border-zinc-800 bg-zinc-900 p-5 text-left transition hover:border-violet-500 hover:bg-zinc-800"
+>
+  <div className="flex items-center justify-between">
+
+    <span className="text-2xl">
+      🧠
+    </span>
+
+    <span className="text-xs text-zinc-500 group-hover:text-violet-400">
+      Manage →
+    </span>
+
+  </div>
+
+  <h3 className="mt-4 font-semibold">
+    Advance Booking Intelligence
+  </h3>
+
+  <p className="mt-2 text-xs leading-5 text-zinc-500">
+    Manage movies featured on the public Advance Booking
+    Intelligence page and control their live tracking status.
+  </p>
+
+</button>
+
 
           {/* Person Intelligence */}
 

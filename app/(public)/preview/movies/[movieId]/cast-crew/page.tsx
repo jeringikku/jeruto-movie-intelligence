@@ -287,7 +287,7 @@ export default async function CastCrewPage({
                 Cast
               </p>
 
-              <h2 className="mt-1 text-sm font-small text-zinc-200">
+              <h2 className="mt-1 text-sm font-medium text-zinc-200">
                 Principal & Supporting Performers
               </h2>
 
@@ -314,64 +314,105 @@ export default async function CastCrewPage({
 
           ) : (
 
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="overflow-hidden rounded-xl border border-zinc-900 bg-zinc-950">
 
-              {cast.map((row, index) => {
+              <div className="divide-y divide-zinc-900">
 
-                const person =
-                  getPerson(row.people);
+                {cast.map((row, index) => {
 
-                const role =
-                  getRole(row.person_roles);
+                  const person =
+                    getPerson(row.people);
 
-                const creditType =
-                  getCreditType(
-                    row.credit_types
-                  );
+                  const role =
+                    getRole(row.person_roles);
 
-                return (
-                  <div
-                    key={row.id}
-                    className="group rounded-xl border border-violet-600 bg-pink-650 p-3 transition hover:border-pink-800"
-                  >
+                  const creditType =
+                    getCreditType(
+                      row.credit_types
+                    );
 
-                    <div className="flex items-start gap-3">
+                  return (
+                    <div
+                      key={row.id}
+                      className="flex items-start gap-3 px-4 py-3 transition hover:bg-zinc-900/30"
+                    >
 
-                      {/* PERSON PLACEHOLDER */}
-{/* PROFILE IMAGE */}
+                      {/* ---------------------------------
+                          PROFILE IMAGE
+                      --------------------------------- */}
 
-{person?.profile_image_url ? (
-  <img
-    src={person.profile_image_url}
-    alt={person.full_name}
-    className="h-12 w-12 shrink-0 rounded-lg border border-zinc-800 object-cover"
-  />
-) : (
-  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-[9px] text-zinc-700">
-    {person?.full_name
-      ?.charAt(0)
-      ?.toUpperCase() || "?"}
-  </div>
-)}
+                      {person?.profile_image_url ? (
+
+                        <img
+                          src={person.profile_image_url}
+                          alt={person.full_name}
+                          className="h-10 w-10 shrink-0 rounded-lg border border-zinc-800 object-cover"
+                        />
+
+                      ) : (
+
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-[8px] text-zinc-700">
+
+                          {person?.full_name
+                            ?.charAt(0)
+                            ?.toUpperCase() || "?"}
+
+                        </div>
+
+                      )}
+
+                      {/* ---------------------------------
+                          PERSON INFORMATION
+                      --------------------------------- */}
 
                       <div className="min-w-0 flex-1">
 
                         <Link
                           href={`/preview/people/${row.person_id}?movieId=${movie.id}`}
-                          className="block truncate text-[11px] font-medium text-zinc-200 transition hover:text-violet-300"
+                          className="block truncate text-[10px] font-medium text-zinc-200 transition hover:text-violet-300"
                         >
                           {person?.full_name ||
-                            "Unknown Person"} 
+                            "Unknown Person"}
                         </Link>
 
-                        <p className="mt-1 text-[8px] uppercase tracking-[0.12em] text-zinc-500">
-                          {role?.name ||
-                            "Actor"}
-                        </p>
+                        <div className="mt-1 flex flex-wrap items-center gap-2">
+
+                          <span className="text-[8px] text-zinc-400">
+                            {role?.name ||
+                              "Actor"}
+                          </span>
+
+                          {row.character_name && (
+                            <>
+                              <span className="text-zinc-800">
+                                ·
+                              </span>
+
+                              <span className="text-[9px] text-zinc-400">
+                                {row.character_name}
+                              </span>
+                            </>
+                          )}
+
+                        </div>
+
+                        {creditType?.name && (
+                          <div className="mt-1">
+
+                            <span className="text-[7px] uppercase tracking-[0.1em] text-pink-400">
+                              {creditType.name}
+                            </span>
+
+                          </div>
+                        )}
 
                       </div>
 
-                      <span className="text-[8px] text-zinc-800">
+                      {/* ---------------------------------
+                          BILLING ORDER
+                      --------------------------------- */}
+
+                      <span className="shrink-0 text-[8px] text-zinc-800">
                         {String(
                           row.billing_order ??
                             index + 1
@@ -379,41 +420,16 @@ export default async function CastCrewPage({
                       </span>
 
                     </div>
+                  );
+                })}
 
-                    {row.character_name && (
-                      <div className="mt-4 border-t border-zinc-900 pt-3">
-
-                        <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-500">
-                          Character
-                        </p>
-
-                        <p className="mt-1 text-[9px] text-zinc-400">
-                          {row.character_name}
-                        </p>
-
-                      </div>
-                    )}
-
-                    {creditType?.name && (
-                      <div className="mt-3">
-
-                        <span className="rounded-full border border-zinc-500 px-2 py-1 text-[8px] uppercase tracking-[0.1em] text-zinc-600">
-                          {creditType.name}
-                        </span>
-
-                      </div>
-                    )}
-
-                  </div>
-                );
-              })}
+              </div>
 
             </div>
 
           )}
 
         </section>
-
         {/* -------------------------------------------------
             CREW
         ------------------------------------------------- */}
@@ -555,7 +571,7 @@ export default async function CastCrewPage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-3">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-500">
                 Cast
               </p>
 
@@ -567,7 +583,7 @@ export default async function CastCrewPage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-3">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-500">
                 Crew
               </p>
 
@@ -579,7 +595,7 @@ export default async function CastCrewPage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-3">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-500">
                 Credits
               </p>
 
@@ -599,11 +615,11 @@ export default async function CastCrewPage({
 
         <section className="mt-6 rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-          <p className="text-[8px] uppercase tracking-[0.16em] text-zinc-600">
+          <p className="text-[8px] uppercase tracking-[0.16em] text-green-500">
             Data Note
           </p>
 
-          <p className="mt-2 text-[9px] leading-5 text-zinc-600">
+          <p className="mt-2 text-[9px] leading-5 text-zinc-400">
             Cast and crew presentation is based on the
             movie-person credits currently maintained in JMI.
             Role, department, billing and credit information
@@ -620,7 +636,7 @@ export default async function CastCrewPage({
 
           <Link
             href={`/preview/movies/${movie.id}`}
-            className="block rounded-lg border border-zinc-900 bg-zinc-950 px-4 py-3 text-center text-[9px] text-zinc-500 transition hover:border-zinc-700 hover:text-zinc-300"
+            className="block rounded-lg border border-zinc-900 bg-zinc-950 px-4 py-3 text-center text-[9px] text-violet-500 transition hover:border-zinc-700 hover:text-zinc-300"
           >
             Back to Movie Intelligence
           </Link>

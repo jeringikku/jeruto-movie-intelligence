@@ -134,6 +134,10 @@ export default function PublicHeader() {
       label: "Audience Behavior",
       href: "/preview/audience-behavior",
     },
+     {
+    label: "Advance Booking LIVE Tracking",
+    href: "/preview/advance-booking",
+  },
     {
       label: "JMI Comparison Tool",
       href: "/preview/compare",

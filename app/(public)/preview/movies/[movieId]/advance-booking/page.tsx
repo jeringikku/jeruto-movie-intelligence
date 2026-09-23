@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import PublicHeader from "@/app/(public)/components/PublicHeader";
 import { supabase } from "@/lib/supabase";
 
+import AdvanceBookingDayTable from "./AdvanceBookingDayTable";
+
 type Props = {
   params: Promise<{
     movieId: string;
@@ -23,10 +25,14 @@ type State = {
   name: string;
 };
 
-type AdvanceBookingRecord = {
+type DailyAdvanceBookingRecord = {
   id: number;
   movie_id: number;
-  coverage_type: "STATE" | "REST_OF_INDIA";
+  booking_day: number;
+  booking_date: string | null;
+  coverage_type:
+    | "STATE"
+    | "REST_OF_INDIA";
   state_id: number | null;
   gross: number | null;
   admissions: number | null;
@@ -35,13 +41,22 @@ type AdvanceBookingRecord = {
   updated_at: string;
 };
 
-function formatCollection(value: number | null) {
+/* =========================================================
+   FORMATTERS
+========================================================= */
+
+function formatCollection(
+  value: number | null
+) {
   if (
     value === null ||
-    value === undefined ||
-    value === 0
+    value === undefined
   ) {
     return "—";
+  }
+
+  if (value === 0) {
+    return "₹0";
   }
 
   return (
@@ -52,42 +67,77 @@ function formatCollection(value: number | null) {
   );
 }
 
-function formatNumber(value: number | null) {
+function formatNumber(
+  value: number | null
+) {
   if (
     value === null ||
-    value === undefined ||
-    value === 0
+    value === undefined
   ) {
     return "—";
   }
 
-  return new Intl.NumberFormat("en-IN").format(value);
+  return new Intl.NumberFormat(
+    "en-IN"
+  ).format(value);
 }
 
-function formatUpdatedAt(value: string) {
-  return new Date(value).toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function formatUpdatedAt(
+  value: string
+) {
+  return new Date(
+    value
+  ).toLocaleString(
+    "en-IN",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }
+  );
 }
+
+function formatDate(
+  value: string
+) {
+  return new Date(
+    `${value}T00:00:00`
+  ).toLocaleDateString(
+    "en-IN",
+    {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }
+  );
+}
+
+/* =========================================================
+   PAGE
+========================================================= */
 
 export default async function AdvanceBookingPublicPage({
   params,
 }: Props) {
-  const { movieId } = await params;
+  const { movieId } =
+    await params;
 
-  const numericMovieId = Number(movieId);
+  const numericMovieId =
+    Number(movieId);
 
-  if (!Number.isFinite(numericMovieId)) {
+  if (
+    !Number.isFinite(
+      numericMovieId
+    )
+  ) {
     notFound();
   }
 
-  /* ---------------------------------------------------------
+  /* =======================================================
      MOVIE
-  --------------------------------------------------------- */
+  ======================================================= */
 
   const {
     data: movie,
@@ -101,16 +151,22 @@ export default async function AdvanceBookingPublicPage({
       release_year,
       poster_url
     `)
-    .eq("id", numericMovieId)
+    .eq(
+      "id",
+      numericMovieId
+    )
     .single();
 
-  if (movieError || !movie) {
+  if (
+    movieError ||
+    !movie
+  ) {
     notFound();
   }
 
-  /* ---------------------------------------------------------
+  /* =======================================================
      STATES
-  --------------------------------------------------------- */
+  ======================================================= */
 
   const {
     data: states,
@@ -121,7 +177,9 @@ export default async function AdvanceBookingPublicPage({
       id,
       name
     `)
-    .order("name", { ascending: true });
+    .order("name", {
+      ascending: true,
+    });
 
   if (statesError) {
     console.error(
@@ -130,18 +188,32 @@ export default async function AdvanceBookingPublicPage({
     );
   }
 
-  /* ---------------------------------------------------------
-     ADVANCE BOOKING RECORDS
-  --------------------------------------------------------- */
+  const stateList: State[] =
+    states || [];
+
+  /* =======================================================
+     DAILY LIVE TRACKING DATA
+
+     IMPORTANT:
+     We intentionally do NOT read from
+     movie_advance_booking.
+
+     Public advance booking is powered entirely by
+     movie_advance_booking_daily.
+  ======================================================= */
 
   const {
-    data: advanceBookingData,
-    error: advanceBookingError,
+    data: dailyData,
+    error: dailyError,
   } = await supabase
-    .from("movie_advance_booking")
+    .from(
+      "movie_advance_booking_daily"
+    )
     .select(`
       id,
       movie_id,
+      booking_day,
+      booking_date,
       coverage_type,
       state_id,
       gross,
@@ -150,73 +222,306 @@ export default async function AdvanceBookingPublicPage({
       notes,
       updated_at
     `)
-    .eq("movie_id", numericMovieId)
-    .order("updated_at", { ascending: false });
+    .eq(
+      "movie_id",
+      numericMovieId
+    )
+    .order(
+      "booking_day",
+      {
+        ascending: true,
+      }
+    )
+    .order(
+      "updated_at",
+      {
+        ascending: false,
+      }
+    );
 
-  if (advanceBookingError) {
+  if (dailyError) {
     console.error(
-      "Advance booking public page error:",
-      advanceBookingError
+      "Advance booking daily public page error:",
+      dailyError
     );
   }
 
-  const records: AdvanceBookingRecord[] =
-    (advanceBookingData || []) as AdvanceBookingRecord[];
+  const records: DailyAdvanceBookingRecord[] =
+    (dailyData ||
+      []) as DailyAdvanceBookingRecord[];
 
-  const stateList: State[] = states || [];
-
-  const latestUpdatedAt =
-  records.length > 0
-    ? records[0].updated_at
-    : null;
-
-  /* ---------------------------------------------------------
+  /* =======================================================
      STATE NAME
-  --------------------------------------------------------- */
+  ======================================================= */
 
-  function getStateName(stateId: number | null) {
-    if (!stateId) {
-      return "—";
+  function getStateName(
+    stateId: number | null
+  ) {
+    if (
+      stateId === null
+    ) {
+      return "Rest of India";
     }
 
-    const state = stateList.find(
-      (item) => item.id === stateId
-    );
+    const state =
+      stateList.find(
+        (item) =>
+          item.id === stateId
+      );
 
-    return state?.name || "Unknown State";
+    return (
+      state?.name ||
+      "Unknown State"
+    );
   }
 
-  /* ---------------------------------------------------------
-     TOTALS
-  --------------------------------------------------------- */
+  /* =======================================================
+     LATEST UPDATE
+  ======================================================= */
 
-  const totalGross = records.reduce(
-    (total, record) =>
-      total + Number(record.gross || 0),
-    0
-  );
+  const latestUpdatedAt =
+    records.length > 0
+      ? records.reduce(
+          (
+            latest,
+            record
+          ) => {
+            if (
+              !latest
+            ) {
+              return record.updated_at;
+            }
 
-  const totalAdmissions = records.reduce(
-    (total, record) =>
-      total + Number(record.admissions || 0),
-    0
-  );
+            return new Date(
+              record.updated_at
+            ).getTime() >
+              new Date(
+                latest
+              ).getTime()
+              ? record.updated_at
+              : latest;
+          },
+          null as string | null
+        )
+      : null;
 
-  const totalShows = records.reduce(
-    (total, record) =>
-      total + Number(record.show_count || 0),
-    0
-  );
+  /* =======================================================
+     OVERALL TOTALS
+  ======================================================= */
 
-  const stateRecords = records.filter(
-    (record) =>
-      record.coverage_type === "STATE"
-  ).length;
+  const totalTrackedGross =
+    records.reduce(
+      (
+        total,
+        record
+      ) =>
+        total +
+        Number(
+          record.gross || 0
+        ),
+      0
+    );
 
-  const restOfIndiaRecords = records.filter(
-    (record) =>
-      record.coverage_type === "REST_OF_INDIA"
-  ).length;
+  const totalAdmissions =
+    records.reduce(
+      (
+        total,
+        record
+      ) =>
+        total +
+        Number(
+          record.admissions ||
+            0
+        ),
+      0
+    );
+
+  const totalShows =
+    records.reduce(
+      (
+        total,
+        record
+      ) =>
+        total +
+        Number(
+          record.show_count ||
+            0
+        ),
+      0
+    );
+
+  const uniqueDays =
+    Array.from(
+      new Set(
+        records.map(
+          (record) =>
+            record.booking_day
+        )
+      )
+    ).sort(
+      (a, b) => a - b
+    );
+
+  const daysTracked =
+    uniqueDays.length;
+
+  const territoriesTracked =
+    records.length;
+
+  const stateRecords =
+    records.filter(
+      (record) =>
+        record.coverage_type ===
+        "STATE"
+    ).length;
+
+  const restOfIndiaRecords =
+    records.filter(
+      (record) =>
+        record.coverage_type ===
+        "REST_OF_INDIA"
+    ).length;
+
+  /* =======================================================
+     GROUP BY DAY
+
+     booking_date is now included and passed to the
+     interactive public table.
+  ======================================================= */
+
+  const groupedDays =
+    uniqueDays.map(
+      (day) => {
+        const dayRecords =
+          records.filter(
+            (record) =>
+              record.booking_day ===
+              day
+          );
+
+        const dayGross =
+          dayRecords.reduce(
+            (
+              total,
+              record
+            ) =>
+              total +
+              Number(
+                record.gross ||
+                  0
+              ),
+            0
+          );
+
+        const dayAdmissions =
+          dayRecords.reduce(
+            (
+              total,
+              record
+            ) =>
+              total +
+              Number(
+                record.admissions ||
+                  0
+              ),
+            0
+          );
+
+        const dayShows =
+          dayRecords.reduce(
+            (
+              total,
+              record
+            ) =>
+              total +
+              Number(
+                record.show_count ||
+                  0
+              ),
+            0
+          );
+
+        const dayLatestUpdatedAt =
+          dayRecords.reduce(
+            (
+              latest,
+              record
+            ) => {
+              if (
+                !latest
+              ) {
+                return record.updated_at;
+              }
+
+              return new Date(
+                record.updated_at
+              ).getTime() >
+                new Date(
+                  latest
+                ).getTime()
+                ? record.updated_at
+                : latest;
+            },
+            null as string | null
+          );
+
+        /*
+         * All territory records belonging to
+         * one booking day should have the same
+         * booking_date.
+         */
+        const bookingDate =
+          dayRecords.find(
+            (record) =>
+              record.booking_date
+          )?.booking_date ||
+          null;
+
+        return {
+          day,
+          date:
+            bookingDate,
+          records:
+            dayRecords.map(
+              (record) => ({
+                id:
+                  record.id,
+                booking_day:
+                  record.booking_day,
+                booking_date:
+                  record.booking_date,
+                coverage_type:
+                  record.coverage_type,
+                territory_name:
+                  record.coverage_type ===
+                  "REST_OF_INDIA"
+                    ? "Rest of India"
+                    : getStateName(
+                        record.state_id
+                      ),
+                gross:
+                  record.gross,
+                admissions:
+                  record.admissions,
+                show_count:
+                  record.show_count,
+                notes:
+                  record.notes,
+                updated_at:
+                  record.updated_at,
+              })
+            ),
+          gross:
+            dayGross,
+          admissions:
+            dayAdmissions,
+          shows:
+            dayShows,
+          latestUpdatedAt:
+            dayLatestUpdatedAt,
+        };
+      }
+    );
 
   return (
     <div className="min-h-screen bg-black text-zinc-100">
@@ -225,9 +530,9 @@ export default async function AdvanceBookingPublicPage({
 
       <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
 
-        {/* -------------------------------------------------
+        {/* =================================================
             BACK TO MOVIE
-        ------------------------------------------------- */}
+        ================================================= */}
 
         <div className="mb-4">
 
@@ -236,32 +541,37 @@ export default async function AdvanceBookingPublicPage({
             className="inline-flex items-center gap-2 text-[9px] text-violet-400 transition hover:text-zinc-300"
           >
             <span>←</span>
-            <span>Back to Movie</span>
+            <span>
+              Back to Movie
+            </span>
           </Link>
 
         </div>
 
-        {/* -------------------------------------------------
+
+        {/* =================================================
             MOVIE HEADER
-        ------------------------------------------------- */}
+        ================================================= */}
 
         <section className="border-b border-zinc-900 pb-6">
 
           <div className="flex items-start gap-4">
 
-            {/* POSTER */}
-
             {movie.poster_url ? (
 
               <img
-                src={movie.poster_url}
-                alt={movie.title}
-                className="h-[105px] w-[70px] shrink-0 rounded-lg border border-zinc-800 object-cover sm:h-[135px] sm:w-[90px]"
+                src={
+                  movie.poster_url
+                }
+                alt={
+                  movie.title
+                }
+                className="h-[115px] w-[77px] shrink-0 rounded-lg border border-zinc-800 object-cover sm:h-[145px] sm:w-[97px]"
               />
 
             ) : (
 
-              <div className="flex h-[105px] w-[70px] shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950 text-[8px] text-zinc-700 sm:h-[135px] sm:w-[90px]">
+              <div className="flex h-[115px] w-[77px] shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950 text-[8px] text-zinc-700 sm:h-[145px] sm:w-[97px]">
                 No Poster
               </div>
 
@@ -269,11 +579,23 @@ export default async function AdvanceBookingPublicPage({
 
             <div className="min-w-0 pt-1">
 
-              <p className="text-[8px] uppercase tracking-[0.18em] text-violet-400">
-                Advance Booking Trend
-              </p>
+              <div className="flex items-center gap-2">
 
-              <h1 className="mt-1 text-base font-medium text-zinc-100 sm:text-lg">
+                <span className="relative flex h-2 w-2">
+
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500/40" />
+
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+
+                </span>
+
+                <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-red-400">
+                  Live Advance Booking
+                </p>
+
+              </div>
+
+              <h1 className="mt-2 text-base font-medium text-zinc-100 sm:text-xl">
                 {movie.title}
               </h1>
 
@@ -281,21 +603,16 @@ export default async function AdvanceBookingPublicPage({
 
                 {movie.release_year && (
                   <span>
-                    {movie.release_year}
+                    {
+                      movie.release_year
+                    }
                   </span>
                 )}
 
                 {movie.release_date && (
                   <span>
-                    {new Date(
+                    {formatDate(
                       movie.release_date
-                    ).toLocaleDateString(
-                      "en-IN",
-                      {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      }
                     )}
                   </span>
                 )}
@@ -303,8 +620,10 @@ export default async function AdvanceBookingPublicPage({
               </div>
 
               <p className="mt-3 max-w-xl text-[10px] leading-5 text-zinc-400">
-                Real-time Pre-release theatrical advance booking
-                performance tracked by JMI.
+                Real-time pre-release theatrical
+                advance booking performance tracked
+                through JMI's live territory-level
+                tracking system.
               </p>
 
             </div>
@@ -313,9 +632,10 @@ export default async function AdvanceBookingPublicPage({
 
         </section>
 
-        {/* -------------------------------------------------
+
+        {/* =================================================
             CURRENT DATA NOTE
-        ------------------------------------------------- */}
+        ================================================= */}
 
         <section className="mt-5 rounded-lg border border-violet-900/40 bg-violet-950/10 px-4 py-3">
 
@@ -324,14 +644,19 @@ export default async function AdvanceBookingPublicPage({
           </p>
 
           <p className="mt-1 text-[9px] leading-5 text-zinc-500">
-            Figures are derived from the real-time tracking of ticket sales across Online ticket booking platforms tracked by JMI
+            Figures shown on this page are based on
+            the day-wise territory-level advance booking
+            records manually tracked and updated by JMI.
+            Historical days remain preserved when newer
+            tracking data is entered.
           </p>
 
         </section>
 
-       {/* -------------------------------------------------
-            LIVE UPDATE STATUS
-        ------------------------------------------------- */}
+
+        {/* =================================================
+            LIVE STATUS
+        ================================================= */}
 
         <section className="mt-6">
 
@@ -339,36 +664,41 @@ export default async function AdvanceBookingPublicPage({
 
             <div className="flex items-center gap-2">
 
-              {/* LIVE INDICATOR */}
-
-              <span className="relative flex h-2 w-2">
+              <span className="relative flex h-2.5 w-2.5">
 
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500/40" />
 
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
 
               </span>
 
-              <span className="text-[8px] font-semibold uppercase tracking-[0.16em] text-red-400">
-                Live Tracking
-              </span>
+              <div>
+
+                <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-red-400">
+                  Live Tracking
+                </p>
+
+                <p className="mt-1 text-[8px] text-zinc-600">
+                  JMI advance booking intelligence
+                </p>
+
+              </div>
 
             </div>
 
+            <div className="text-right">
 
-            {/* LAST UPDATED */}
+              <p className="text-[7px] uppercase tracking-[0.12em] text-green-400">
+                Last Updated
+              </p>
 
-            <div className="flex items-center gap-1.5">
-
-              <span className="text-[7px] uppercase tracking-[0.12em] text-green-400">
-                Last updated
-              </span>
-
-              <span className="text-[8.5px] font-medium text-zinc-400">
+              <p className="mt-1 text-[8.5px] font-medium text-zinc-400">
                 {latestUpdatedAt
-                  ? formatUpdatedAt(latestUpdatedAt)
-                  : "—"}
-              </span>
+                  ? formatUpdatedAt(
+                      latestUpdatedAt
+                    )
+                  : "No data yet"}
+              </p>
 
             </div>
 
@@ -377,11 +707,12 @@ export default async function AdvanceBookingPublicPage({
         </section>
 
 
-        {/* -------------------------------------------------
+        {/* =================================================
             OVERVIEW
-        ------------------------------------------------- */}
+        ================================================= */}
 
-        <section className="mt-5">
+        <section className="mt-6">
+
           <div className="mb-4">
 
             <p className="text-[8px] uppercase tracking-[0.18em] text-violet-400">
@@ -389,95 +720,109 @@ export default async function AdvanceBookingPublicPage({
             </p>
 
             <h2 className="mt-1 text-sm font-medium text-yellow-500">
-              Current Booking Performance
+              Current Tracking Performance
             </h2>
 
             <p className="mt-1 text-[9px] text-zinc-500">
-              Aggregate advance booking figures currently
-              recorded for this movie.
+              Aggregate figures calculated from all
+              day-wise records currently tracked by JMI.
             </p>
 
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 
-            {/* TOTAL GROSS */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
 
             <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-500">
-                Current Total Gross
+              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-400">
+                Total Tracked Gross
               </p>
 
-              <p className="mt-2 text-sm font-semibold text-green-400">
-                {formatCollection(totalGross)}
+              <p className="mt-2 text-sm font-semibold text-yellow-400">
+                {formatCollection(
+                  totalTrackedGross
+                )}
               </p>
 
-              <p className="mt-1 text-[8px] text-zinc-500">
-                Reported advance gross
+              <p className="mt-1 text-[8px] text-zinc-600">
+                Across recorded days
               </p>
 
             </div>
 
-            {/* ADMISSIONS */}
 
             <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-500">
+              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-400">
                 Admissions
               </p>
 
               <p className="mt-2 text-sm font-semibold text-zinc-200">
-                {formatNumber(totalAdmissions)}
+                {formatNumber(
+                  totalAdmissions
+                )}
               </p>
 
               <p className="mt-1 text-[8px] text-zinc-500">
-                Tickets / admissions
+                Tracked admissions
               </p>
 
             </div>
 
-            {/* SHOWS */}
 
             <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-500">
-                No.of Shows Tracked
+              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-400">
+                Shows Tracked
               </p>
 
               <p className="mt-2 text-sm font-semibold text-zinc-200">
-                {formatNumber(totalShows)}
+                {formatNumber(
+                  totalShows
+                )}
               </p>
 
-              <p className="mt-1 text-[8px] text-zinc-500">
-                Reported shows
+              <p className="mt-1 text-[8px] text-zinc-600">
+                Recorded shows
               </p>
 
             </div>
 
-            {/* COVERAGE */}
 
             <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-500">
-                Coverage
+              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-400">
+                Days Tracked
+              </p>
+
+              <p className="mt-2 text-sm font-semibold text-violet-400">
+                {formatNumber(
+                  daysTracked
+                )}
+              </p>
+
+              <p className="mt-1 text-[8px] text-zinc-600">
+                Day 0 onward
+              </p>
+
+            </div>
+
+
+            <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4">
+
+              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-400">
+                Territory Records
               </p>
 
               <p className="mt-2 text-sm font-semibold text-zinc-200">
-                {records.length}
+                {formatNumber(
+                  territoriesTracked
+                )}
               </p>
 
-              <p className="mt-1 text-[8px] text-zinc-700">
-                {stateRecords > 0
-                  ? `${stateRecords} state`
-                  : ""}
-                {stateRecords > 0 &&
-                restOfIndiaRecords > 0
-                  ? " · "
-                  : ""}
-                {restOfIndiaRecords > 0
-                  ? `${restOfIndiaRecords} ROI`
-                  : ""}
+              <p className="mt-1 text-[8px] text-zinc-600">
+                State + ROI records
               </p>
 
             </div>
@@ -486,194 +831,191 @@ export default async function AdvanceBookingPublicPage({
 
         </section>
 
-        {/* -------------------------------------------------
-            PERFORMANCE TABLE
-        ------------------------------------------------- */}
 
-        <section className="mt-6">
+        {/* =================================================
+            TRACKING COVERAGE
+        ================================================= */}
 
-          <div className="mb-4">
+        <section className="mt-5">
 
-            <p className="text-[8px] uppercase tracking-[0.18em] text-violet-400">
-              Market Performance
-            </p>
+          <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-            <h2 className="mt-1 text-sm font-medium text-yellow-500">
-              Advance Booking by Territory
-            </h2>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-            <p className="mt-1 text-[10px] text-zinc-500">
-              State-wise advance booking
-              records currently available.
-            </p>
+              <div>
+
+                <p className="text-[8px] uppercase tracking-[0.16em] text-violet-400">
+                  Tracking Coverage
+                </p>
+
+                <p className="mt-1 text-[9px] leading-5 text-zinc-500">
+                  Territory records currently available
+                  within the JMI live tracking database.
+                </p>
+
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+
+                <span className="rounded-full border border-zinc-800 bg-black px-3 py-1.5 text-[8px] text-zinc-400">
+                  {stateRecords} State Records
+                </span>
+
+                <span className="rounded-full border border-zinc-800 bg-black px-3 py-1.5 text-[8px] text-zinc-400">
+                  {restOfIndiaRecords} ROI Records
+                </span>
+
+              </div>
+
+            </div>
 
           </div>
 
-          {records.length === 0 ? (
+        </section>
 
-            <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-6">
 
-              <p className="text-[9px] text-zinc-600">
-                No advance booking data is currently
-                available for this movie.
+        {/* =================================================
+            INTERACTIVE DAY / DATE TABLE
+        ================================================= */}
+
+        {groupedDays.length === 0 ? (
+
+          <section className="mt-7">
+
+            <div className="mb-4">
+
+              <p className="text-[8px] uppercase tracking-[0.18em] text-violet-400">
+                Day-wise Intelligence
+              </p>
+
+              <h2 className="mt-1 text-sm font-medium text-yellow-500">
+                Advance Booking Timeline
+              </h2>
+
+            </div>
+
+            <div className="rounded-xl border border-dashed border-zinc-900 bg-zinc-950 p-8 text-center">
+
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-zinc-900 bg-black">
+
+                <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
+
+              </div>
+
+              <p className="mt-4 text-[10px] font-medium text-zinc-400">
+                No live advance booking data available.
+              </p>
+
+              <p className="mt-2 text-[9px] leading-5 text-zinc-700">
+                JMI has not yet recorded day-wise
+                advance booking data for this movie.
               </p>
 
             </div>
 
-          ) : (
+          </section>
 
-            <div className="overflow-x-auto rounded-xl border border-zinc-900 bg-zinc-950">
+        ) : (
 
-              <table className="w-full min-w-[680px] text-xs">
+          <AdvanceBookingDayTable
+            days={groupedDays}
+          />
 
-                <thead>
+        )}
 
-                  <tr className="border-b border-zinc-800">
 
-                    <th className="px-4 py-3 text-left text-[8px] font-medium uppercase tracking-[0.14em] text-zinc-400">
-                      Territory
-                    </th>
+        {/* =================================================
+            TRACKING SUMMARY
+        ================================================= */}
 
-                    <th className="px-4 py-3 text-right text-[8px] font-medium uppercase tracking-[0.14em] text-zinc-400">
-                      Gross
-                    </th>
+        {groupedDays.length > 0 && (
 
-                    <th className="px-4 py-3 text-right text-[8px] font-medium uppercase tracking-[0.14em] text-zinc-400">
-                      Admissions
-                    </th>
+          <section className="mt-7">
 
-                    <th className="px-4 py-3 text-right text-[8px] font-medium uppercase tracking-[0.14em] text-zinc-400">
-                      Shows
-                    </th>
+            <div className="mb-4">
 
-                    <th className="px-4 py-3 text-left text-[8px] font-medium uppercase tracking-[0.14em] text-zinc-400">
-                      Updated
-                    </th>
+              <p className="text-[8px] uppercase tracking-[0.18em] text-violet-400">
+                Tracking Summary
+              </p>
 
-                    <th className="px-4 py-3 text-left text-[8px] font-medium uppercase tracking-[0.14em] text-zinc-400">
-                      Milestones
-                    </th>
-
-                  </tr>
-
-                </thead>
-
-                <tbody>
-
-                  {records.map((record) => (
-
-                    <tr
-                      key={record.id}
-                      className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-900/40"
-                    >
-
-                      {/* TERRITORY */}
-
-                      <td className="px-4 py-3">
-
-                        <div className="font-medium text-zinc-200">
-
-                          {record.coverage_type ===
-                          "REST_OF_INDIA"
-                            ? "Rest of India"
-                            : getStateName(
-                                record.state_id
-                              )}
-
-                        </div>
-
-                        <div className="mt-1 text-[8px] text-zinc-700">
-
-                          {record.coverage_type ===
-                          "REST_OF_INDIA"
-                            ? "National coverage"
-                            : "State coverage"}
-
-                        </div>
-
-                      </td>
-
-                      {/* GROSS */}
-
-                      <td className="px-4 py-3 text-right font-semibold text-yellow-400">
-
-                        {formatCollection(
-                          record.gross
-                        )}
-
-                      </td>
-
-                      {/* ADMISSIONS */}
-
-                      <td className="px-4 py-3 text-right text-zinc-300">
-
-                        {formatNumber(
-                          record.admissions
-                        )}
-
-                      </td>
-
-                      {/* SHOWS */}
-
-                      <td className="px-4 py-3 text-right text-zinc-300">
-
-                        {formatNumber(
-                          record.show_count
-                        )}
-
-                      </td>
-
-                      {/* UPDATED */}
-
-                      <td className="px-4 py-3 text-[9px] text-zinc-400">
-
-                        {formatUpdatedAt(
-                          record.updated_at
-                        )}
-
-                      </td>
-
-                      {/* NOTES */}
-
-                      <td className="max-w-[220px] px-4 py-3 text-[10px] leading-4 text-zinc-400">
-
-                        {record.notes || "—"}
-
-                      </td>
-
-                    </tr>
-
-                  ))}
-
-                </tbody>
-
-              </table>
+              <h2 className="mt-1 text-sm font-medium text-yellow-500">
+                JMI Live Booking Record
+              </h2>
 
             </div>
 
-          )}
 
-        </section>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 
-        {/* -------------------------------------------------
+              
+
+
+              <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4">
+
+                <p className="text-[8px] uppercase tracking-[0.12em] text-zinc-400">
+                  Days Recorded
+                </p>
+
+                <p className="mt-2 text-sm font-semibold text-zinc-200">
+                  {
+                    uniqueDays.length
+                  }
+                </p>
+
+              </div>
+
+
+              <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4">
+
+                <p className="text-[8px] uppercase tracking-[0.12em] text-zinc-400">
+                  Last Updated
+                </p>
+
+                <p className="mt-2 text-[10px] font-medium text-green-400">
+                  {latestUpdatedAt
+                    ? formatUpdatedAt(
+                        latestUpdatedAt
+                      )
+                    : "—"}
+                </p>
+
+              </div>
+
+            </div>
+
+          </section>
+
+        )}
+
+
+        {/* =================================================
             DATA NOTE
-        ------------------------------------------------- */}
+        ================================================= */}
 
-        <section className="mt-6 rounded-xl border border-zinc-900 bg-zinc-950 p-4">
+        <section className="mt-7 rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
           <p className="text-[8px] uppercase tracking-[0.16em] text-violet-400">
             Data Note
           </p>
 
-          <p className="mt-2 text-[9px] leading-5 text-zinc-600">
-            Advance booking figures shown here are calculated from the aggregated online ticket sales tracked by JMI. Original data can be vary as JMI can not cover entire screens and shows across all releasing centers
+          <p className="mt-2 text-[9px] leading-5 text-zinc-500">
+            Advance booking figures shown here are
+            based on the online ticket-booking data
+           tracked by JMI. The tracking system
+            may not cover every screen, show or releasing
+            centre across all territories. Therefore,
+            these figures represent JMI's tracked
+            coverage and should not be interpreted as
+            a complete industry-wide census of advance
+            ticket sales.
           </p>
 
         </section>
 
-        {/* -------------------------------------------------
+
+        {/* =================================================
             NAVIGATION
-        ------------------------------------------------- */}
+        ================================================= */}
 
         <section className="mt-6 space-y-2">
 
@@ -693,21 +1035,41 @@ export default async function AdvanceBookingPublicPage({
 
         </section>
 
-        {/* -------------------------------------------------
+
+        {/* =================================================
             FOOTER
-        ------------------------------------------------- */}
+        ================================================= */}
 
-        <footer className="mt-10 border-t border-zinc-900 pt-5 pb-8">
+        <footer className="border-t border-zinc-900">
 
-          <p className="text-center text-[8px] text-zinc-800">
-            JMI · Jeruto Movie Intelligence
-          </p>
+        <div className="mx-auto max-w-6xl px-5 py-7 sm:px-6 lg:px-8">
 
-          <p className="mt-1 text-center text-[7px] text-zinc-900">
-            Indian Film Industry Data & Intelligence
-          </p>
+          <div className="flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
 
-        </footer>
+            <div>
+
+              <p className="font-serif text-sm font-medium text-zinc-300">
+                Jeruto{" "}
+                <span className="text-yellow-400">
+                  Movie Intelligence
+                </span>
+              </p>
+
+              <p className="mt-1 text-[9px] text-zinc-500">
+                India's Next Generation Movie Intelligence Platform
+              </p>
+
+            </div>
+
+            <p className="text-[9px] text-zinc-500">
+              JMI · Live Tracking Intelligence
+            </p>
+
+          </div>
+
+        </div>
+
+      </footer>
 
       </main>
 
