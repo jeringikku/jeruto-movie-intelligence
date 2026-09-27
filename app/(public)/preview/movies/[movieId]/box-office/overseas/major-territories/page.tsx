@@ -416,7 +416,7 @@ export default async function MajorTerritoriesPage({
               </h1>
 
               {movie.release_year && (
-                <p className="mt-1 text-[9px] text-zinc-600">
+                <p className="mt-1 text-[9px] text-pink-500">
                   {movie.release_year}
                 </p>
               )}
@@ -445,11 +445,11 @@ export default async function MajorTerritoriesPage({
 
         <section className="mt-5 rounded-lg border border-zinc-900 bg-zinc-950 px-4 py-3">
 
-          <p className="text-[8px] uppercase tracking-[0.16em] text-zinc-600">
+          <p className="text-[8px] uppercase tracking-[0.16em] text-green-500">
             Current Cumulative Data
           </p>
 
-          <p className="mt-1 text-[9px] leading-5 text-zinc-700">
+          <p className="mt-1 text-[9px] leading-5 text-zinc-400">
             Major territory figures are derived from the
             country-wise overseas collection recorded by JMI.
           </p>
@@ -478,7 +478,7 @@ export default async function MajorTerritoriesPage({
 
             <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-5">
 
-              <p className="text-[10px] text-zinc-600">
+              <p className="text-[10px] text-red-500">
                 No major territory data is available.
               </p>
 
@@ -496,23 +496,23 @@ export default async function MajorTerritoriesPage({
 
                     <tr>
 
-                      <th className="px-4 py-3 text-left text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+                      <th className="px-4 py-3 text-left text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                         Territory
                       </th>
 
-                      <th className="px-4 py-3 text-left text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+                      <th className="px-4 py-3 text-left text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                         Description
                       </th>
 
-                      <th className="px-4 py-3 text-right text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+                      <th className="px-4 py-3 text-right text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                         Countries
                       </th>
 
-                      <th className="px-4 py-3 text-right text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+                      <th className="px-4 py-3 text-right text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                         USD Gross
                       </th>
 
-                      <th className="px-4 py-3 text-right text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+                      <th className="px-4 py-3 text-right text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                         Share
                       </th>
 
@@ -533,7 +533,7 @@ export default async function MajorTerritoriesPage({
 
                             <div className="flex items-center gap-3">
 
-                              <span className="text-[8px] text-zinc-700">
+                              <span className="text-[8px] text-green-500">
                                 {String(
                                   index + 1
                                 ).padStart(
@@ -544,7 +544,7 @@ export default async function MajorTerritoriesPage({
 
                               <div>
 
-                                <p className="text-[10px] font-medium text-zinc-200">
+                                <p className="text-[10px] font-medium text-zinc-300">
                                   {record.name}
                                 </p>
 
@@ -561,7 +561,7 @@ export default async function MajorTerritoriesPage({
 
                           </td>
 
-                          <td className="px-4 py-4 text-right text-[9px] text-zinc-500">
+                          <td className="px-4 py-4 text-right text-[9px] text-green-500">
 
                             {record.countryCount}
 
@@ -597,7 +597,7 @@ export default async function MajorTerritoriesPage({
 
                       <td
                         colSpan={3}
-                        className="px-4 py-4 text-[8px] uppercase tracking-[0.14em] text-zinc-700"
+                        className="px-4 py-4 text-[8px] uppercase tracking-[0.14em] text-yellow-500"
                       >
                         Territory Group Sum
                       </td>
@@ -648,7 +648,7 @@ export default async function MajorTerritoriesPage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-3">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Territories
               </p>
 
@@ -660,7 +660,7 @@ export default async function MajorTerritoriesPage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-3">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Countries
               </p>
 
@@ -672,7 +672,7 @@ export default async function MajorTerritoriesPage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-3">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Reported USD
               </p>
 
@@ -692,11 +692,11 @@ export default async function MajorTerritoriesPage({
 
         <section className="mt-6 rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-          <p className="text-[8px] uppercase tracking-[0.16em] text-zinc-600">
+          <p className="text-[8px] uppercase tracking-[0.16em] text-red-500">
             Data Note
           </p>
 
-          <p className="mt-2 text-[9px] leading-5 text-zinc-600">
+          <p className="mt-2 text-[9px] leading-5 text-zinc-500">
             Major territory figures are analytical views
             generated from the country-wise overseas records
             available in JMI. Territory groups may contain
@@ -737,17 +737,36 @@ export default async function MajorTerritoriesPage({
             FOOTER
         ------------------------------------------------- */}
 
-        <footer className="mt-10 border-t border-zinc-900 pt-5 pb-8">
+        <footer className="border-t border-zinc-900">
 
-          <p className="text-center text-[8px] text-zinc-800">
-            JMI · Jeruto Movie Intelligence
-          </p>
+        <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
 
-          <p className="mt-1 text-center text-[7px] text-zinc-900">
-            Indian Film Industry Data & Intelligence
-          </p>
+          <div className="flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
 
-        </footer>
+            <div>
+
+              <p className="font-serif text-sm font-medium text-zinc-300">
+                Jeruto{" "}
+                <span className="text-yellow-400">
+                  Movie Intelligence
+                </span>
+              </p>
+
+              <p className="mt-1 text-[9px] text-zinc-500">
+                India's Next Generation Movie Intelligence Platform
+              </p>
+
+            </div>
+
+            <p className="text-[9px] text-zinc-500">
+              JMI · Territory Intelligence
+            </p>
+
+          </div>
+
+        </div>
+
+      </footer>
 
       </main>
 

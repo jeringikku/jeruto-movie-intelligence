@@ -368,7 +368,7 @@ export default async function MovieIntelligencePage({
                 {/* Synopsis */}
 
                 {movie.synopsis && (
-                  <p className="mt-5 max-w-2xl text-[10px] leading-5 text-zinc-500">
+                  <p className="mt-5 max-w-2xl text-[10px] leading-5 text-zinc-400">
                     {movie.synopsis}
                   </p>
                 )}
@@ -472,9 +472,111 @@ export default async function MovieIntelligencePage({
 
             </div>
 
+            
+
           </div>
 
+          
+
         </section>
+
+        {/* =================================================
+    JMI PREMIUM PERFORMANCE REPORT
+================================================= */}
+
+<div className="mt-5">
+
+  <Link
+    href={`/preview/movies/${movie.id}/performance-report`}
+    className="group inline-block overflow-hidden rounded-xl border border-violet-400/20 bg-gradient-to-r from-violet-500/[0.07] via-zinc-950 to-yellow-500/[0.04] transition-all duration-300 hover:border-violet-400/40 hover:shadow-[0_0_35px_rgba(139,92,246,0.08)]"
+  >
+
+    {/* Premium glow */}
+
+    <div className="pointer-events-none absolute -right-16 -top-16 h-32 w-32 rounded-full bg-violet-500/[0.07] blur-3xl transition-all duration-500 group-hover:bg-violet-500/[0.12]" />
+
+    <div className="pointer-events-none absolute -bottom-20 -left-10 h-28 w-28 rounded-full bg-yellow-500/[0.04] blur-3xl" />
+
+    <div className="relative flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+
+      {/* Left */}
+
+      <div className="flex items-start gap-3.5">
+
+        {/* Icon */}
+
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/[0.08]">
+
+          <span className="text-lg">
+            📄
+          </span>
+
+        </div>
+
+        {/* Text */}
+
+        <div className="min-w-0">
+
+          <div className="flex flex-wrap items-center gap-2">
+
+            <p className="text-[8px] font-semibold uppercase tracking-[0.24em] text-violet-400">
+              JMI Premium
+            </p>
+
+            <span className="rounded-full border border-yellow-500/20 bg-yellow-500/[0.05] px-2 py-0.5 text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
+              Exclusive
+            </span>
+
+          </div>
+
+          <h3 className="mt-1.5 text-sm font-medium tracking-[-0.02em] text-green-500">
+            JMI Movie Performance Report
+          </h3>
+
+          <p className="mt-1 text-[9px] leading-4 text-zinc-400">
+            Generate an AI-powered analysis of this movie's
+            box office, markets, business and theatrical performance.
+          </p>
+
+          <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[7px] uppercase tracking-[0.14em] text-pink-400">
+
+            <span>AI Analysis</span>
+
+            <span>•</span>
+
+            <span>Trade Data</span>
+
+            <span>•</span>
+
+            <span>Box Office</span>
+
+            <span>•</span>
+
+            <span>Downlodable PDF Report</span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Right CTA */}
+
+      <div className="flex flex-shrink-0 items-center justify-between gap-3 sm:justify-end">
+
+       
+
+        <span className="flex h-9 w-9 items-center justify-center rounded-full border border-violet-400/20 bg-violet-500/[0.06] text-sm text-violet-400 transition-transform duration-300 group-hover:translate-x-1">
+          →
+        </span>
+
+      </div>
+
+    </div>
+
+  </Link>
+
+</div>
 
         {/* =====================================================
             BOX OFFICE INTELLIGENCE
@@ -484,7 +586,7 @@ export default async function MovieIntelligencePage({
 
         <section className="border-b border-zinc-900">
 
-          <div className="mx-auto max-w-6xl px-5 py-10 sm:px-6 sm:py-14 lg:px-8">
+          <div className="mx-auto max-w-6xl px-5 py-10 sm:px-6 sm:py-14 lg:px-8"> 
 
              <section
   id="box-office"
@@ -731,7 +833,7 @@ export default async function MovieIntelligencePage({
                       Overseas Breakdown
                     </p>
 
-                    <p className="mt-1 text-[8px] text-zinc-700">
+                    <p className="mt-1 text-[9px] text-zinc-400">
                       International theatrical performance
                     </p>
 
@@ -850,19 +952,27 @@ export default async function MovieIntelligencePage({
 
       <footer className="border-t border-zinc-900">
 
-        <div className="mx-auto max-w-6xl px-5 py-7 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
 
-            <p className="font-serif text-sm text-zinc-300">
-              Jeruto{" "}
-              <span className="text-yellow-400">
-                Movie Intelligence
-              </span>
-            </p>
+            <div>
 
-            <p className="text-[9px] text-zinc-700">
-              JMI · Indian Movie Intelligence
+              <p className="font-serif text-sm font-medium text-zinc-300">
+                Jeruto{" "}
+                <span className="text-yellow-400">
+                  Movie Intelligence
+                </span>
+              </p>
+
+              <p className="mt-1 text-[9px] text-zinc-500">
+                India's Next Generation Movie Intelligence Platform
+              </p>
+
+            </div>
+
+            <p className="text-[9px] text-zinc-500">
+              JMI · People Intelligence
             </p>
 
           </div>
@@ -870,7 +980,6 @@ export default async function MovieIntelligencePage({
         </div>
 
       </footer>
-
     </div>
   );
 }
@@ -989,7 +1098,7 @@ function AdvancedStatsButton({
         duration-300
         ${
           available
-            ? "cursor-pointer border-zinc-800 bg-zinc-950 hover:border-violet-400/30 hover:bg-zinc-900/70"
+            ? "cursor-pointer border-violet-500/30 bg-zinc-950 hover:border-violet-400/30 hover:bg-zinc-900/70"
             : "border-zinc-400 bg-black/40 opacity-55"
         }
       `}
@@ -1043,8 +1152,8 @@ function AdvancedStatsButton({
               leading-4
               ${
                 available
-                  ? "text-zinc-600"
-                  : "text-zinc-800"
+                  ? "text-zinc-500"
+                  : "text-zinc-600"
               }
             `}
           >

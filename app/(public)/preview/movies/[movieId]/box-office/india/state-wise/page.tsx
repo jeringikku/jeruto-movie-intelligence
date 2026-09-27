@@ -215,7 +215,7 @@ export default async function StateWiseBoxOfficePage({
                 </h1>
 
                 {movie.release_year && (
-                  <p className="mt-1 text-[9px] text-zinc-600">
+                  <p className="mt-1 text-[9px] text-pink-500">
                     {movie.release_year}
                   </p>
                 )}
@@ -245,7 +245,7 @@ export default async function StateWiseBoxOfficePage({
               Domestic market performance.
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-600">
+            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-400">
               JMI state-level theatrical collection recorded
               across the Indian domestic market.
             </p>
@@ -257,7 +257,7 @@ export default async function StateWiseBoxOfficePage({
 
             <div className="mt-7 rounded-xl border border-violet-400/20 bg-zinc-950 px-5 py-5">
 
-              <p className="text-[8px] uppercase tracking-[0.2em] text-zinc-700">
+              <p className="text-[8px] uppercase tracking-[0.2em] text-pink-500">
                 India Gross
               </p>
 
@@ -276,11 +276,11 @@ export default async function StateWiseBoxOfficePage({
 
               <div className="mb-4">
 
-                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-700">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-yellow-500">
                   Market Breakdown
                 </p>
 
-                <p className="mt-1 text-[9px] text-zinc-600">
+                <p className="mt-1 text-[9px] text-zinc-400">
                   Current cumulative collection by state.
                 </p>
 
@@ -295,11 +295,11 @@ export default async function StateWiseBoxOfficePage({
 
                   <div className="grid grid-cols-[1fr_auto] border-b border-zinc-800 px-4 py-3 sm:px-5">
 
-                    <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-zinc-700">
+                    <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-green-500">
                       State / Market
                     </p>
 
-                    <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-zinc-700">
+                    <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-green-500">
                       Gross
                     </p>
 
@@ -344,7 +344,7 @@ export default async function StateWiseBoxOfficePage({
                         </p>
 
                         {row.isRestOfIndia && (
-                          <p className="mt-0.5 text-[7px] uppercase tracking-[0.15em] text-zinc-700">
+                          <p className="mt-0.5 text-[7px] uppercase tracking-[0.15em] text-zinc-400">
                             Remaining domestic market
                           </p>
                         )}
@@ -364,7 +364,7 @@ export default async function StateWiseBoxOfficePage({
 
                   <div className="grid grid-cols-[1fr_auto] items-center border-t border-zinc-800 bg-zinc-900/30 px-4 py-4 sm:px-5">
 
-                    <p className="text-[9px] font-semibold text-zinc-300">
+                    <p className="text-[9px] font-semibold text-green-500">
                       India Total
                     </p>
 
@@ -453,7 +453,7 @@ export default async function StateWiseBoxOfficePage({
 
             <Link
               href={`/preview/movies/${movie.id}`}
-              className="inline-flex items-center rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-[8px] uppercase tracking-[0.18em] text-zinc-500 transition hover:border-violet-400/30 hover:text-violet-400"
+              className="inline-flex items-center rounded-lg border border-zinc-600 bg-zinc-950 px-4 py-3 text-[8px] uppercase tracking-[0.18em] text-zinc-500 transition hover:border-violet-400/30 hover:text-violet-400"
             >
               ← Return to Movie Intelligence
             </Link>

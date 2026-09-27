@@ -83,7 +83,7 @@ export default function CompaniesPage() {
             Company Intelligence
           </h1>
 
-          <p className="mt-2 max-w-2xl text-[9px] leading-5 text-zinc-500 sm:text-[10px]">
+          <p className="mt-2 max-w-2xl text-[9px] leading-5 text-zinc-400 sm:text-[10px]">
             Explore the business side of Indian cinema through
             production companies, distributors, studios and other
             film-industry businesses tracked by JMI.

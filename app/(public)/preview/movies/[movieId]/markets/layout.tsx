@@ -1,79 +1,13 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-export default async function MovieMarketsLayout({
+export default function MovieMarketsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  /*
-   * =========================================================
-   * LOGGED OUT
-   * =========================================================
-   */
-
-  if (!user) {
-    return (
-      <MovieFeatureLock
-        authenticated={false}
-        title="Movie Markets"
-        description="Explore detailed Indian and overseas market intelligence for this movie with JMI Pro."
-      />
-    );
-  }
-
-  /*
-   * =========================================================
-   * CHECK PRO FEATURE
-   * =========================================================
-   */
-
-  const { data: allowed, error } =
-    await supabase.rpc(
-      "jmi_user_has_feature",
-      {
-        requested_feature_slug:
-          "market_intelligence",
-      }
-    );
-
-  /*
-   * Fail closed.
-   */
-
-  if (error || allowed !== true) {
-    if (error) {
-      console.error(
-        "Movie Markets entitlement check failed:",
-        error
-      );
-    }
-
-    return (
-      <MovieFeatureLock
-        authenticated={true}
-        title="Movie Markets"
-        description="Explore detailed Indian and overseas market intelligence for this movie with JMI Pro."
-      />
-    );
-  }
-
-  /*
-   * =========================================================
-   * PRO+
-   * =========================================================
-   */
-
   return <>{children}</>;
 }
-
-
 /* ============================================================
    MOVIE FEATURE LOCK
 ============================================================ */

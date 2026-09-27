@@ -241,7 +241,7 @@ export default async function LanguageWiseBoxOfficePage({
               Language market performance.
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-600">
+            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-500">
               Current cumulative theatrical performance
               recorded across language markets in India.
             </p>
@@ -256,7 +256,7 @@ export default async function LanguageWiseBoxOfficePage({
                 Current Cumulative Data
               </p>
 
-              <p className="mt-2 text-[9px] leading-5 text-zinc-600">
+              <p className="mt-2 text-[9px] leading-5 text-zinc-500">
                 Language-wise figures represent the latest
                 cumulative performance recorded for each
                 language. These are independent breakdowns
@@ -273,7 +273,7 @@ export default async function LanguageWiseBoxOfficePage({
 
               <div className="mb-4">
 
-                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-700">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-green-500">
                   Language Performance
                 </p>
 
@@ -287,12 +287,12 @@ export default async function LanguageWiseBoxOfficePage({
 
                 <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-950 px-5 py-10 text-center">
 
-                  <p className="text-[9px] text-zinc-600">
+                  <p className="text-[9px] text-red-500">
                     Language-wise box office data is not
                     available yet.
                   </p>
 
-                  <p className="mt-2 text-[8px] text-zinc-800">
+                  <p className="mt-2 text-[8px] text-zinc-600">
                     JMI will display language intelligence
                     when verified data becomes available.
                   </p>

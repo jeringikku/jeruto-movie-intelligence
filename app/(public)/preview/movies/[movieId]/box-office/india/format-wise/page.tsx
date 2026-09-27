@@ -205,7 +205,7 @@ export default async function FormatWiseBoxOfficePage({
 
               <div className="min-w-0">
 
-                <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-violet-400">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-pink-400">
                   India Box Office
                 </p>
 
@@ -243,7 +243,7 @@ export default async function FormatWiseBoxOfficePage({
               Exhibition format performance.
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-600">
+            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-500">
               Current cumulative theatrical performance
               recorded across exhibition formats in India.
             </p>
@@ -258,7 +258,7 @@ export default async function FormatWiseBoxOfficePage({
                 Current Cumulative Data
               </p>
 
-              <p className="mt-2 text-[9px] leading-5 text-zinc-600">
+              <p className="mt-2 text-[9px] leading-5 text-zinc-400">
                 Format-wise figures represent the latest
                 cumulative performance recorded for each
                 exhibition format. They are independent
@@ -276,7 +276,7 @@ export default async function FormatWiseBoxOfficePage({
 
               <div className="mb-4">
 
-                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-700">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-green-500">
                   Format Performance
                 </p>
 
@@ -290,12 +290,12 @@ export default async function FormatWiseBoxOfficePage({
 
                 <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-950 px-5 py-10 text-center">
 
-                  <p className="text-[9px] text-zinc-600">
+                  <p className="text-[9px] text-red-500">
                     Format-wise box office data is not
                     available yet.
                   </p>
 
-                  <p className="mt-2 text-[8px] text-zinc-800">
+                  <p className="mt-2 text-[8px] text-zinc-600">
                     JMI will display format intelligence
                     when verified data becomes available.
                   </p>

@@ -1,55 +1,11 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-export default async function IndividualIndustryIntelligenceLayout({
+export default function IndividualIndustryIntelligenceLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  /*
-   * Not authenticated
-   */
-  if (!user) {
-    return (
-      <IndustryPremiumLock authenticated={false} />
-    );
-  }
-
-  /*
-   * Check Premium / Enterprise entitlement
-   */
-  const { data: allowed, error } =
-    await supabase.rpc(
-      "jmi_user_has_feature",
-      {
-        requested_feature_slug:
-          "individual_industry_intelligence",
-      }
-    );
-
-  if (error || allowed !== true) {
-    if (error) {
-      console.error(
-        "Individual Industry Intelligence entitlement check failed:",
-        error
-      );
-    }
-
-    return (
-      <IndustryPremiumLock authenticated={true} />
-    );
-  }
-
-  /*
-   * Premium / Enterprise users
-   * can access the actual industry intelligence page.
-   */
   return <>{children}</>;
 }
 

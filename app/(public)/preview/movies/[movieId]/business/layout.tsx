@@ -1,44 +1,11 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-export default async function MovieBusinessLayout({
+export default function MovieBusinessLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return (
-      <MovieBusinessLock authenticated={false} />
-    );
-  }
-
-  const { data: allowed, error } =
-    await supabase.rpc(
-      "jmi_user_has_feature",
-      {
-        requested_feature_slug: "movie_business",
-      }
-    );
-
-  if (error || allowed !== true) {
-    if (error) {
-      console.error(
-        "Movie Business entitlement check failed:",
-        error
-      );
-    }
-
-    return (
-      <MovieBusinessLock authenticated={true} />
-    );
-  }
-
   return <>{children}</>;
 }
 

@@ -1,54 +1,11 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-export default async function AudienceBehaviorLayout({
+export default function AudienceBehaviorLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  /*
-   * Not authenticated
-   */
-  if (!user) {
-    return (
-      <AudiencePremiumLock authenticated={false} />
-    );
-  }
-
-  /*
-   * Check Premium / Enterprise entitlement
-   */
-  const { data: allowed, error } =
-    await supabase.rpc(
-      "jmi_user_has_feature",
-      {
-        requested_feature_slug: "audience_behavior",
-      }
-    );
-
-  if (error || allowed !== true) {
-    if (error) {
-      console.error(
-        "Audience Behavior entitlement check failed:",
-        error
-      );
-    }
-
-    return (
-      <AudiencePremiumLock authenticated={true} />
-    );
-  }
-
-  /*
-   * Premium / Enterprise users
-   * can access the actual Audience Behavior page.
-   */
   return <>{children}</>;
 }
 

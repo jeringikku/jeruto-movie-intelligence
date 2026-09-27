@@ -234,7 +234,7 @@ export default async function CastCrewPage({
               </h1>
 
               {movie.release_year && (
-                <p className="mt-1 text-[9px] text-zinc-600">
+                <p className="mt-1 text-[9px] text-pink-500">
                   {movie.release_year}
                 </p>
               )}

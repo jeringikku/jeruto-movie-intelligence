@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
+import PublicHeader from "@/app/(public)/components/PublicHeader";
 
 type Props = {
   params: Promise<{
@@ -107,6 +108,15 @@ function isHit(verdict: string | null) {
 
 function isFlop(verdict: string | null) {
   return normalizeVerdict(verdict).includes("flop");
+}
+
+function isFlopOrDisaster(verdict: string | null) {
+  const value = normalizeVerdict(verdict);
+
+  return (
+    value.includes("flop") ||
+    value.includes("disaster")
+  );
 }
 
 function isBlockbuster(verdict: string | null) {
@@ -347,7 +357,7 @@ export async function generateMetadata({
       ...metadata.openGraph,
       images: [
         {
-          url: person.profile_image_url,
+          url: person.profile_image_url, 
           alt: `${personName} profile,`
         },
       ],
@@ -661,20 +671,17 @@ export default async function PersonRoleIntelligencePage({
 
   if (movieIds.length > 0) {
     const { data: territoryData } =
-      await supabase
-        .from("movie_state_box_office")
-        .select(
-          `
-          movie_id,
-          state_id,
-          gross_jmi,
-          states (
-            id,
-            name
-          )
-        `
-        )
-        .in("movie_id", movieIds);
+  await supabase
+    .from("movie_territory_box_office")
+    .select(
+      `
+      movie_id,
+      state_id,
+      state_name,
+      gross_jmi
+    `
+    )
+    .in("movie_id", movieIds);
 
     const territoryMap = new Map<
       number,
@@ -693,9 +700,9 @@ export default async function PersonRoleIntelligencePage({
         const stateId = Number(row.state_id);
         const movieId = Number(row.movie_id);
 
-        const stateName =
-          row.states?.name ||
-          "Unknown Territory";
+       const stateName =
+  row.state_name ||
+  "Unknown Territory";
 
         const gross = Number(
           row.gross_jmi || 0
@@ -1251,14 +1258,33 @@ export default async function PersonRoleIntelligencePage({
         )[0]
       : null;
 
-  const biggestFlop =
-    flopMovies.length > 0
-      ? [...flopMovies].sort(
+  const flopOrDisasterMovies =
+  uniqueMovies.filter((movie) =>
+    isFlopOrDisaster(
+      movie.theatrical_verdict
+    )
+  );
+
+const biggestFlop =
+  flopOrDisasterMovies.length > 0
+    ? [...flopOrDisasterMovies]
+        .filter(
+          (movie) =>
+            Number(
+              movie.production_budget_trade || 0
+            ) > 0
+        )
+        .sort(
           (a, b) =>
-            a.worldwide_gross -
-            b.worldwide_gross
-        )[0]
-      : null;
+            Number(
+              b.production_budget_trade || 0
+            ) -
+            Number(
+              a.production_budget_trade || 0
+            )
+        )[0] ?? null
+    : null;
+  
 
   // ============================================================
   // DAY 1
@@ -1388,6 +1414,8 @@ export default async function PersonRoleIntelligencePage({
 
   return (
     <div className="min-h-screen bg-black text-zinc-200">
+
+       <PublicHeader />
 
       <main className="mx-auto max-w-6xl px-4 pb-12 pt-5 sm:px-6">
 
@@ -1996,7 +2024,7 @@ export default async function PersonRoleIntelligencePage({
                         Top Opening
                       </th>
 
-                      <th className="px-4 py-3 text-left text-[9px] font-medium uppercase tracking-wide text-zinc-600">
+                      <th className="px-4 py-3 text-left text-[9px] font-medium uppercase tracking-wide text-pink-400">
                        Top Final
                       </th>
 
@@ -2565,11 +2593,11 @@ export default async function PersonRoleIntelligencePage({
 
         <section className="mt-7 rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-          <p className="text-[8px] uppercase tracking-[0.18em] text-zinc-700">
+          <p className="text-[8px] uppercase tracking-[0.18em] text-green-500">
             JMI Intelligence Model
           </p>
 
-          <p className="mt-2 text-[9px] leading-5 text-zinc-600">
+          <p className="mt-2 text-[9px] leading-5 text-zinc-400">
             This analysis is restricted to the selected person and
             role. Box-office figures are aggregated from available
             JMI movie-level trade data. Where source data is
@@ -2579,6 +2607,41 @@ export default async function PersonRoleIntelligencePage({
         </section>
 
       </main>
+
+      {/* =====================================================
+    FOOTER
+===================================================== */}
+
+<footer className="border-t border-zinc-900">
+
+        <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
+
+          <div className="flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+
+            <div>
+
+              <p className="font-serif text-sm font-medium text-zinc-300">
+                Jeruto{" "}
+                <span className="text-yellow-400">
+                  Movie Intelligence
+                </span>
+              </p>
+
+              <p className="mt-1 text-[9px] text-zinc-500">
+                India's Next Generation Movie Intelligence Platform
+              </p>
+
+            </div>
+
+            <p className="text-[9px] text-zinc-500">
+              JMI · People Intelligence
+            </p>
+
+          </div>
+
+        </div>
+
+      </footer>
 
     </div>
   );
@@ -2661,6 +2724,7 @@ function MiniStat({
     </div>
   );
 }
+  
 
 // ============================================================
 // HIGHLIGHT CARD
@@ -2713,6 +2777,10 @@ function HighlightCard({
         </p>
       )}
 
+      
+
     </div>
+    
   );
 }
+

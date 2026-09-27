@@ -17,14 +17,18 @@ type RankedMovie = {
   gross: number;
 };
 
+const ANDHRA_PRADESH_STATE_ID = 1;
+const TELANGANA_STATE_ID = 24;
+const TELUGU_STATES_STATE_ID = 37;
+
 function formatCrores(value: number) {
   if (!value || value <= 0) return "—";
 
   if (value >= 10000000) {
-    return `₹${(value / 10000000).toFixed(2)} Cr`;
+    return `₹${(value / 10000000).toFixed(2)} Cr;`
   }
 
-  return `₹${(value / 100000).toFixed(2)} L`;
+  return `₹${(value / 100000).toFixed(2)} L;`
 }
 
 function formatRank(rank: number) {
@@ -82,7 +86,7 @@ export default async function TeluguStatesTeluguPage({
 
   /*
    * =========================================================
-   * 1. FIND ANDHRA PRADESH + TELANGANA
+   * 1. FIND TELUGU STATES + AP + TELANGANA
    * =========================================================
    */
 
@@ -92,15 +96,16 @@ export default async function TeluguStatesTeluguPage({
   } = await supabase
     .from("states")
     .select("id, name")
-    .in("name", [
-      "Andhra Pradesh",
-      "Telangana",
+    .in("id", [
+      ANDHRA_PRADESH_STATE_ID,
+      TELANGANA_STATE_ID,
+      TELUGU_STATES_STATE_ID,
     ]);
 
   if (
     statesError ||
     !states ||
-    states.length < 2
+    states.length < 3
   ) {
     console.error(
       "Telugu States lookup error:",
@@ -297,6 +302,17 @@ export default async function TeluguStatesTeluguPage({
    * =========================================================
    * 6. GET TELUGU STATES BOX OFFICE
    * =========================================================
+   *
+   * We fetch:
+   * - Telugu States (consolidated)
+   * - Andhra Pradesh
+   * - Telangana
+   *
+   * If a Telugu States row exists for a movie,
+   * it takes priority.
+   *
+   * Otherwise, Andhra Pradesh + Telangana
+   * are used as the fallback.
    */
 
   const movieIds =
@@ -314,13 +330,18 @@ export default async function TeluguStatesTeluguPage({
 
   /*
    * =========================================================
-   * 7. GROUP AP + TELANGANA COLLECTION
+   * 7. GROUP TELUGU STATES COLLECTION
    * =========================================================
    */
 
   const grossMap = new Map<
     number,
-    number
+    {
+      teluguStates: number;
+      hasTeluguStates: boolean;
+      andhraPradesh: number;
+      telangana: number;
+    }
   >();
 
   for (const row of stateRows) {
@@ -330,11 +351,39 @@ export default async function TeluguStatesTeluguPage({
     const gross =
       Number(row.gross_jmi || 0);
 
-    grossMap.set(
-      movieId,
-      (grossMap.get(movieId) || 0) +
-        gross
-    );
+    if (!grossMap.has(movieId)) {
+      grossMap.set(movieId, {
+        teluguStates: 0,
+        hasTeluguStates: false,
+        andhraPradesh: 0,
+        telangana: 0,
+      });
+    }
+
+    const movieStateData =
+      grossMap.get(movieId)!;
+
+    if (
+      Number(row.state_id) ===
+      TELUGU_STATES_STATE_ID
+    ) {
+      movieStateData.hasTeluguStates = true;
+      movieStateData.teluguStates += gross;
+    }
+
+    if (
+      Number(row.state_id) ===
+      ANDHRA_PRADESH_STATE_ID
+    ) {
+      movieStateData.andhraPradesh += gross;
+    }
+
+    if (
+      Number(row.state_id) ===
+      TELANGANA_STATE_ID
+    ) {
+      movieStateData.telangana += gross;
+    }
   }
 
   /*
@@ -345,21 +394,36 @@ export default async function TeluguStatesTeluguPage({
 
   const rankedMovies: RankedMovie[] =
     eligibleMovies
-      .map((movie) => ({
-        id: Number(movie.id),
-        title: movie.title,
-        release_year:
-          movie.release_year,
-        poster_url:
-          movie.poster_url,
-        original_language:
-          movie.original_language ||
-          "Telugu",
-        gross:
+      .map((movie) => {
+        const movieStateData =
           grossMap.get(
             Number(movie.id)
-          ) || 0,
-      }))
+          );
+
+        let totalGross = 0;
+
+        if (movieStateData?.hasTeluguStates) {
+          totalGross =
+            movieStateData.teluguStates;
+        } else {
+          totalGross =
+            (movieStateData?.andhraPradesh || 0) +
+            (movieStateData?.telangana || 0);
+        }
+
+        return {
+          id: Number(movie.id),
+          title: movie.title,
+          release_year:
+            movie.release_year,
+          poster_url:
+            movie.poster_url,
+          original_language:
+            movie.original_language ||
+            "Telugu",
+          gross: totalGross,
+        };
+      })
       .filter(
         (movie) => movie.gross > 0
       )
@@ -450,7 +514,7 @@ export default async function TeluguStatesTeluguPage({
             The top 100 Telugu movies
             ranked by their current JMI
             theatrical collection across
-            Andhra Pradesh and Telangana.
+            Telugu States.
           </p>
 
         </section>
@@ -670,11 +734,12 @@ export default async function TeluguStatesTeluguPage({
             This ranking includes only movies
             whose primary language is Telugu.
             Secondary or dubbed languages do not
-            affect the classification. Rankings
-            are based on current JMI theatrical
-            collection across Andhra Pradesh
-            and Telangana, combined as the
-            Telugu States market.
+            affect the classification. For
+            Telugu States collection, the
+            consolidated Telugu States record is
+            used when available. If no consolidated
+            record exists, Andhra Pradesh and
+            Telangana collections are combined.
           </p>
 
         </section>

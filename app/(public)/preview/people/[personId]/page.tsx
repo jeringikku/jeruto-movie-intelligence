@@ -276,14 +276,14 @@ export default async function PersonIntelligencePage({
                       ? `/preview/people/${person.id}/${role.id}?movieId=${movieId}`
                       : `/preview/people/${person.id}/${role.id}`
                   }
-                  className="group rounded-xl border border-zinc-900 bg-zinc-950 p-4 transition hover:border-zinc-800 hover:bg-zinc-900/50"
+                  className="group rounded-xl border border-zinc-600 bg-zinc-950 p-4 transition hover:border-zinc-800 hover:bg-zinc-900/50"
                 >
 
                   <div className="flex items-start justify-between gap-3">
 
-                    <div className="min-w-0">
+                    <div className="min-w-0 borger-zinc-400">
 
-                      <p className="text-[7px] uppercase tracking-[0.16em] text-zinc-400">
+                      <p className="text-[7px] uppercase tracking-[0.16em] text-green-400">
                         Role Intelligence
                       </p>
 

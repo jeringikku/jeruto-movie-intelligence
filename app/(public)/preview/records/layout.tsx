@@ -1,67 +1,13 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-export default async function RecordsLayout({
+export default function RecordsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  /*
-   * =========================================================
-   * LOGGED-OUT VISITOR
-   * =========================================================
-   */
-
-  if (!user) {
-    return <RecordsUpgradeScreen authenticated={false} />;
-  }
-
-  /*
-   * =========================================================
-   * JMI RECORDS ENTITLEMENT
-   * =========================================================
-   */
-
-  const { data: allowed, error } = await supabase.rpc(
-    "jmi_user_has_feature",
-    {
-      requested_feature_slug: "jmi_records",
-    }
-  );
-
-  /*
-   * Fail closed.
-   *
-   * If the entitlement check fails, protected Records
-   * content should NOT be exposed.
-   */
-
-  if (error || allowed !== true) {
-    if (error) {
-      console.error(
-        "JMI Records entitlement check failed:",
-        error
-      );
-    }
-
-    return <RecordsUpgradeScreen authenticated={true} />;
-  }
-
-  /*
-   * =========================================================
-   * PRO / PREMIUM / ENTERPRISE
-   * =========================================================
-   */
-
   return <>{children}</>;
 }
-
 
 /* ============================================================
    RECORDS UPGRADE SCREEN

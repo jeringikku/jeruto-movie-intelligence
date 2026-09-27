@@ -987,128 +987,239 @@ export default function PublicIndustryIntelligencePage() {
       movies1000CrPlus,
     });
 
-    /* =======================================================
-       16. TOP 5 DOMESTIC MARKETS
-    ======================================================= */
+    const ANDHRA_PRADESH_STATE_ID = 1;
+const TELANGANA_STATE_ID = 24;
+const TELUGU_STATES_STATE_ID = 37;
 
-    const domesticMap: Record<
-      number,
-      {
-        gross: number;
-        movieIds: Set<number>;
-      }
-    > = {};
+   /* =======================================================
+   16. TOP 5 DOMESTIC MARKETS
+======================================================= */
+const domesticMap: Record<
+  number,
+  {
+    gross: number;
+    movieIds: Set<number>;
+  }
+> = {};
 
-    /*
-     * IMPORTANT:
-     * Only STATE rows are used.
-     * REST_OF_INDIA is intentionally excluded.
-     */
+/*
+ * IMPORTANT:
+ * Only STATE rows are used.
+ * REST_OF_INDIA is intentionally excluded.
+ *
+ * Telugu States normalization:
+ * - If Telugu States row exists for a movie,
+ *   use the Telugu States value.
+ * - Otherwise, combine Andhra Pradesh + Telangana.
+ * - Never count Telugu States + AP + Telangana
+ *   together for the same movie.
+ */
 
-    stateBoxOffice?.forEach((row) => {
-      if (
-        row.coverage_type !==
-          "STATE" ||
-        row.state_id === null
-      ) {
-        return;
-      }
+const teluguMovieMap: Record<
+  number,
+  {
+    teluguStates: number;
+    hasTeluguStates: boolean;
+    andhraPradesh: number;
+    telangana: number;
+  }
+> = {};
 
-      const stateId =
-        Number(row.state_id);
+stateBoxOffice?.forEach((row) => {
+  if (
+    row.coverage_type !== "STATE" ||
+    row.state_id === null
+  ) {
+    return;
+  }
 
-      if (!domesticMap[stateId]) {
-        domesticMap[stateId] = {
-          gross: 0,
-          movieIds:
-            new Set<number>(),
-        };
-      }
+  const stateId = Number(row.state_id);
+  const movieId = Number(row.movie_id);
+  const gross = Number(row.gross_jmi || 0);
 
-      domesticMap[stateId].gross +=
-        Number(row.gross_jmi || 0);
-
-      domesticMap[stateId].movieIds.add(
-        Number(row.movie_id)
-      );
-    });
-
-    const domesticStateIds =
-      Object.keys(domesticMap)
-        .map(Number)
-        .filter((id) =>
-          Number.isFinite(id)
-        );
-
-    let domesticMarkets: MarketIntelligence[] =
-      [];
-
-    if (
-      domesticStateIds.length > 0
-    ) {
-      const {
-        data: states,
-        error: statesError,
-      } = await supabase
-        .from("states")
-        .select("id, name")
-        .in(
-          "id",
-          domesticStateIds
-        );
-
-      if (statesError) {
-        console.error(
-          "Public industry states error:",
-          statesError
-        );
-
-        setError(
-          statesError.message
-        );
-
-        setLoading(false);
-        return;
-      }
-
-      const stateNameMap: Record<
-        number,
-        string
-      > = {};
-
-      states?.forEach((state) => {
-        stateNameMap[
-          Number(state.id)
-        ] = state.name;
-      });
-
-      domesticMarkets =
-        domesticStateIds
-          .map((stateId) => ({
-            id: stateId,
-
-            name:
-              stateNameMap[stateId] ||
-              `State ${stateId}`,
-
-            gross:
-              domesticMap[stateId]
-                .gross,
-
-            movies:
-              domesticMap[stateId]
-                .movieIds.size,
-          }))
-          .sort(
-            (a, b) =>
-              b.gross - a.gross
-          )
-          .slice(0, 5);
+  /* ================================================
+     TELUGU STATES GROUP
+  ================================================ */
+  if (
+    stateId === ANDHRA_PRADESH_STATE_ID ||
+    stateId === TELANGANA_STATE_ID ||
+    stateId === TELUGU_STATES_STATE_ID
+  ) {
+    if (!teluguMovieMap[movieId]) {
+      teluguMovieMap[movieId] = {
+        teluguStates: 0,
+        hasTeluguStates: false,
+        andhraPradesh: 0,
+        telangana: 0,
+      };
     }
 
-    setTopDomesticMarkets(
-      domesticMarkets
+    if (
+      stateId ===
+      TELUGU_STATES_STATE_ID
+    ) {
+      teluguMovieMap[movieId]
+        .hasTeluguStates = true;
+
+      teluguMovieMap[movieId]
+        .teluguStates += gross;
+    }
+
+    if (
+      stateId ===
+      ANDHRA_PRADESH_STATE_ID
+    ) {
+      teluguMovieMap[movieId]
+        .andhraPradesh += gross;
+    }
+
+    if (
+      stateId ===
+      TELANGANA_STATE_ID
+    ) {
+      teluguMovieMap[movieId]
+        .telangana += gross;
+    }
+
+    return;
+  }
+
+  /* ================================================
+     ALL OTHER STATES — EXISTING LOGIC
+  ================================================ */
+  if (!domesticMap[stateId]) {
+    domesticMap[stateId] = {
+      gross: 0,
+      movieIds:
+        new Set<number>(),
+    };
+  }
+
+  domesticMap[stateId].gross += gross;
+
+  domesticMap[stateId].movieIds.add(
+    movieId
+  );
+});
+
+/* ================================================
+   BUILD NORMALIZED TELUGU STATES MARKET
+================================================ */
+Object.entries(teluguMovieMap).forEach(
+  ([movieIdString, movieData]) => {
+    const movieId =
+      Number(movieIdString);
+
+    let totalGross = 0;
+
+    if (
+      movieData.hasTeluguStates
+    ) {
+      totalGross =
+        movieData.teluguStates;
+    } else {
+      totalGross =
+        movieData.andhraPradesh +
+        movieData.telangana;
+    }
+
+    if (totalGross <= 0) {
+      return;
+    }
+
+    if (!domesticMap[
+      TELUGU_STATES_STATE_ID
+    ]) {
+      domesticMap[
+        TELUGU_STATES_STATE_ID
+      ] = {
+        gross: 0,
+        movieIds:
+          new Set<number>(),
+      };
+    }
+
+    domesticMap[
+      TELUGU_STATES_STATE_ID
+    ].gross += totalGross;
+
+    domesticMap[
+      TELUGU_STATES_STATE_ID
+    ].movieIds.add(movieId);
+  }
+);
+
+const domesticStateIds =
+  Object.keys(domesticMap)
+    .map(Number)
+    .filter((id) =>
+      Number.isFinite(id)
     );
+
+let domesticMarkets: MarketIntelligence[] =
+  [];
+
+if (
+  domesticStateIds.length > 0
+) {
+  const {
+    data: states,
+    error: statesError,
+  } = await supabase
+    .from("states")
+    .select("id, name")
+    .in(
+      "id",
+      domesticStateIds
+    );
+
+  if (statesError) {
+    console.error(
+      "Public industry states error:",
+      statesError
+    );
+    setError(
+      statesError.message
+    );
+    setLoading(false);
+    return;
+  }
+
+  const stateNameMap: Record<
+    number,
+    string
+  > = {};
+
+  states?.forEach((state) => {
+    stateNameMap[
+      Number(state.id)
+    ] = state.name;
+  });
+
+  domesticMarkets =
+    domesticStateIds
+      .map((stateId) => ({
+        id: stateId,
+        name:
+          stateNameMap[stateId] ||
+          `State ${stateId}`,
+        gross:
+          domesticMap[stateId]
+            .gross,
+        movies:
+          domesticMap[stateId]
+            .movieIds.size,
+      }))
+      .sort(
+        (a, b) =>
+          b.gross - a.gross
+      )
+      .slice(0, 5);
+}
+
+setTopDomesticMarkets(
+  domesticMarkets
+);
 
     /* =======================================================
        17. TOP 5 OVERSEAS MARKETS
@@ -1616,7 +1727,7 @@ export default function PublicIndustryIntelligencePage() {
 
           <Link
             href="/preview/industries"
-            className="text-[8px] uppercase tracking-[0.16em] text-zinc-600 transition hover:text-violet-300"
+            className="text-[8px] uppercase tracking-[0.16em] text-violet-500 transition hover:text-violet-300"
           >
             ← Back to Industries
           </Link>
@@ -1633,7 +1744,7 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="min-w-0">
 
-              <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-violet-400">
+              <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-pink-400">
                 Industry Intelligence
               </p>
 
@@ -1642,13 +1753,13 @@ export default function PublicIndustryIntelligencePage() {
               </h1>
 
               {industry.native_name && (
-                <p className="mt-1.5 text-[9px] text-zinc-500">
+                <p className="mt-1.5 text-[9px] text-zinc-400">
                   {industry.native_name}
                 </p>
               )}
 
               {industry.short_name && (
-                <p className="mt-1 text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+                <p className="mt-1 text-[7px] uppercase tracking-[0.14em] text-zinc-400">
                   {industry.short_name}
                 </p>
               )}
@@ -1663,7 +1774,7 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="shrink-0 rounded-xl border border-zinc-800 bg-black px-4 py-3">
 
-              <p className="text-[7px] uppercase tracking-[0.16em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.16em] text-green-400">
                 Industry ID
               </p>
 
@@ -1693,7 +1804,7 @@ export default function PublicIndustryIntelligencePage() {
               Overall Box-Office Performance
             </h2>
 
-            <p className="mt-1 text-[8px] leading-4 text-zinc-600 sm:text-[9px]">
+            <p className="mt-1 text-[8px] leading-4 text-zinc-400 sm:text-[9px]">
               Overall theatrical performance of movies associated with this industry.
             </p>
 
@@ -1703,11 +1814,11 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-zinc-800 bg-black p-4">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Total Movies
               </p>
 
-              <p className="mt-2 text-xl font-semibold text-white">
+              <p className="mt-2 text-sm font-normal text-white">
                 {intelligence?.totalMovies ?? 0}
               </p>
 
@@ -1715,11 +1826,11 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-zinc-800 bg-black p-4">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 India Gross
               </p>
 
-              <p className="mt-2 text-xl font-semibold text-white">
+              <p className="mt-2 text-sm font-normal text-white">
                 {formatCrores(
                   intelligence?.indiaGross ?? 0
                 )}
@@ -1729,11 +1840,11 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-zinc-800 bg-black p-4">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Overseas Gross
               </p>
 
-              <p className="mt-2 text-xl font-semibold text-white">
+              <p className="mt-2 text-sm font-normal text-white">
                 {formatCrores(
                   intelligence?.overseasGross ?? 0
                 )}
@@ -1743,11 +1854,11 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-violet-400/20 bg-violet-400/[0.03] p-4">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Worldwide Gross
               </p>
 
-              <p className="mt-2 text-xl font-semibold text-violet-300">
+              <p className="mt-2 text-sm font-normal text-violet-300">
                 {formatCrores(
                   intelligence?.worldwideGross ?? 0
                 )}
@@ -1771,11 +1882,11 @@ export default function PublicIndustryIntelligencePage() {
               People Intelligence
             </p>
 
-            <h2 className="mt-1.5 text-base font-medium sm:text-lg">
+            <h2 className="mt-1.5 text-base font-medium text-pink-400 sm:text-lg">
               Top 10 Contributing Lead Actors
             </h2>
 
-            <p className="mt-1 text-[8px] leading-4 text-zinc-600 sm:text-[9px]">
+            <p className="mt-1 text-[8px] leading-4 text-zinc-400 sm:text-[9px]">
               Lead actors ranked by cumulative worldwide box-office contribution across this industry&apos;s movies.
             </p>
 
@@ -1791,33 +1902,33 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="overflow-x-auto">
 
-              <table className="w-full min-w-[850px]">
+              <table className="w-full min-w-[600px]">
 
                 <thead>
 
                   <tr className="border-b border-zinc-800">
 
-                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Rank
                     </th>
 
-                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Actor
                     </th>
 
-                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Lead Movies
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       India
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Overseas
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Worldwide
                     </th>
 
@@ -1840,8 +1951,8 @@ export default function PublicIndustryIntelligencePage() {
                           <span
                             className={
                               index === 0
-                                ? "font-semibold text-violet-300"
-                                : "text-zinc-500"
+                                ? "font-normal text-[13px] text-violet-500"
+                                : "text-green-500 text-[13px]"
                             }
                           >
                             #{index + 1}
@@ -1853,30 +1964,30 @@ export default function PublicIndustryIntelligencePage() {
 
                           <Link
                             href={`/preview/people/${actor.personId}`}
-                            className="font-medium text-zinc-200 transition hover:text-violet-300"
+                            className="font-small text-[13px] text-zinc-300 transition hover:text-violet-300"
                           >
                             {actor.name}
                           </Link>
 
                         </td>
 
-                        <td className="px-3 py-3.5 text-zinc-400">
+                        <td className="px-3 py-3.5 text-zinc-400 text-[13px]">
                           {actor.movies}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-400">
+                        <td className="px-3 py-3.5 text-right text-[13px] text-zinc-400">
                           {formatCrores(
                             actor.indiaGross
                           )}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-400">
+                        <td className="px-3 py-3.5 text-right text-[13px] text-zinc-400">
                           {formatCrores(
                             actor.overseasGross
                           )}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right font-medium text-white">
+                        <td className="px-3 py-3.5 text-right font-medium text-[13px] text-white">
                           {formatCrores(
                             actor.worldwideGross
                           )}
@@ -1913,7 +2024,7 @@ export default function PublicIndustryIntelligencePage() {
               Year-wise Box-Office Intelligence
             </h2>
 
-            <p className="mt-1 text-[8px] text-zinc-600">
+            <p className="mt-1 text-[8px] text-zinc-400">
               Annual theatrical performance based on movie release year.
             </p>
 
@@ -1921,7 +2032,7 @@ export default function PublicIndustryIntelligencePage() {
 
           {yearlyIntelligence.length === 0 ? (
 
-            <p className="text-[8px] text-zinc-600">
+            <p className="text-[8px] text-red-500">
               No year-wise box-office data available.
             </p>
 
@@ -1929,29 +2040,29 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="overflow-x-auto">
 
-              <table className="w-full min-w-[700px]">
+              <table className="w-full min-w-[500px]">
 
                 <thead>
 
                   <tr className="border-b border-zinc-800">
 
-                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Year
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Movies
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       India
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Overseas
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Worldwide
                     </th>
 
@@ -1969,27 +2080,27 @@ export default function PublicIndustryIntelligencePage() {
                         className="border-b border-zinc-800/70 hover:bg-zinc-900/60"
                       >
 
-                        <td className="px-3 py-3.5 font-medium text-zinc-200">
+                        <td className="px-3 py-3.5 font-medium text-[13px] text-zinc-200">
                           {year.year}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-400">
+                        <td className="px-3 py-3.5 text-right text-[13px] text-zinc-400">
                           {year.movies}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-400">
+                        <td className="px-3 py-3.5 text-right text-[13px] text-zinc-400">
                           {formatCrores(
                             year.indiaGross
                           )}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-400">
+                        <td className="px-3 py-3.5 text-right text-[13px] text-zinc-400">
                           {formatCrores(
                             year.overseasGross
                           )}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right font-medium text-white">
+                        <td className="px-3 py-3.5 text-right text-[13px] font-medium text-white">
                           {formatCrores(
                             year.worldwideGross
                           )}
@@ -2018,7 +2129,7 @@ export default function PublicIndustryIntelligencePage() {
 
           <div className="mb-5">
 
-            <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-green-500">
               Monthly Intelligence
             </p>
 
@@ -2026,7 +2137,7 @@ export default function PublicIndustryIntelligencePage() {
               Monthly Box-Office Intelligence
             </h2>
 
-            <p className="mt-1 text-[8px] text-zinc-600">
+            <p className="mt-1 text-[8px] text-zinc-400">
               Monthly performance based on the release month of associated movies.
             </p>
 
@@ -2042,29 +2153,29 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="overflow-x-auto">
 
-              <table className="w-full min-w-[800px]">
+              <table className="w-full min-w-[500px]">
 
                 <thead>
 
                   <tr className="border-b border-zinc-800">
 
-                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Month
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Movies
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       India
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Overseas
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Worldwide
                     </th>
 
@@ -2082,28 +2193,28 @@ export default function PublicIndustryIntelligencePage() {
                         className="border-b border-zinc-800/70 hover:bg-zinc-900/60"
                       >
 
-                        <td className="px-3 py-3.5 font-medium text-zinc-200">
+                        <td className="px-3 py-3.5 text-[13px] font-medium text-zinc-200">
                           {month.monthName}{" "}
                           {month.year}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-400">
+                        <td className="px-3 py-3.5 text-[13px] text-right text-zinc-400">
                           {month.movies}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-400">
+                        <td className="px-3 py-3.5 text-[13px] text-right text-zinc-400">
                           {formatCrores(
                             month.indiaGross
                           )}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-400">
+                        <td className="px-3 py-3.5 text-right text-[13px] text-zinc-400">
                           {formatCrores(
                             month.overseasGross
                           )}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right font-medium text-white">
+                        <td className="px-3 py-3.5 text-right text-[13px] font-medium text-white">
                           {formatCrores(
                             month.worldwideGross
                           )}
@@ -2140,7 +2251,7 @@ export default function PublicIndustryIntelligencePage() {
               Top 5 Movies
             </h2>
 
-            <p className="mt-1 text-[8px] text-zinc-600">
+            <p className="mt-1 text-[8px] text-zinc-400">
               Highest-grossing movies associated with this industry by worldwide gross.
             </p>
 
@@ -2156,33 +2267,33 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="overflow-x-auto">
 
-              <table className="w-full min-w-[850px]">
+              <table className="w-full min-w-[600px]">
 
                 <thead>
 
                   <tr className="border-b border-zinc-800">
 
-                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Rank
                     </th>
 
-                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Movie
                     </th>
 
-                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Year
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       India
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Overseas
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Worldwide
                     </th>
 
@@ -2206,7 +2317,7 @@ export default function PublicIndustryIntelligencePage() {
                             className={
                               index === 0
                                 ? "font-semibold text-violet-300"
-                                : "text-zinc-500"
+                                : "text-green-400"
                             }
                           >
                             #{index + 1}
@@ -2218,30 +2329,30 @@ export default function PublicIndustryIntelligencePage() {
 
                           <Link
                             href={`/preview/movies/${movie.movieId}`}
-                            className="font-medium text-zinc-200 transition hover:text-violet-300"
+                            className="font-medium text-[13px] text-zinc-200 transition hover:text-violet-300"
                           >
                             {movie.title}
                           </Link>
 
                         </td>
 
-                        <td className="px-3 py-3.5 text-zinc-600">
+                        <td className="px-3 py-3.5 text-[13px] text-zinc-400">
                           {movie.year ?? "—"}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-400">
+                        <td className="px-3 py-3.5 text-right text-[13px] text-zinc-400">
                           {formatCrores(
                             movie.indiaGross
                           )}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-400">
+                        <td className="px-3 py-3.5 text-right text-[13px] text-zinc-400">
                           {formatCrores(
                             movie.overseasGross
                           )}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right font-medium text-white">
+                        <td className="px-3 py-3.5 text-right text-[13px] font-medium text-white">
                           {formatCrores(
                             movie.worldwideGross
                           )}
@@ -2270,7 +2381,7 @@ export default function PublicIndustryIntelligencePage() {
 
           <div className="mb-5">
 
-            <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-pink-500">
               Annual Rankings
             </p>
 
@@ -2278,7 +2389,7 @@ export default function PublicIndustryIntelligencePage() {
               Year-wise Top Movies
             </h2>
 
-            <p className="mt-1 text-[8px] text-zinc-600">
+            <p className="mt-1 text-[8px] text-zinc-400">
               Top five worldwide-grossing movies associated with the industry for each release year.
             </p>
 
@@ -2303,7 +2414,7 @@ export default function PublicIndustryIntelligencePage() {
 
                       <span className="h-1.5 w-1.5 rounded-full bg-violet-400/70" />
 
-                      <h3 className="text-sm font-medium text-zinc-200">
+                      <h3 className="text-sm font-medium text-[13px] text-yellow-500">
                         {yearData.year}
                       </h3>
 
@@ -2317,23 +2428,23 @@ export default function PublicIndustryIntelligencePage() {
 
                           <tr className="border-b border-zinc-800">
 
-                            <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                            <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-green-500">
                               Rank
                             </th>
 
-                            <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                            <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-green-500">
                               Movie
                             </th>
 
-                            <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                            <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-green-500">
                               India
                             </th>
 
-                            <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                            <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-green-500">
                               Overseas
                             </th>
 
-                            <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                            <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-green-500">
                               Worldwide
                             </th>
 
@@ -2351,7 +2462,7 @@ export default function PublicIndustryIntelligencePage() {
                                 className="border-b border-zinc-800/70 hover:bg-zinc-900/60"
                               >
 
-                                <td className="px-3 py-3.5 text-zinc-500">
+                                <td className="px-3 py-3.5 text-[13px] text-pink-500">
                                   #{index + 1}
                                 </td>
 
@@ -2359,26 +2470,26 @@ export default function PublicIndustryIntelligencePage() {
 
                                   <Link
                                     href={`/preview/movies/${movie.movieId}`}
-                                    className="font-medium text-zinc-200 transition hover:text-violet-300"
+                                    className="font-medium text-[13px] text-zinc-200 transition hover:text-violet-300"
                                   >
                                     {movie.title}
                                   </Link>
 
                                 </td>
 
-                                <td className="px-3 py-3.5 text-right text-zinc-400">
+                                <td className="px-3 py-3.5 text-right text-[13px] text-zinc-400">
                                   {formatCrores(
                                     movie.indiaGross
                                   )}
                                 </td>
 
-                                <td className="px-3 py-3.5 text-right text-zinc-400">
+                                <td className="px-3 py-3.5 text-right text-[13px] text-zinc-400">
                                   {formatCrores(
                                     movie.overseasGross
                                   )}
                                 </td>
 
-                                <td className="px-3 py-3.5 text-right font-medium text-white">
+                                <td className="px-3 py-3.5 text-right font-medium text-[13px] text-white">
                                   {formatCrores(
                                     movie.worldwideGross
                                   )}
@@ -2432,7 +2543,7 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-zinc-800 bg-black p-4">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Avg Worldwide
               </p>
 
@@ -2446,7 +2557,7 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-zinc-800 bg-black p-4">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Avg India
               </p>
 
@@ -2460,7 +2571,7 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-zinc-800 bg-black p-4">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Avg Overseas
               </p>
 
@@ -2474,7 +2585,7 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-zinc-800 bg-black p-4">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Highest Grosser
               </p>
 
@@ -2499,7 +2610,7 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-violet-400/20 bg-violet-400/[0.03] p-4">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-green-500">
                 ₹100 Cr+
               </p>
 
@@ -2507,7 +2618,7 @@ export default function PublicIndustryIntelligencePage() {
                 {performanceMetrics?.movies100CrPlus ?? 0}
               </p>
 
-              <p className="mt-1 text-[7px] text-zinc-700">
+              <p className="mt-1 text-[7px] text-zinc-400">
                 Movies
               </p>
 
@@ -2515,7 +2626,7 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-zinc-800 bg-black p-4">
 
-  <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+  <p className="text-[7px] uppercase tracking-[0.14em] text-green-500">
     ₹250 Cr+
   </p>
 
@@ -2523,7 +2634,7 @@ export default function PublicIndustryIntelligencePage() {
     {performanceMetrics?.movies250CrPlus ?? 0}
   </p>
 
-  <p className="mt-1 text-[7px] text-zinc-700">
+  <p className="mt-1 text-[7px] text-zinc-400">
     Movies
   </p>
 
@@ -2531,7 +2642,7 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-zinc-800 bg-black p-4">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-green-500">
                 ₹500 Cr+
               </p>
 
@@ -2539,7 +2650,7 @@ export default function PublicIndustryIntelligencePage() {
                 {performanceMetrics?.movies500CrPlus ?? 0}
               </p>
 
-              <p className="mt-1 text-[7px] text-zinc-700">
+              <p className="mt-1 text-[7px] text-zinc-400">
                 Movies
               </p>
 
@@ -2547,7 +2658,7 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-zinc-800 bg-black p-4">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-green-500">
                 ₹1000 Cr+
               </p>
 
@@ -2555,7 +2666,7 @@ export default function PublicIndustryIntelligencePage() {
                 {performanceMetrics?.movies1000CrPlus ?? 0}
               </p>
 
-              <p className="mt-1 text-[7px] text-zinc-700">
+              <p className="mt-1 text-[7px] text-zinc-400">
                 Movies
               </p>
 
@@ -2581,7 +2692,7 @@ export default function PublicIndustryIntelligencePage() {
               Top 5 Domestic Markets
             </h2>
 
-            <p className="mt-1 text-[8px] text-zinc-600">
+            <p className="mt-1 text-[8px] text-zinc-500">
               Highest-grossing Indian states for movies associated with this industry.
             </p>
 
@@ -2597,25 +2708,25 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="overflow-x-auto">
 
-              <table className="w-full min-w-[650px]">
+              <table className="w-full min-w-[550px]">
 
                 <thead>
 
                   <tr className="border-b border-zinc-800">
 
-                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Rank
                     </th>
 
-                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Market
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Movies
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Gross
                     </th>
 
@@ -2633,19 +2744,19 @@ export default function PublicIndustryIntelligencePage() {
                         className="border-b border-zinc-800/70 hover:bg-zinc-900/60"
                       >
 
-                        <td className="px-3 py-3.5 text-zinc-500">
+                        <td className="px-3 py-3.5 text-[13px] text-green-500">
                           #{index + 1}
                         </td>
 
-                        <td className="px-3 py-3.5 font-medium text-zinc-200">
+                        <td className="px-3 py-3.5 font-medium text-[13px] text-zinc-300">
                           {market.name}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-400">
+                        <td className="px-3 py-3.5 text-right text-[13px] text-zinc-300">
                           {market.movies}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right font-medium text-white">
+                        <td className="px-3 py-3.5 text-right font-medium text-[13px] text-white">
                           {formatCrores(
                             market.gross
                           )}
@@ -2682,7 +2793,7 @@ export default function PublicIndustryIntelligencePage() {
               Top 5 Overseas Markets
             </h2>
 
-            <p className="mt-1 text-[8px] text-zinc-600">
+            <p className="mt-1 text-[8px] text-zinc-500">
               Highest-grossing overseas countries based on country-level USD data.
             </p>
 
@@ -2698,25 +2809,25 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="overflow-x-auto">
 
-              <table className="w-full min-w-[650px]">
+              <table className="w-full min-w-[500px]">
 
                 <thead>
 
                   <tr className="border-b border-zinc-800">
 
-                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Rank
                     </th>
 
-                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Market
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Movies
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Gross USD
                     </th>
 
@@ -2734,19 +2845,19 @@ export default function PublicIndustryIntelligencePage() {
                         className="border-b border-zinc-800/70 hover:bg-zinc-900/60"
                       >
 
-                        <td className="px-3 py-3.5 text-zinc-500">
+                        <td className="px-3 py-3.5 text-[13px] text-green-500">
                           #{index + 1}
                         </td>
 
-                        <td className="px-3 py-3.5 font-medium text-zinc-200">
+                        <td className="px-3 py-3.5 font-medium text-[13px] text-zinc-300">
                           {market.name}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-400">
+                        <td className="px-3 py-3.5 text-right text-[13px] text-zinc-300">
                           {market.movies}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right font-medium text-white">
+                        <td className="px-3 py-3.5 text-right font-medium v text-white">
                           $
                           {market.gross.toLocaleString(
                             "en-US"
@@ -2784,7 +2895,7 @@ export default function PublicIndustryIntelligencePage() {
               Year-over-Year Industry Growth
             </h2>
 
-            <p className="mt-1 text-[8px] leading-4 text-zinc-600 sm:text-[9px]">
+            <p className="mt-1 text-[8px] leading-4 text-zinc-400 sm:text-[9px]">
               Annual change in worldwide box-office performance compared with the immediately preceding year.
             </p>
 
@@ -2792,7 +2903,7 @@ export default function PublicIndustryIntelligencePage() {
 
           {yearlyGrowth.length === 0 ? (
 
-            <p className="text-[8px] text-zinc-600">
+            <p className="text-[8px] text-red-500">
               No year-over-year growth data available.
             </p>
 
@@ -2800,25 +2911,25 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="overflow-x-auto">
 
-              <table className="w-full min-w-[750px]">
+              <table className="w-full min-w-[550px]">
 
                 <thead>
 
                   <tr className="border-b border-zinc-800">
 
-                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Year
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Worldwide Gross
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       Previous Year
                     </th>
 
-                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                    <th className="px-3 py-3 text-right text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
                       YoY Growth
                     </th>
 
@@ -2836,17 +2947,17 @@ export default function PublicIndustryIntelligencePage() {
                         className="border-b border-zinc-800/70 hover:bg-zinc-900/60"
                       >
 
-                        <td className="px-3 py-3.5 font-medium text-zinc-200">
+                        <td className="px-3 py-3.5 text-[13px] font-medium text-zinc-300">
                           {growth.year}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-400">
+                        <td className="px-3 py-3.5 text-right text-[13px] text-zinc-300">
                           {formatCrores(
                             growth.worldwideGross
                           )}
                         </td>
 
-                        <td className="px-3 py-3.5 text-right text-zinc-500">
+                        <td className="px-3 py-3.5 text-[13px] text-right text-zinc-400">
                           {growth.previousYearGross === null
                             ? "—"
                             : formatCrores(
@@ -2929,16 +3040,16 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-violet-400/20 bg-violet-400/[0.03] p-5">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Highest-Grossing Year
               </p>
 
-              <p className="mt-2 text-2xl font-semibold text-violet-300">
+              <p className="mt-2 text-xl font-semibold text-violet-300">
                 {industryRecords?.highestGrossingYear ??
                   "—"}
               </p>
 
-              <p className="mt-2 text-[8px] text-zinc-600">
+              <p className="mt-2 text-[8px] text-yellow-500">
                 Worldwide Gross
               </p>
 
@@ -2953,16 +3064,16 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-zinc-800 bg-black p-5">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-green-500">
                 Most Productive Year
               </p>
 
-              <p className="mt-2 text-2xl font-semibold text-white">
+              <p className="mt-2 text-xl font-semibold text-white">
                 {industryRecords?.mostProductiveYear ??
                   "—"}
               </p>
 
-              <p className="mt-2 text-[8px] text-zinc-600">
+              <p className="mt-2 text-[8px] text-zinc-500">
                 Movies Released
               </p>
 
@@ -3003,11 +3114,11 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-zinc-800 bg-black p-5">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-green-500">
                 India Contribution
               </p>
 
-              <p className="mt-2 text-2xl font-semibold text-white">
+              <p className="mt-2 text-xl font-semibold text-white">
                 {marketContribution
                   ? `${marketContribution.indiaPercentage.toFixed(
                       2
@@ -3015,7 +3126,7 @@ export default function PublicIndustryIntelligencePage() {
                   : "—"}
               </p>
 
-              <p className="mt-2 text-[8px] text-zinc-600">
+              <p className="mt-2 text-[8px] text-zinc-400">
                 India Gross
               </p>
 
@@ -3029,11 +3140,11 @@ export default function PublicIndustryIntelligencePage() {
 
             <div className="rounded-xl border border-violet-400/20 bg-violet-400/[0.03] p-5">
 
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-600">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-green-500">
                 Overseas Contribution
               </p>
 
-              <p className="mt-2 text-2xl font-semibold text-violet-300">
+              <p className="mt-2 text-xl font-semibold text-violet-300">
                 {marketContribution
                   ? `${marketContribution.overseasPercentage.toFixed(
                       2
@@ -3111,7 +3222,7 @@ export default function PublicIndustryIntelligencePage() {
 
             <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-400/70" />
 
-            <p className="text-[8px] leading-4 text-zinc-700">
+            <p className="text-[9px] leading-4 text-zinc-400">
               Industry intelligence is generated from JMI&apos;s structured
               industry, movie and box-office records. Worldwide gross combines
               India and overseas gross. Domestic market rankings use STATE-level
@@ -3124,6 +3235,43 @@ export default function PublicIndustryIntelligencePage() {
         </section>
 
       </div>
+
+      {/* =================================================
+          FOOTER
+      ================================================= */}
+
+      <footer className="border-t border-zinc-900">
+
+        <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
+
+          <div className="flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+
+            <div>
+
+              <p className="font-serif text-sm font-medium text-zinc-300">
+                Jeruto{" "}
+                <span className="text-yellow-400">
+                  Movie Intelligence
+                </span>
+              </p>
+
+              <p className="mt-1 text-[9px] text-zinc-500">
+                India's Next Generation Movie Intelligence Platform
+              </p>
+
+            </div>
+
+            <p className="text-[9px] text-zinc-500">
+              JMI · People Intelligence
+            </p>
+
+          </div>
+
+        </div>
+
+      </footer>
+
     </main>
   );
 }
+    

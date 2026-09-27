@@ -732,7 +732,7 @@ export default async function CompanyIntelligencePage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-              <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+              <p className="text-[8px] uppercase tracking-wide text-yellow-500">
                 Total Movies
               </p>
 
@@ -744,7 +744,7 @@ export default async function CompanyIntelligencePage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-              <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+              <p className="text-[8px] uppercase tracking-wide text-yellow-500">
                 Total Roles
               </p>
 
@@ -756,7 +756,7 @@ export default async function CompanyIntelligencePage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-              <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+              <p className="text-[8px] uppercase tracking-wide text-yellow-500">
                 First Movie
               </p>
 
@@ -768,8 +768,8 @@ export default async function CompanyIntelligencePage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-              <p className="text-[8px] uppercase tracking-wide text-zinc-500">
-                Latest Activity
+              <p className="text-[8px] uppercase tracking-wide text-yellow-500">
+                Recent Movie
               </p>
 
               <p className="mt-1 text-sm font-medium text-zinc-200">
@@ -790,7 +790,7 @@ export default async function CompanyIntelligencePage({
 
           <div className="mb-4">
 
-            <p className="text-[8px] uppercase tracking-[0.18em] text-yellow-500">
+            <p className="text-[8px] uppercase tracking-[0.18em] text-green-500">
               Box Office Intelligence
             </p>
 
@@ -824,7 +824,7 @@ export default async function CompanyIntelligencePage({
 
                 <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-                  <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+                  <p className="text-[8px] uppercase tracking-wide text-green-500">
                     JMI Total Gross
                   </p>
 
@@ -838,7 +838,7 @@ export default async function CompanyIntelligencePage({
 
                 <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-                  <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+                  <p className="text-[8px] uppercase tracking-wide text-green-500">
                     Avg Gross
                   </p>
 
@@ -852,7 +852,7 @@ export default async function CompanyIntelligencePage({
 
                 <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-                  <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+                  <p className="text-[8px] uppercase tracking-wide text-zinc-300">
                     Final
                   </p>
 
@@ -864,7 +864,7 @@ export default async function CompanyIntelligencePage({
 
                 <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-                  <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+                  <p className="text-[8px] uppercase tracking-wide text-zinc-300">
                     Provisional
                   </p>
 
@@ -891,7 +891,7 @@ export default async function CompanyIntelligencePage({
                       "—"}
                   </p>
 
-                  <p className="mt-1 text-[10px] text-zinc-400">
+                  <p className="mt-1 text-[10px] text-pink-400">
                     {formatCrores(
                       highestGrossingMovie
                         ?.gross_jmi ||
@@ -905,7 +905,7 @@ export default async function CompanyIntelligencePage({
 
                 <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-                  <p className="text-[8px] uppercase tracking-wide text-red-500">
+                  <p className="text-[8px] uppercase tracking-wide text-red-400">
                     Lowest Grosser
                   </p>
 
@@ -914,7 +914,7 @@ export default async function CompanyIntelligencePage({
                       "—"}
                   </p>
 
-                  <p className="mt-1 text-[10px] text-zinc-400">
+                  <p className="mt-1 text-[10px] text-pink-400">
                     {formatCrores(
                       lowestGrossingMovie
                         ?.gross_jmi ||
@@ -952,19 +952,19 @@ export default async function CompanyIntelligencePage({
 
                       <tr className="border-b border-zinc-900">
 
-                        <th className="px-3 py-2 text-left text-[8px] uppercase tracking-wide text-zinc-500">
+                        <th className="px-3 py-2 text-left text-[8px] uppercase tracking-wide text-green-500">
                           Rank
                         </th>
 
-                        <th className="px-3 py-2 text-left text-[8px] uppercase tracking-wide text-zinc-500">
+                        <th className="px-3 py-2 text-left text-[8px] uppercase tracking-wide text-green-500">
                           Movie
                         </th>
 
-                        <th className="px-3 py-2 text-left text-[8px] uppercase tracking-wide text-zinc-500">
+                        <th className="px-3 py-2 text-left text-[8px] uppercase tracking-wide text-green-500">
                           Year
                         </th>
 
-                        <th className="px-3 py-2 text-right text-[8px] uppercase tracking-wide text-zinc-500">
+                        <th className="px-3 py-2 text-right text-[8px] uppercase tracking-wide text-green-500">
                           Gross
                         </th>
 
@@ -1000,7 +1000,7 @@ export default async function CompanyIntelligencePage({
                               {movie.movie_title}
                             </td>
 
-                            <td className="px-3 py-3 text-zinc-500">
+                            <td className="px-3 py-3 text-zinc-400">
                               {movie.release_year ||
                                 "—"}
                             </td>
@@ -1054,7 +1054,7 @@ export default async function CompanyIntelligencePage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-              <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+              <p className="text-[8px] uppercase tracking-wide text-yellow-500">
                 Production
               </p>
 
@@ -1066,7 +1066,7 @@ export default async function CompanyIntelligencePage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-              <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+              <p className="text-[8px] uppercase tracking-wide text-yellow-500">
                 Distribution
               </p>
 
@@ -1078,7 +1078,7 @@ export default async function CompanyIntelligencePage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-              <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+              <p className="text-[8px] uppercase tracking-wide text-yellow-500">
                 Other Roles
               </p>
 
@@ -1090,7 +1090,7 @@ export default async function CompanyIntelligencePage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-              <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+              <p className="text-[8px] uppercase tracking-wide text-yellow-500">
                 Multi-Role
               </p>
 
@@ -1106,7 +1106,7 @@ export default async function CompanyIntelligencePage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-              <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+              <p className="text-[8px] uppercase tracking-wide text-yellow-500">
                 Activity Span
               </p>
 
@@ -1120,7 +1120,7 @@ export default async function CompanyIntelligencePage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-              <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+              <p className="text-[8px] uppercase tracking-wide text-yellow-500">
                 Avg / Year
               </p>
 
@@ -1136,7 +1136,7 @@ export default async function CompanyIntelligencePage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-              <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+              <p className="text-[8px] uppercase tracking-wide text-yellow-500">
                 Founded
               </p>
 
@@ -1149,7 +1149,7 @@ export default async function CompanyIntelligencePage({
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 px-3 py-3">
 
-              <p className="text-[8px] uppercase tracking-wide text-zinc-500">
+              <p className="text-[8px] uppercase tracking-wide text-yellow-500">
                 Status
               </p>
 
@@ -1239,7 +1239,7 @@ export default async function CompanyIntelligencePage({
                                 {language.name}
                               </p>
 
-                              <p className="mt-1 text-[8px] text-zinc-600">
+                              <p className="mt-1 text-[8px] text-zinc-400">
                                 {percentage.toFixed(
                                   1
                                 )}
@@ -1328,7 +1328,7 @@ export default async function CompanyIntelligencePage({
                                 {genre.name}
                               </p>
 
-                              <p className="mt-1 text-[8px] text-zinc-600">
+                              <p className="mt-1 text-[8px] text-zinc-400">
                                 {percentage.toFixed(
                                   1
                                 )}
@@ -1416,19 +1416,19 @@ export default async function CompanyIntelligencePage({
 
                   <tr className="border-b border-zinc-900">
 
-                    <th className="px-3 py-3 text-left text-[7px] uppercase tracking-wide text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] uppercase tracking-wide text-green-500">
                       #
                     </th>
 
-                    <th className="px-3 py-3 text-left text-[7px] uppercase tracking-wide text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] uppercase tracking-wide text-green-500">
                       Movie
                     </th>
 
-                    <th className="px-3 py-3 text-left text-[7px] uppercase tracking-wide text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] uppercase tracking-wide text-green-500">
                       Year
                     </th>
 
-                    <th className="px-3 py-3 text-left text-[7px] uppercase tracking-wide text-zinc-600">
+                    <th className="px-3 py-3 text-left text-[7px] uppercase tracking-wide text-green-500">
                       Role
                     </th>
 
@@ -1511,11 +1511,11 @@ export default async function CompanyIntelligencePage({
 
         <section className="mt-6 rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-          <p className="text-[8px] uppercase tracking-[0.16em] text-zinc-600">
+          <p className="text-[8px] uppercase tracking-[0.16em] text-red-500">
             Data Note
           </p>
 
-          <p className="mt-2 text-[9px] leading-5 text-zinc-600">
+          <p className="mt-2 text-[9px] leading-5 text-zinc-400">
             Company intelligence is generated from JMI's
             current company, movie-company and box-office
             records. Box-office totals are calculated from
@@ -1554,21 +1554,41 @@ export default async function CompanyIntelligencePage({
 
         </section>
 
+        
         {/* =================================================
             FOOTER
         ================================================= */}
 
-        <footer className="mt-10 border-t border-zinc-900 pt-5 pb-8">
+       <footer className="border-t border-zinc-900">
 
-          <p className="text-center text-[8px] text-zinc-800">
-            JMI · Jeruto Movie Intelligence
-          </p>
+        <div className="mx-auto max-w-6xl px-5 py-7 sm:px-6 lg:px-8">
 
-          <p className="mt-1 text-center text-[7px] text-zinc-900">
-            Indian Film Industry Data & Intelligence
-          </p>
+          <div className="flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
 
-        </footer>
+            <div>
+
+              <p className="font-serif text-sm font-medium text-zinc-300">
+                Jeruto{" "}
+                <span className="text-yellow-400">
+                  Movie Intelligence
+                </span>
+              </p>
+
+              <p className="mt-1 text-[9px] text-zinc-500">
+                India's Next Generation Movie Intelligence Platform
+              </p>
+
+            </div>
+
+            <p className="text-[9px] text-zinc-500">
+              JMI · Live Tracking Intelligence
+            </p>
+
+          </div>
+
+        </div>
+
+      </footer>
 
       </main>
 

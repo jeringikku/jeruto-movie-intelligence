@@ -248,7 +248,7 @@ export default async function ContinentWisePage({
               </h1>
 
               {movie.release_year && (
-                <p className="mt-1 text-[9px] text-zinc-600">
+                <p className="mt-1 text-[9px] text-pink-500">
                   {movie.release_year}
                 </p>
               )}
@@ -272,11 +272,11 @@ export default async function ContinentWisePage({
         ------------------------------------------------- */}
 
         <section className="mt-5 rounded-lg border border-zinc-900 bg-zinc-950 px-4 py-3">
-          <p className="text-[8px] uppercase tracking-[0.16em] text-zinc-600">
+          <p className="text-[8px] uppercase tracking-[0.16em] text-green-500">
             Current Cumulative Data
           </p>
 
-          <p className="mt-1 text-[9px] leading-5 text-zinc-700">
+          <p className="mt-1 text-[9px] leading-5 text-zinc-500">
             Continental figures are derived from reported
             country-wise overseas data recorded by JMI.
           </p>
@@ -329,11 +329,11 @@ export default async function ContinentWisePage({
                     <div className="flex items-start justify-between gap-3">
 
                       <div>
-                        <p className="text-[7px] uppercase tracking-[0.16em] text-zinc-700">
+                        <p className="text-[7px] uppercase tracking-[0.16em] text-zinc-300">
                           Continent
                         </p>
 
-                        <h3 className="mt-1 text-[12px] font-medium text-zinc-200">
+                        <h3 className="mt-1 text-[12px] font-medium text-green-500">
                           {label}
                         </h3>
                       </div>
@@ -347,11 +347,11 @@ export default async function ContinentWisePage({
                     <div className="mt-4 grid grid-cols-3 gap-3 border-t border-zinc-900 pt-3">
 
                       <div>
-                        <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+                        <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-400">
                           USD Gross
                         </p>
 
-                        <p className="mt-1 text-[9px] text-zinc-300">
+                        <p className="mt-1 text-[9px] text-yellow-500">
                           {formatUSD(item.grossUsd)}
                         </p>
                       </div>
@@ -404,7 +404,7 @@ export default async function ContinentWisePage({
           <div className="grid grid-cols-3 gap-2">
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-3">
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Continents
               </p>
 
@@ -414,7 +414,7 @@ export default async function ContinentWisePage({
             </div>
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-3">
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Countries
               </p>
 
@@ -424,7 +424,7 @@ export default async function ContinentWisePage({
             </div>
 
             <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-3">
-              <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+              <p className="text-[7px] uppercase tracking-[0.14em] text-yellow-500">
                 Reported USD
               </p>
 
@@ -442,11 +442,11 @@ export default async function ContinentWisePage({
 
         <section className="mt-6 rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-          <p className="text-[8px] uppercase tracking-[0.16em] text-zinc-600">
+          <p className="text-[8px] uppercase tracking-[0.16em] text-red-500">
             Data Note
           </p>
 
-          <p className="mt-2 text-[9px] leading-5 text-zinc-600">
+          <p className="mt-2 text-[9px] leading-5 text-zinc-500">
             Continental figures are calculated from the
             country-wise USD gross figures currently reported
             in JMI. They represent the aggregate of available
@@ -486,15 +486,36 @@ export default async function ContinentWisePage({
             FOOTER
         ------------------------------------------------- */}
 
-        <footer className="mt-10 border-t border-zinc-900 pt-5 pb-8">
-          <p className="text-center text-[8px] text-zinc-800">
-            JMI · Jeruto Movie Intelligence
-          </p>
+       <footer className="border-t border-zinc-900">
 
-          <p className="mt-1 text-center text-[7px] text-zinc-900">
-            Indian Film Industry Data & Intelligence
-          </p>
-        </footer>
+        <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
+
+          <div className="flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+
+            <div>
+
+              <p className="font-serif text-sm font-medium text-zinc-300">
+                Jeruto{" "}
+                <span className="text-yellow-400">
+                  Movie Intelligence
+                </span>
+              </p>
+
+              <p className="mt-1 text-[9px] text-zinc-500">
+                India's Next Generation Movie Intelligence Platform
+              </p>
+
+            </div>
+
+            <p className="text-[9px] text-zinc-500">
+              JMI · Territory Intelligence
+            </p>
+
+          </div>
+
+        </div>
+
+      </footer>
 
       </main>
     </div>

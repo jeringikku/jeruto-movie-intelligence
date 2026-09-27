@@ -1,40 +1,11 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-export default async function GeographicalWiseLayout({
+export default function GeographicalWiseLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return <AdvancedBoxOfficeLock authenticated={false} />;
-  }
-
-  const { data: allowed, error } =
-    await supabase.rpc(
-      "jmi_user_has_feature",
-      {
-        requested_feature_slug: "advanced_box_office",
-      }
-    );
-
-  if (error || allowed !== true) {
-    if (error) {
-      console.error(
-        "Advanced Box Office entitlement check failed:",
-        error
-      );
-    }
-
-    return <AdvancedBoxOfficeLock authenticated={true} />;
-  }
-
   return <>{children}</>;
 }
 

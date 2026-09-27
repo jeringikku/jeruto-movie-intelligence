@@ -375,7 +375,7 @@ export default async function GeographicalWisePage({
                 </h1>
 
                 {movie.release_year && (
-                  <p className="mt-1 text-[9px] text-zinc-600">
+                  <p className="mt-1 text-[9px] text-pink-500">
                     {movie.release_year}
                   </p>
                 )}
@@ -404,7 +404,7 @@ export default async function GeographicalWisePage({
               Where is the movie performing?
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-600">
+            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-500">
               Visual representation of current cumulative
               performance across Indian states and
               geographic regions.
@@ -420,7 +420,7 @@ export default async function GeographicalWisePage({
                 Current Cumulative Data
               </p>
 
-              <p className="mt-2 text-[9px] leading-5 text-zinc-600">
+              <p className="mt-2 text-[9px] leading-5 text-zinc-500">
                 State performance is derived from the
                 latest cumulative state-wise JMI records.
                 Geographic regions are calculated from
@@ -438,13 +438,13 @@ export default async function GeographicalWisePage({
 
               <div className="mb-4">
 
-                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-700">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-green-500">
                   India Performance Map
                 </p>
 
-                <p className="mt-1 text-[9px] text-zinc-600">
-                  Tap a highlighted state to view its
-                  performance.
+                <p className="mt-1 text-[9px] text-zinc-500">
+                 Here is the Geographical distribution of the boxoffice numbers as per most recent data. Tap on a highlighted state to view its
+                  detailed performance stats.
                 </p>
 
               </div>
@@ -525,7 +525,7 @@ export default async function GeographicalWisePage({
 
               <div className="mb-4">
 
-                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-700">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-yellow-500">
                   Geographic Performance
                 </p>
 
@@ -734,7 +734,7 @@ export default async function GeographicalWisePage({
 
             <div className="mt-6 rounded-xl border border-zinc-900 bg-zinc-950 px-5 py-4">
 
-              <p className="text-[8px] leading-5 text-zinc-700">
+              <p className="text-[8px] leading-5 text-zinc-500">
                 Geographic totals are derived from
                 the latest cumulative State-wise
                 Collection records. Rest of India is
@@ -793,19 +793,27 @@ export default async function GeographicalWisePage({
 
       <footer className="border-t border-zinc-900">
 
-        <div className="mx-auto max-w-6xl px-5 py-7 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
 
-            <p className="font-serif text-sm text-zinc-300">
-              Jeruto{" "}
-              <span className="text-yellow-400">
-                Movie Intelligence
-              </span>
-            </p>
+            <div>
 
-            <p className="text-[9px] text-zinc-700">
-              JMI · Indian Movie Intelligence
+              <p className="font-serif text-sm font-medium text-zinc-300">
+                Jeruto{" "}
+                <span className="text-yellow-400">
+                  Movie Intelligence
+                </span>
+              </p>
+
+              <p className="mt-1 text-[9px] text-zinc-500">
+                India's Next Generation Movie Intelligence Platform
+              </p>
+
+            </div>
+
+            <p className="text-[9px] text-zinc-500">
+              JMI · Territory Intelligence
             </p>
 
           </div>

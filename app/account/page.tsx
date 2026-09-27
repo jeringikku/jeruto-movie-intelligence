@@ -34,7 +34,6 @@ const avatarOptions = [
     label: "Young Woman",
     url: "https://api.dicebear.com/10.x/personas/svg?seed=young-woman-02&backgroundColor=4c1d95",
   },
-
   {
     id: "adult-man-01",
     label: "Adult Man",
@@ -55,7 +54,6 @@ const avatarOptions = [
     label: "Adult Woman",
     url: "https://api.dicebear.com/10.x/personas/svg?seed=adult-woman-02&backgroundColor=422006",
   },
-
   {
     id: "young-man-03",
     label: "Young Man",
@@ -76,7 +74,6 @@ const avatarOptions = [
     label: "Adult Woman",
     url: "https://api.dicebear.com/10.x/personas/svg?seed=adult-woman-03&backgroundColor=172554",
   },
-
   {
     id: "mature-man-01",
     label: "Mature Man",
@@ -97,7 +94,6 @@ const avatarOptions = [
     label: "Mature Woman",
     url: "https://api.dicebear.com/10.x/personas/svg?seed=mature-woman-02&backgroundColor=4c1d95",
   },
-
   {
     id: "adult-man-04",
     label: "Adult Man",
@@ -118,7 +114,6 @@ const avatarOptions = [
     label: "Young Woman",
     url: "https://api.dicebear.com/10.x/personas/svg?seed=young-woman-04&backgroundColor=3f3f46",
   },
-
   {
     id: "mature-man-03",
     label: "Mature Man",
@@ -239,15 +234,6 @@ type ProfileInfo = {
   avatarUrl: string;
 };
 
-type SubscriptionInfo = {
-  planName: string;
-  planSlug: string;
-  status: string;
-  currentPeriodStart: string | null;
-  currentPeriodEnd: string | null;
-  cancelAtPeriodEnd: boolean;
-};
-
 const emptyProfile: ProfileInfo = {
   fullName: "",
   age: null,
@@ -273,9 +259,6 @@ export default function AccountPage() {
 
   const [editProfile, setEditProfile] =
     useState<ProfileInfo>(emptyProfile);
-
-  const [subscription, setSubscription] =
-    useState<SubscriptionInfo | null>(null);
 
   const [showAvatars, setShowAvatars] =
     useState(false);
@@ -388,72 +371,6 @@ export default function AccountPage() {
       setProfile(loadedProfile);
       setEditProfile(loadedProfile);
 
-      /* --------------------------------------------------------
-         Load subscription
-         -------------------------------------------------------- */
-
-      const {
-        data: subscriptionData,
-        error: subscriptionError,
-      } = await supabaseBrowser
-        .from("user_subscriptions")
-        .select(
-          `
-            status,
-            current_period_start,
-            current_period_end,
-            cancel_at_period_end,
-            subscription_plans (
-              name,
-              slug
-            )
-          `
-        )
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (subscriptionError) {
-        console.error(
-          "Subscription loading error:",
-          subscriptionError
-        );
-      }
-
-      if (
-        subscriptionData &&
-        mounted
-      ) {
-        const plan =
-          Array.isArray(
-            subscriptionData.subscription_plans
-          )
-            ? subscriptionData.subscription_plans[0]
-            : subscriptionData.subscription_plans;
-
-        setSubscription({
-          planName:
-            plan?.name || "Free",
-
-          planSlug:
-            plan?.slug || "free",
-
-          status:
-            subscriptionData.status || "active",
-
-          currentPeriodStart:
-            subscriptionData.current_period_start ||
-            null,
-
-          currentPeriodEnd:
-            subscriptionData.current_period_end ||
-            null,
-
-          cancelAtPeriodEnd:
-            subscriptionData.cancel_at_period_end ||
-            false,
-        });
-      }
-
       if (mounted) {
         setLoading(false);
       }
@@ -517,7 +434,10 @@ export default function AccountPage() {
       error: refreshError,
     } = await supabaseBrowser.auth.refreshSession();
 
-    if (refreshError || !refreshedSession.session) {
+    if (
+      refreshError ||
+      !refreshedSession.session
+    ) {
       console.error(
         "Session refresh error:",
         refreshError
@@ -569,7 +489,9 @@ export default function AccountPage() {
     if (
       editProfile.age !== null &&
       (
-        !Number.isInteger(editProfile.age) ||
+        !Number.isInteger(
+          editProfile.age
+        ) ||
         editProfile.age < 13 ||
         editProfile.age > 120
       )
@@ -590,7 +512,8 @@ export default function AccountPage() {
     const avatar =
       avatarOptions.find(
         (item) =>
-          item.id === editProfile.avatarId
+          item.id ===
+          editProfile.avatarId
       );
 
     const avatarUrl =
@@ -612,19 +535,24 @@ export default function AccountPage() {
         editProfile.age,
 
       gender:
-        editProfile.gender || null,
+        editProfile.gender ||
+        null,
 
       state:
-        editProfile.state || null,
+        editProfile.state ||
+        null,
 
       country:
-        editProfile.country || null,
+        editProfile.country ||
+        null,
 
       avatar_id:
-        editProfile.avatarId || null,
+        editProfile.avatarId ||
+        null,
 
       avatar_url:
-        avatarUrl || null,
+        avatarUrl ||
+        null,
     };
 
     /* ==========================================================
@@ -652,7 +580,8 @@ export default function AccountPage() {
       );
 
       if (
-        updateError.code === "PGRST303" ||
+        updateError.code ===
+          "PGRST303" ||
         updateError.message
           ?.toLowerCase()
           .includes("jwt expired")
@@ -680,7 +609,9 @@ export default function AccountPage() {
         error: insertError,
       } = await supabaseBrowser
         .from("profiles")
-        .insert(profilePayload);
+        .insert(
+          profilePayload
+        );
 
       if (insertError) {
         console.error(
@@ -689,7 +620,8 @@ export default function AccountPage() {
         );
 
         if (
-          insertError.code === "PGRST303" ||
+          insertError.code ===
+            "PGRST303" ||
           insertError.message
             ?.toLowerCase()
             .includes("jwt expired")
@@ -770,11 +702,13 @@ export default function AccountPage() {
     avatarId: string,
     avatarUrl: string
   ) {
-    setEditProfile((current) => ({
-      ...current,
-      avatarId,
-      avatarUrl,
-    }));
+    setEditProfile(
+      (current) => ({
+        ...current,
+        avatarId,
+        avatarUrl,
+      })
+    );
 
     setShowAvatars(false);
   }
@@ -834,22 +768,6 @@ export default function AccountPage() {
   }
 
   /* ==========================================================
-     STATUS
-     ========================================================== */
-
-  function formatStatus(
-    status: string
-  ) {
-    return status
-      .replace(/_/g, " ")
-      .replace(
-        /\b\w/g,
-        (letter) =>
-          letter.toUpperCase()
-      );
-  }
-
-  /* ==========================================================
      DISPLAY AVATARS
      ========================================================== */
 
@@ -895,14 +813,6 @@ export default function AccountPage() {
     return null;
   }
 
-  const planName =
-    subscription?.planName ||
-    "Free";
-
-  const subscriptionStatus =
-    subscription?.status ||
-    "active";
-
   return (
     <>
       <PublicHeader />
@@ -932,7 +842,6 @@ export default function AccountPage() {
                 <span>
                   Back to JMI Home
                 </span>
-
               </Link>
 
             </div>
@@ -942,7 +851,7 @@ export default function AccountPage() {
               <span className="h-1.5 w-1.5 rounded-full bg-violet-400 shadow-[0_0_10px_rgba(167,139,250,0.9)]" />
 
               <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-violet-300">
-                JMI Membership Profile
+                JMI Member Profile
               </span>
 
             </div>
@@ -952,8 +861,8 @@ export default function AccountPage() {
             </h1>
 
             <p className="mt-1.5 max-w-xl text-xs leading-5 text-zinc-400">
-              Manage your JMI profile, subscription and
-              entertainment activity from one place.
+              Manage your JMI profile and account
+              information from one place.
             </p>
 
           </div>
@@ -1047,7 +956,8 @@ export default function AccountPage() {
                 </div>
 
                 <p className="mt-2 text-[9px] text-zinc-400">
-                  Complete your profile for a better JMI experience.
+                  Complete your profile for a better
+                  JMI experience.
                 </p>
 
               </div>
@@ -1466,163 +1376,6 @@ export default function AccountPage() {
               )}
 
             </div>
-            
-          </section>
-
-          {/* ==================================================
-              SUBSCRIPTION
-          ================================================== */}
-
-          <section className="mb-5 overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.025] shadow-[0_15px_60px_rgba(0,0,0,0.25)]">
-
-            <div className="border-b border-white/[0.06] px-5 py-4 sm:px-6">
-
-              <h2 className="text-sm font-semibold text-green-400">
-                Subscription
-              </h2>
-
-              <p className="mt-0.5 text-[10px] text-zinc-500">
-                Your current JMI subscription.
-              </p>
-
-            </div>
-
-            <div className="p-5 sm:p-6">
-
-              <div className="relative overflow-hidden rounded-2xl border border-violet-300/10 bg-gradient-to-br from-violet-500/[0.10] via-black/30 to-black/50 p-5">
-
-                <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-violet-500/10 blur-3xl" />
-
-                <div className="relative flex items-start justify-between gap-4">
-
-                  <div>
-
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-violet-300/70">
-                      Current Plan
-                    </p>
-
-                    <p className="mt-1 text-xl font-semibold text-green-400">
-                      JMI {planName}
-                    </p>
-
-                    <p className="mt-1 text-[10px] text-zinc-600">
-                      Your JMI membership is active.
-                    </p>
-
-                  </div>
-
-                  <span className="rounded-full border border-emerald-300/15 bg-emerald-400/[0.08] px-2.5 py-1 text-[9px] font-semibold text-emerald-300 shadow-[0_0_15px_rgba(52,211,153,0.08)]">
-                    {formatStatus(
-                      subscriptionStatus
-                    )}
-                  </span>
-
-                </div>
-
-                <div className="relative mt-5 grid gap-4 sm:grid-cols-3">
-
-                  <SubscriptionItem
-                    label="Plan"
-                    value={
-                      subscription?.planSlug ||
-                      "free"
-                    }
-                  />
-
-                  <SubscriptionItem
-                    label="Next Due Date"
-                    value={
-                      subscription?.currentPeriodEnd
-                        ? formatDate(
-                            subscription.currentPeriodEnd
-                          )
-                        : "No payment due"
-                    }
-                  />
-
-                  <SubscriptionItem
-                    label="Cancellation"
-                    value={
-                      subscription?.cancelAtPeriodEnd
-                        ? "Scheduled"
-                        : "Not scheduled"
-                    }
-                  />
-
-                </div>
-
-              </div>
-
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
-
-                <button
-                  type="button"
-                  disabled
-                  className="rounded-xl border border-violet-400 bg-white/[0.02] px-4 py-3 text-[10px] font-medium text-yellow-500"
-                >
-                  Change Plan
-                </button>
-
-                <button
-                  type="button"
-                  disabled
-                  className="rounded-xl border border-violet-400 bg-white/[0.02] px-4 py-3 text-[10px] font-medium text-red-500"
-                >
-                  Cancel Subscription
-                </button>
-
-              </div>
-
-              <p className="mt-3 text-[9px] leading-4 text-zinc-500">
-                Subscription management will become available
-                when JMI billing is connected.
-              </p>
-
-            </div>
-
-          </section>
-
-          {/* ==================================================
-              JMI ENTERTAINMENT
-          ================================================== */}
-
-          <section className="mb-5 overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.025] shadow-[0_15px_60px_rgba(0,0,0,0.25)]">
-
-            <div className="border-b border-white/[0.06] px-5 py-4 sm:px-6">
-
-              <h2 className="text-sm font-semibold text-yellow-500">
-                JMI Entertainment 🎆
-              </h2>
-
-              <p className="mt-0.5 text-[10px] text-zinc-500">
-                Your prediction and rewards activity.
-              </p>
-
-            </div>
-
-            <div className="grid grid-cols-2 gap-2.5 p-5 sm:grid-cols-4 sm:p-6">
-
-              <StatCard
-                label="Your Points"
-                value="0"
-              />
-
-              <StatCard
-                label="Rewards Earned"
-                value="0"
-              />
-
-              <StatCard
-                label="Total Predictions"
-                value="0"
-              />
-
-              <StatCard
-                label="Accurate Predictions"
-                value="0"
-              />
-
-            </div>
 
           </section>
 
@@ -1721,6 +1474,10 @@ export default function AccountPage() {
 
           </div>
 
+          {/* ==================================================
+              FOOTER
+          ================================================== */}
+
           <footer className="border-t border-zinc-900">
 
             <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
@@ -1743,7 +1500,7 @@ export default function AccountPage() {
                 </div>
 
                 <p className="text-[9px] text-zinc-500">
-                  JMI · People Intelligence
+                  JMI · Account
                 </p>
 
               </div>
@@ -1924,57 +1681,5 @@ function ProfileSelect({
       </div>
 
     </label>
-  );
-}
-
-/* ============================================================
-   SUBSCRIPTION ITEM
-   ============================================================ */
-
-function SubscriptionItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div>
-
-      <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-pink-400">
-        {label}
-      </p>
-
-      <p className="mt-1 text-[11px] text-zinc-300">
-        {value}
-      </p>
-
-    </div>
-  );
-}
-
-/* ============================================================
-   STAT CARD
-   ============================================================ */
-
-function StatCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-violet-400 bg-black/25 p-4 transition hover:border-violet-400/15 hover:bg-violet-500/[0.025]">
-
-      <p className="text-[8px] font-semibold uppercase tracking-[0.12em] text-pink-500">
-        {label}
-      </p>
-
-      <p className="mt-1.5 text-lg font-semibold tracking-tight text-green-500">
-        {value}
-      </p>
-
-    </div>
   );
 }

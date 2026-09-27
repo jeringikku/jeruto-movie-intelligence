@@ -46,7 +46,7 @@ export default function CompanySearch({
             Search the JMI company database.
           </h2>
 
-          <p className="mt-1 text-[8px] leading-4 text-zinc-600 sm:text-[9px]">
+          <p className="mt-1 text-[8px] leading-4 text-zinc-400 sm:text-[9px]">
             Search production companies, distributors, studios
             and other film-industry businesses.
           </p>

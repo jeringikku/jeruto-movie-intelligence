@@ -215,7 +215,7 @@ export default async function CityWiseBoxOfficePage({
                 </h1>
 
                 {movie.release_year && (
-                  <p className="mt-1 text-[9px] text-zinc-600">
+                  <p className="mt-1 text-[9px] text-pink-500">
                     {movie.release_year}
                   </p>
                 )}
@@ -244,7 +244,7 @@ export default async function CityWiseBoxOfficePage({
               City performance.
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-600">
+            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-500">
               Current cumulative theatrical performance
               recorded across tracked cities in India.
             </p>
@@ -259,7 +259,7 @@ export default async function CityWiseBoxOfficePage({
                 Current Cumulative Data
               </p>
 
-              <p className="mt-2 text-[9px] leading-5 text-zinc-600">
+              <p className="mt-2 text-[9px] leading-5 text-zinc-500">
                 City-wise figures represent the latest
                 cumulative performance recorded for each
                 tracked city. They are independent geographic
@@ -277,7 +277,7 @@ export default async function CityWiseBoxOfficePage({
 
               <div className="mb-4">
 
-                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-700">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-green-500">
                   City Performance
                 </p>
 
@@ -291,12 +291,12 @@ export default async function CityWiseBoxOfficePage({
 
                 <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-950 px-5 py-10 text-center">
 
-                  <p className="text-[9px] text-zinc-600">
+                  <p className="text-[9px] text-red-500">
                     City-wise box office data is not
                     available yet.
                   </p>
 
-                  <p className="mt-2 text-[8px] text-zinc-800">
+                  <p className="mt-2 text-[8px] text-zinc-600">
                     JMI will display city intelligence
                     when verified data becomes available.
                   </p>

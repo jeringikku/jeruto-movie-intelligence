@@ -78,6 +78,10 @@ type SouthMarketAnalysis = SouthMarket & {
   topGenres: SouthMarketGenre[];
 };
 
+const ANDHRA_PRADESH_STATE_ID = 1;
+const TELANGANA_STATE_ID = 24;
+const TELUGU_STATES_STATE_ID = 37;
+
 async function fetchAllRows<T>(
   table: string,
   columns: string,
@@ -118,7 +122,7 @@ async function fetchAllRows<T>(
 }
 
 function formatCrores(value: number) {
-  return `₹${(value / 10000000).toFixed(2)} Cr;;`
+  return `₹${(value / 10000000).toFixed(2)} Cr;;;`
 }
 
 export default async function AudienceBehaviorPage() {
@@ -485,13 +489,18 @@ export default async function AudienceBehaviorPage() {
    *   Kerala
    *   Tamil Nadu
    *   Karnataka
-   *   Telugu States = Andhra Pradesh + Telangana
+   *   Telugu States
    *
-   * Market gross is calculated directly from
-   * movie_state_box_office.
+   * Telugu States logic:
+   *   1. Use consolidated Telugu States row
+   *      when it exists for a movie.
    *
-   * Each movie contributes its full market gross
-   * to every genre assigned to that movie.
+   *   2. If no Telugu States row exists for
+   *      that movie, use Andhra Pradesh +
+   *      Telangana.
+   *
+   * This prevents double counting when both
+   * consolidated and individual records exist.
    * =====================================================
    */
 
@@ -524,6 +533,9 @@ export default async function AudienceBehaviorPage() {
   const telanganaId =
     findStateId("Telangana");
 
+  const teluguStatesId =
+    findStateId("Telugu States");
+
   const southMarkets: SouthMarket[] = [
     {
       key: "kerala",
@@ -553,12 +565,10 @@ export default async function AudienceBehaviorPage() {
       key: "telugu-states",
       name: "Telugu States",
       stateIds: [
-        andhraPradeshId,
-        telanganaId,
-      ].filter(
-        (id): id is number =>
-          typeof id === "number"
-      ),
+        ANDHRA_PRADESH_STATE_ID,
+        TELANGANA_STATE_ID,
+        TELUGU_STATES_STATE_ID,
+      ],
     },
   ];
 
@@ -568,40 +578,159 @@ export default async function AudienceBehaviorPage() {
         new Map<number, number>();
 
       /*
-       * First calculate each movie's total gross
-       * within this particular market.
+       * ===================================================
+       * CALCULATE EACH MOVIE'S MARKET GROSS
+       * ===================================================
        *
-       * This is important for Telugu States because
-       * Andhra Pradesh + Telangana must be combined
-       * into one market.
+       * For Kerala, Tamil Nadu and Karnataka:
+       * use the existing state-based calculation.
+       *
+       * For Telugu States:
+       *
+       *   Telugu States row exists
+       *          ↓
+       *   use Telugu States gross
+       *
+       *   Telugu States row does not exist
+       *          ↓
+       *   use AP + Telangana gross
+       *
+       * Never add consolidated Telugu States together
+       * with AP + Telangana.
        */
 
       const movieMarketGross =
         new Map<number, number>();
 
-      for (const row of stateBoxOffice) {
-        if (
-          row.state_id === null ||
-          !market.stateIds.includes(row.state_id)
-        ) {
-          continue;
+      if (
+        market.key ===
+        "telugu-states"
+      ) {
+        const movieTeluguStatesData =
+          new Map<
+            number,
+            {
+              teluguStates: number;
+              hasTeluguStates: boolean;
+              andhraPradesh: number;
+              telangana: number;
+            }
+          >();
+
+        for (const row of stateBoxOffice) {
+          if (
+            row.state_id === null ||
+            ![
+              ANDHRA_PRADESH_STATE_ID,
+              TELANGANA_STATE_ID,
+              TELUGU_STATES_STATE_ID,
+            ].includes(row.state_id)
+          ) {
+            continue;
+          }
+
+          const gross =
+            Number(row.gross_jmi || 0);
+
+          const existing =
+            movieTeluguStatesData.get(
+              row.movie_id
+            ) || {
+              teluguStates: 0,
+              hasTeluguStates: false,
+              andhraPradesh: 0,
+              telangana: 0,
+            };
+
+          if (
+            row.state_id ===
+            TELUGU_STATES_STATE_ID
+          ) {
+            existing.hasTeluguStates = true;
+            existing.teluguStates += gross;
+          }
+
+          if (
+            row.state_id ===
+            ANDHRA_PRADESH_STATE_ID
+          ) {
+            existing.andhraPradesh += gross;
+          }
+
+          if (
+            row.state_id ===
+            TELANGANA_STATE_ID
+          ) {
+            existing.telangana += gross;
+          }
+
+          movieTeluguStatesData.set(
+            row.movie_id,
+            existing
+          );
         }
 
-        const gross =
-          Number(row.gross_jmi || 0);
+        for (const [
+          movieId,
+          movieData,
+        ] of movieTeluguStatesData.entries()) {
+          let totalGross = 0;
 
-        if (gross <= 0) continue;
+          if (
+            movieData.hasTeluguStates
+          ) {
+            totalGross =
+              movieData.teluguStates;
+          } else {
+            totalGross =
+              movieData.andhraPradesh +
+              movieData.telangana;
+          }
 
-        movieMarketGross.set(
-          row.movie_id,
-          (movieMarketGross.get(row.movie_id) || 0) +
-            gross
-        );
+          if (totalGross > 0) {
+            movieMarketGross.set(
+              movieId,
+              totalGross
+            );
+          }
+        }
+      } else {
+        /*
+         * Existing calculation for Kerala,
+         * Tamil Nadu and Karnataka.
+         */
+
+        for (const row of stateBoxOffice) {
+          if (
+            row.state_id === null ||
+            !market.stateIds.includes(
+              row.state_id
+            )
+          ) {
+            continue;
+          }
+
+          const gross =
+            Number(row.gross_jmi || 0);
+
+          if (gross <= 0) continue;
+
+          movieMarketGross.set(
+            row.movie_id,
+            (movieMarketGross.get(
+              row.movie_id
+            ) || 0) + gross
+          );
+        }
       }
 
       /*
-       * Attribute each movie's market gross to its
-       * assigned genres.
+       * ===================================================
+       * ATTRIBUTE MARKET GROSS TO GENRES
+       * ===================================================
+       *
+       * Each movie's market gross is attributed
+       * to every genre assigned to that movie.
        *
        * Set prevents duplicate genre relationships
        * from double-counting the same movie.
@@ -704,12 +833,12 @@ export default async function AudienceBehaviorPage() {
           </h1>
 
           <p className="mt-3 max-w-2xl text-[11px] leading-5 text-zinc-400 sm:text-xs">
-            A data-driven view of genre performance across
+            This module deals with the deeper study and research on Indian audience and their favourite movie genres.A data-driven view of genre performance across
             Indian theatrical markets, industries and
             regional audiences.
           </p>
 
-           <AudienceBehaviorBanner />
+          <AudienceBehaviorBanner />
 
         </section>
 
@@ -730,7 +859,7 @@ export default async function AudienceBehaviorPage() {
             <p className="mt-2 max-w-2xl text-[9px] leading-4 text-zinc-500">
               Genres ranked by the combined domestic India
               theatrical gross of movies classified under each
-              genre.
+              genre.The data is not full as the Indian cinema is very vast and infinite, these particular study and stats shows only the results based on our available data.
             </p>
           </div>
 
@@ -820,7 +949,7 @@ export default async function AudienceBehaviorPage() {
           </h2>
 
           <p className="mt-2 text-[9px] leading-4 text-zinc-500">
-            Industry-level genre performance and theatrical
+           Each Movie Industry and their audiences are unique and different from the other audiences. This section shows the industry wise audience tastes and their favourite genre movies. Industry-level genre performance and theatrical
             success patterns will appear here.
           </p>
 
@@ -832,7 +961,7 @@ export default async function AudienceBehaviorPage() {
               return (
                 <div
                   key={industry.id}
-                  className="overflow-hidden rounded-xl border border-zinc-900 bg-zinc-950"
+                  className="overflow-hidden rounded-xl text-green-500 border border-zinc-900 bg-zinc-950"
                 >
                   {/* INDUSTRY HEADER */}
                   <div className="border-b border-zinc-900 px-4 py-4 sm:px-5">
@@ -858,7 +987,7 @@ export default async function AudienceBehaviorPage() {
                             key={genre.id}
                             className="flex items-center gap-3 border-b border-zinc-900 py-2.5 last:border-b-0"
                           >
-                            <span className="w-5 shrink-0 text-[7px] text-zinc-700">
+                            <span className="w-5 shrink-0 text-[7px] text-green-500">
                               {String(index + 1).padStart(
                                 2,
                                 "0"
@@ -887,7 +1016,7 @@ export default async function AudienceBehaviorPage() {
                               </div>
                             </div>
 
-                            <span className="shrink-0 text-[9px] text-zinc-400">
+                            <span className="shrink-0 text-[9px] text-green-500">
                               {formatCrores(
                                 genre.gross
                               )}
@@ -943,7 +1072,7 @@ export default async function AudienceBehaviorPage() {
           </h2>
 
           <p className="mt-2 text-[9px] leading-4 text-zinc-500">
-            Genre performance across Kerala, Tamil Nadu,
+            This section specifically deals with the study on south indian markets and the audience behavior.Genre performance across Kerala, Tamil Nadu,
             Karnataka and Telugu States.
           </p>
 
@@ -985,7 +1114,7 @@ export default async function AudienceBehaviorPage() {
                               className="flex items-center gap-3 border-b border-zinc-900 py-2.5 last:border-b-0"
                             >
                               {/* RANK */}
-                              <span className="w-5 shrink-0 text-[7px] text-zinc-700">
+                              <span className="w-5 shrink-0 text-[7px] text-green-500">
                                 {String(index + 1).padStart(
                                   2,
                                   "0"
@@ -1016,7 +1145,7 @@ export default async function AudienceBehaviorPage() {
                               </div>
 
                               {/* GROSS */}
-                              <span className="shrink-0 text-[9px] text-zinc-400">
+                              <span className="shrink-0 text-[9px] text-green-500">
                                 {formatCrores(
                                   genre.gross
                                 )}
@@ -1046,9 +1175,11 @@ export default async function AudienceBehaviorPage() {
               Market genre performance is calculated from
               state-wise JMI theatrical gross. Kerala, Tamil
               Nadu and Karnataka use their respective state
-              markets, while Telugu States combines Andhra
-              Pradesh and Telangana. A movie's market gross is
-              attributed to each genre assigned to that movie.
+              markets. For Telugu States, the consolidated
+              Telugu States record is used when available for
+              a movie; otherwise Andhra Pradesh and Telangana
+              collections are combined. A movie's market gross
+              is attributed to each genre assigned to that movie.
             </p>
           </div>
         </section>

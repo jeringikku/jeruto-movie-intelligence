@@ -1,39 +1,11 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-export default async function PersonRoleIntelligenceLayout({
+export default function PersonRoleIntelligenceLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return <PersonRolePremiumLock authenticated={false} />;
-  }
-
-  const { data: allowed, error } = await supabase.rpc(
-    "jmi_user_has_feature",
-    {
-      requested_feature_slug: "person_role_intelligence",
-    }
-  );
-
-  if (error || allowed !== true) {
-    if (error) {
-      console.error(
-        "Person Role Intelligence entitlement check failed:",
-        error
-      );
-    }
-
-    return <PersonRolePremiumLock authenticated={true} />;
-  }
-
   return <>{children}</>;
 }
 
