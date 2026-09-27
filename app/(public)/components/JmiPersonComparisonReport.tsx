@@ -135,17 +135,25 @@ type ComparisonMetric = {
 };
 
 function formatCrores(value: number | null) {
-  if (value === null || value === undefined || !Number.isFinite(value)) {
+  if (
+    value === null ||
+    value === undefined ||
+    !Number.isFinite(value)
+  ) {
     return "Not enough data";
   }
 
   if (value <= 0) return "₹0.00 Cr";
 
-  return `₹${(value / 10000000).toFixed(2)} Cr;`
+  return `₹${(value / 10000000).toFixed(2)} Cr;`;
 }
 
 function formatNumber(value: number | null) {
-  if (value === null || value === undefined || !Number.isFinite(value)) {
+  if (
+    value === null ||
+    value === undefined ||
+    !Number.isFinite(value)
+  ) {
     return "Not enough data";
   }
 
@@ -153,11 +161,15 @@ function formatNumber(value: number | null) {
 }
 
 function formatPercent(value: number | null) {
-  if (value === null || value === undefined || !Number.isFinite(value)) {
+  if (
+    value === null ||
+    value === undefined ||
+    !Number.isFinite(value)
+  ) {
     return "Not enough data";
   }
 
-  return `${value.toFixed(1)}%;`
+  return `${value.toFixed(1)}%;`;
 }
 
 function normalizeVerdict(value: string | null) {
@@ -171,7 +183,11 @@ function addValues(
   current: number | null,
   value: number | null
 ): number | null {
-  if (value === null || value === undefined || !Number.isFinite(value)) {
+  if (
+    value === null ||
+    value === undefined ||
+    !Number.isFinite(value)
+  ) {
     return current;
   }
 
@@ -182,7 +198,11 @@ function maxValue(
   current: number | null,
   value: number | null
 ): number | null {
-  if (value === null || value === undefined || !Number.isFinite(value)) {
+  if (
+    value === null ||
+    value === undefined ||
+    !Number.isFinite(value)
+  ) {
     return current;
   }
 
@@ -213,12 +233,12 @@ async function fetchPaged<T>(
     const { data, error } = await query;
 
     if (error) {
-  console.error(
-    `JMI person comparison: ${table}`,
-    JSON.stringify(error, null, 2)
-  );
-  break;
-}
+      console.error(
+        `JMI person comparison: ${table}`,
+        JSON.stringify(error, null, 2)
+      );
+      break;
+    }
 
     const page = (data || []) as T[];
 
@@ -349,24 +369,24 @@ async function loadPerson(personId: number): Promise<PersonStats> {
   }
 
   const [
-  movies,
-  business,
-  stateBoxOffice,
-  overseasBoxOffice,
-  dailyBoxOffice,
-] = await Promise.all([
-  fetchPaged<Movie>(
-    "movies",
-    `
-      id,
-      title,
-      release_year
-    `,
-    (query) => query.in("id", movieIds),
-    500
-  ),
+    movies,
+    business,
+    stateBoxOffice,
+    overseasBoxOffice,
+    dailyBoxOffice,
+  ] = await Promise.all([
+    fetchPaged<Movie>(
+      "movies",
+      `
+        id,
+        title,
+        release_year
+      `,
+      (query) => query.in("id", movieIds),
+      500
+    ),
 
-  fetchByMovieIds<Business>(
+    fetchByMovieIds<Business>(
       "movie_business",
       `
         movie_id,
@@ -425,8 +445,10 @@ async function loadPerson(personId: number): Promise<PersonStats> {
 
   overseasBoxOffice.forEach((row) => {
     const movieId = Number(row.movie_id);
+
     const value =
-      row.gross_inr !== null && Number.isFinite(Number(row.gross_inr))
+      row.gross_inr !== null &&
+      Number.isFinite(Number(row.gross_inr))
         ? Number(row.gross_inr)
         : null;
 
@@ -447,9 +469,26 @@ async function loadPerson(personId: number): Promise<PersonStats> {
    * Tamil Nadu = 23
    * Andhra Pradesh = 1
    * Telangana = 24
+   * Telugu States = 37
+   *
+   * Telugu States normalization:
+   *
+   * 1. If Telugu States exists for a movie, use the
+   *    consolidated Telugu States value.
+   *
+   * 2. If Telugu States does not exist, combine
+   *    Andhra Pradesh + Telangana.
+   *
+   * 3. Never count Telugu States + Andhra Pradesh +
+   *    Telangana together.
    *
    * REST_OF_INDIA rows are represented by state_id = NULL.
    */
+
+  const ANDHRA_PRADESH_STATE_ID = 1;
+  const TELANGANA_STATE_ID = 24;
+  const TELUGU_STATES_STATE_ID = 37;
+
   const stateMap = new Map<
     number,
     {
@@ -458,6 +497,12 @@ async function loadPerson(personId: number): Promise<PersonStats> {
       karnataka: number | null;
       tamilNadu: number | null;
       teluguStates: number | null;
+
+      teluguStatesGross: number;
+      hasTeluguStates: boolean;
+      andhraPradeshGross: number;
+      telanganaGross: number;
+      restOfIndia: number | null;
     }
   >();
 
@@ -471,44 +516,168 @@ async function loadPerson(personId: number): Promise<PersonStats> {
         karnataka: null,
         tamilNadu: null,
         teluguStates: null,
+
+        teluguStatesGross: 0,
+        hasTeluguStates: false,
+        andhraPradeshGross: 0,
+        telanganaGross: 0,
+        restOfIndia: null,
       });
     }
 
     const current = stateMap.get(movieId)!;
 
     const gross =
-      row.gross_jmi !== null && Number.isFinite(Number(row.gross_jmi))
+      row.gross_jmi !== null &&
+      Number.isFinite(Number(row.gross_jmi))
         ? Number(row.gross_jmi)
         : null;
 
     if (gross === null) return;
 
+    const stateId =
+      row.state_id === null
+        ? null
+        : Number(row.state_id);
+
     /*
-     * India total:
-     * sum the cumulative state-wise rows including
-     * REST_OF_INDIA. Do not use a separate total table.
+     * --------------------------------------------------------
+     * REST OF INDIA
+     * --------------------------------------------------------
      */
-    current.india = addValues(current.india, gross);
 
-    if (Number(row.state_id) === 12) {
-      current.kerala = addValues(current.kerala, gross);
+    if (stateId === null) {
+      current.restOfIndia = addValues(
+        current.restOfIndia,
+        gross
+      );
+
+      return;
     }
 
-    if (Number(row.state_id) === 11) {
-      current.karnataka = addValues(current.karnataka, gross);
+    /*
+     * --------------------------------------------------------
+     * TELUGU STATES NORMALIZATION
+     * --------------------------------------------------------
+     */
+
+    if (stateId === TELUGU_STATES_STATE_ID) {
+      current.hasTeluguStates = true;
+
+      current.teluguStatesGross += gross;
+
+      return;
     }
 
-    if (Number(row.state_id) === 23) {
-      current.tamilNadu = addValues(current.tamilNadu, gross);
+    if (stateId === ANDHRA_PRADESH_STATE_ID) {
+      current.andhraPradeshGross += gross;
+
+      return;
     }
+
+    if (stateId === TELANGANA_STATE_ID) {
+      current.telanganaGross += gross;
+
+      return;
+    }
+
+    /*
+     * --------------------------------------------------------
+     * OTHER STATES
+     * --------------------------------------------------------
+     */
+
+    if (stateId === 12) {
+      current.kerala = addValues(
+        current.kerala,
+        gross
+      );
+    }
+
+    if (stateId === 11) {
+      current.karnataka = addValues(
+        current.karnataka,
+        gross
+      );
+    }
+
+    if (stateId === 23) {
+      current.tamilNadu = addValues(
+        current.tamilNadu,
+        gross
+      );
+    }
+
+    /*
+     * All other state values contribute to India.
+     *
+     * Telugu States / AP / Telangana are deliberately
+     * excluded here because they are normalized separately.
+     */
+
+    current.india = addValues(
+      current.india,
+      gross
+    );
+  });
+
+  /*
+   * --------------------------------------------------------
+   * FINALIZE NORMALIZED TELUGU STATES + INDIA
+   * --------------------------------------------------------
+   */
+
+  stateMap.forEach((current) => {
+    let normalizedTeluguStates: number | null = null;
+
+    /*
+     * Consolidated Telugu States takes priority.
+     */
+
+    if (current.hasTeluguStates) {
+      normalizedTeluguStates =
+        current.teluguStatesGross;
+    } else {
+      /*
+       * Fallback:
+       * Andhra Pradesh + Telangana.
+       */
+
+      const fallback =
+        current.andhraPradeshGross +
+        current.telanganaGross;
+
+      if (fallback > 0) {
+        normalizedTeluguStates = fallback;
+      }
+    }
+
+    current.teluguStates =
+      normalizedTeluguStates;
+
+    /*
+     * Add normalized Telugu States exactly once
+     * to India.
+     */
 
     if (
-      Number(row.state_id) === 1 ||
-      Number(row.state_id) === 24
+      normalizedTeluguStates !== null &&
+      normalizedTeluguStates > 0
     ) {
-      current.teluguStates = addValues(
-        current.teluguStates,
-        gross
+      current.india = addValues(
+        current.india,
+        normalizedTeluguStates
+      );
+    }
+
+    /*
+     * Add Rest of India exactly once.
+     */
+
+    if (current.restOfIndia !== null) {
+      current.india = addValues(
+        current.india,
+        current.restOfIndia
       );
     }
   });
@@ -524,6 +693,7 @@ async function loadPerson(personId: number): Promise<PersonStats> {
   dailyBoxOffice.forEach((row) => {
     if (Number(row.country_id) !== 1) return;
     if (Number(row.day_number) !== 1) return;
+
     if (
       row.coverage_type &&
       row.coverage_type.toUpperCase() !== "COUNTRY"
@@ -532,7 +702,8 @@ async function loadPerson(personId: number): Promise<PersonStats> {
     }
 
     const gross =
-      row.gross_jmi !== null && Number.isFinite(Number(row.gross_jmi))
+      row.gross_jmi !== null &&
+      Number.isFinite(Number(row.gross_jmi))
         ? Number(row.gross_jmi)
         : null;
 
@@ -547,7 +718,10 @@ async function loadPerson(personId: number): Promise<PersonStats> {
      */
     openingMap.set(
       movieId,
-      Math.max(openingMap.get(movieId) || 0, gross)
+      Math.max(
+        openingMap.get(movieId) || 0,
+        gross
+      )
     );
   });
 
@@ -588,16 +762,22 @@ async function loadPerson(personId: number): Promise<PersonStats> {
       tamilNadu: state?.tamilNadu ?? null,
       teluguStates: state?.teluguStates ?? null,
 
-      openingDay: openingMap.get(movieId) ?? null,
+      openingDay:
+        openingMap.get(movieId) ?? null,
 
       budget:
         businessRow?.production_budget_trade !== null &&
         businessRow?.production_budget_trade !== undefined &&
-        Number.isFinite(Number(businessRow.production_budget_trade))
-          ? Number(businessRow.production_budget_trade)
+        Number.isFinite(
+          Number(businessRow.production_budget_trade)
+        )
+          ? Number(
+              businessRow.production_budget_trade
+            )
           : null,
 
-      verdict: businessRow?.theatrical_verdict ?? null,
+      verdict:
+        businessRow?.theatrical_verdict ?? null,
     });
   });
 
@@ -605,7 +785,8 @@ async function loadPerson(personId: number): Promise<PersonStats> {
     .map((movie) => movie.year)
     .filter(
       (year): year is number =>
-        year !== null && Number.isFinite(year)
+        year !== null &&
+        Number.isFinite(year)
     );
 
   const careerStart =
@@ -648,19 +829,40 @@ async function loadPerson(personId: number): Promise<PersonStats> {
 
   const moviesWithWorldwide: number[] = [];
 
-  let safestRecoverableBudget: MoviePerformance | null = null;
+  let safestRecoverableBudget:
+    MoviePerformance | null = null;
 
   performances.forEach((movie) => {
-    totalIndia = addValues(totalIndia, movie.india);
-    totalOverseas = addValues(totalOverseas, movie.overseas);
-    totalWorldwide = addValues(totalWorldwide, movie.worldwide);
+    totalIndia = addValues(
+      totalIndia,
+      movie.india
+    );
 
-    totalKerala = addValues(totalKerala, movie.kerala);
-    totalKarnataka = addValues(totalKarnataka, movie.karnataka);
+    totalOverseas = addValues(
+      totalOverseas,
+      movie.overseas
+    );
+
+    totalWorldwide = addValues(
+      totalWorldwide,
+      movie.worldwide
+    );
+
+    totalKerala = addValues(
+      totalKerala,
+      movie.kerala
+    );
+
+    totalKarnataka = addValues(
+      totalKarnataka,
+      movie.karnataka
+    );
+
     totalTamilNadu = addValues(
       totalTamilNadu,
       movie.tamilNadu
     );
+
     totalTeluguStates = addValues(
       totalTeluguStates,
       movie.teluguStates
@@ -672,23 +874,33 @@ async function loadPerson(personId: number): Promise<PersonStats> {
     );
 
     if (movie.worldwide !== null) {
-      moviesWithWorldwide.push(movie.worldwide);
+      moviesWithWorldwide.push(
+        movie.worldwide
+      );
     }
 
     if (movie.budget !== null) {
-      totalBudget = addValues(totalBudget, movie.budget);
+      totalBudget = addValues(
+        totalBudget,
+        movie.budget
+      );
     }
 
-    const verdict = normalizeVerdict(movie.verdict);
+    const verdict = normalizeVerdict(
+      movie.verdict
+    );
 
     if (verdict === "hit") hits++;
+
     if (verdict === "super hit") hits++;
+
     if (verdict === "blockbuster") {
       blockbusters++;
       hits++;
     }
 
     if (verdict === "flop") flops++;
+
     if (verdict === "disaster") disasters++;
 
     /*
@@ -698,12 +910,18 @@ async function loadPerson(personId: number): Promise<PersonStats> {
      */
     if (
       movie.budget !== null &&
-      (verdict === "hit" || verdict === "blockbuster")
+      (
+        verdict === "hit" ||
+        verdict === "blockbuster"
+      )
     ) {
       if (
         safestRecoverableBudget === null ||
         movie.budget >
-          (safestRecoverableBudget.budget ?? -Infinity)
+          (
+            safestRecoverableBudget.budget ??
+            -Infinity
+          )
       ) {
         safestRecoverableBudget = movie;
       }
@@ -723,7 +941,8 @@ async function loadPerson(personId: number): Promise<PersonStats> {
       ? moviesWithWorldwide.reduce(
           (sum, value) => sum + value,
           0
-        ) / moviesWithWorldwide.length
+        ) /
+        moviesWithWorldwide.length
       : null;
 
   const highestBy = (
@@ -739,15 +958,19 @@ async function loadPerson(personId: number): Promise<PersonStats> {
     const available = performances.filter(
       (movie) =>
         movie[field] !== null &&
-        Number.isFinite(Number(movie[field]))
+        Number.isFinite(
+          Number(movie[field])
+        )
     );
 
     if (!available.length) return null;
 
-    return available.reduce((best, movie) =>
-      Number(movie[field]) > Number(best[field])
-        ? movie
-        : best
+    return available.reduce(
+      (best, movie) =>
+        Number(movie[field]) >
+        Number(best[field])
+          ? movie
+          : best
     );
   };
 
@@ -801,13 +1024,26 @@ async function loadPerson(personId: number): Promise<PersonStats> {
 
     biggestOpeningDay,
 
-    highestKerala: highestBy("kerala"),
-    highestKarnataka: highestBy("karnataka"),
-    highestTamilNadu: highestBy("tamilNadu"),
-    highestTeluguStates: highestBy("teluguStates"),
-    highestOverseas: highestBy("overseas"),
-    highestIndia: highestBy("india"),
-    highestWorldwide: highestBy("worldwide"),
+    highestKerala:
+      highestBy("kerala"),
+
+    highestKarnataka:
+      highestBy("karnataka"),
+
+    highestTamilNadu:
+      highestBy("tamilNadu"),
+
+    highestTeluguStates:
+      highestBy("teluguStates"),
+
+    highestOverseas:
+      highestBy("overseas"),
+
+    highestIndia:
+      highestBy("india"),
+
+    highestWorldwide:
+      highestBy("worldwide"),
 
     totalBudget,
 
@@ -878,15 +1114,20 @@ function Trophy({
 
   return (
     <div className="flex items-center gap-2 rounded-md border border-yellow-500/20 bg-yellow-500/5 px-2 py-1">
-      <span className="text-[11px]">🏆</span>
+      <span className="text-[11px]">
+        🏆
+      </span>
+
       <span className="text-[9px] uppercase tracking-[0.14em] text-yellow-400">
         {label}
       </span>
+
       {winner !== "TIE" && (
         <span className="text-[9px] font-semibold text-zinc-200">
           {winner === "A" ? "A" : "B"}
         </span>
       )}
+
       {winner === "TIE" && (
         <span className="text-[9px] font-semibold text-zinc-400">
           Tie
@@ -917,7 +1158,9 @@ function MetricRow({
   onWinner,
 }: {
   metric: ComparisonMetric;
-  onWinner?: (winner: "A" | "B" | "TIE" | "NONE") => void;
+  onWinner?: (
+    winner: "A" | "B" | "TIE" | "NONE"
+  ) => void;
 }) {
   const winner = winnerFor(
     metric.a,
@@ -929,7 +1172,9 @@ function MetricRow({
     onWinner?.(winner);
   }, [winner, onWinner]);
 
-  const display = (value: number | null) => {
+  const display = (
+    value: number | null
+  ) => {
     if (metric.format === "number") {
       return formatNumber(value);
     }
@@ -973,17 +1218,48 @@ function MetricRow({
 function Section({
   title,
   children,
+  nameA,
+  nameB,
 }: {
   title: string;
   children: React.ReactNode;
+  nameA: string;
+  nameB: string;
 }) {
   return (
     <section className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <span className="h-3 w-[2px] rounded-full bg-violet-400" />
-        <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-300">
-          {title}
-        </h3>
+      <div className="mb-3">
+        <div className="flex items-center gap-2">
+          <span className="h-3 w-[2px] rounded-full bg-violet-400" />
+
+          <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-300">
+            {title}
+          </h3>
+        </div>
+
+        <div className="mt-3 grid grid-cols-[1fr_72px_72px] items-center gap-2 border-b border-zinc-900 pb-2">
+          <div />
+
+          <div className="text-right">
+            <p className="truncate text-[8px] font-semibold text-violet-300">
+              {nameA}
+            </p>
+
+            <p className="mt-0.5 text-[7px] uppercase tracking-[0.12em] text-zinc-600">
+              Person A
+            </p>
+          </div>
+
+          <div className="text-right">
+            <p className="truncate text-[8px] font-semibold text-violet-300">
+              {nameB}
+            </p>
+
+            <p className="mt-0.5 text-[7px] uppercase tracking-[0.12em] text-zinc-600">
+              Person B
+            </p>
+          </div>
+        </div>
       </div>
 
       {children}
@@ -1081,10 +1357,11 @@ function CareerSpan({
 
   const years = Math.max(
     0,
-    stats.careerEnd - stats.careerStart
+    stats.careerEnd -
+      stats.careerStart
   );
 
-  return `${years} years (${stats.careerStart}–${stats.careerEnd});`
+  return `${years} years (${stats.careerStart}–${stats.careerEnd});`;
 }
 
 function RecordCard({
@@ -1104,12 +1381,16 @@ function RecordCard({
     | "worldwide"
     | "openingDay";
 }) {
-  if (!movie || movie[field] === null) {
+  if (
+    !movie ||
+    movie[field] === null
+  ) {
     return (
       <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-3">
         <p className="text-[9px] uppercase tracking-[0.12em] text-zinc-600">
           {label}
         </p>
+
         <p className="mt-2 text-[10px] text-zinc-600">
           Not enough data
         </p>
@@ -1153,9 +1434,11 @@ export default function JmiPersonComparisonReport({
   const [secondStats, setSecondStats] =
     useState<PersonStats | null>(null);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
 
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] =
+    useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -1165,10 +1448,11 @@ export default function JmiPersonComparisonReport({
       setError(null);
 
       try {
-        const [a, b] = await Promise.all([
-          loadPerson(Number(first.id)),
-          loadPerson(Number(second.id)),
-        ]);
+        const [a, b] =
+          await Promise.all([
+            loadPerson(Number(first.id)),
+            loadPerson(Number(second.id)),
+          ]);
 
         if (cancelled) return;
 
@@ -1293,11 +1577,13 @@ export default function JmiPersonComparisonReport({
         key: "safestBudget",
         label: "Safest Recoverable Budget",
         a:
-          firstStats.safestRecoverableBudget?.budget ??
-          null,
+          firstStats
+            .safestRecoverableBudget
+            ?.budget ?? null,
         b:
-          secondStats.safestRecoverableBudget?.budget ??
-          null,
+          secondStats
+            .safestRecoverableBudget
+            ?.budget ?? null,
       },
       {
         key: "movies50",
@@ -1364,7 +1650,11 @@ export default function JmiPersonComparisonReport({
      * weighted into the final performance championship.
      */
 
-    return { a, b, comparable };
+    return {
+      a,
+      b,
+      comparable,
+    };
   }, [firstStats, secondStats]);
 
   if (loading) {
@@ -1383,7 +1673,11 @@ export default function JmiPersonComparisonReport({
     );
   }
 
-  if (error || !firstStats || !secondStats) {
+  if (
+    error ||
+    !firstStats ||
+    !secondStats
+  ) {
     return (
       <div className="rounded-xl border border-red-500/20 bg-zinc-950 p-6 text-center">
         <p className="text-[10px] uppercase tracking-[0.18em] text-red-400">
@@ -1391,7 +1685,8 @@ export default function JmiPersonComparisonReport({
         </p>
 
         <p className="mt-2 text-[11px] text-zinc-500">
-          {error || "Not enough data"}
+          {error ||
+            "Not enough data"}
         </p>
       </div>
     );
@@ -1532,11 +1827,13 @@ export default function JmiPersonComparisonReport({
         key: "safeBudget",
         label: "Safest Recoverable Budget",
         a:
-          firstStats.safestRecoverableBudget?.budget ??
-          null,
+          firstStats
+            .safestRecoverableBudget
+            ?.budget ?? null,
         b:
-          secondStats.safestRecoverableBudget?.budget ??
-          null,
+          secondStats
+            .safestRecoverableBudget
+            ?.budget ?? null,
       },
     ],
 
@@ -1579,21 +1876,31 @@ export default function JmiPersonComparisonReport({
     ],
   };
 
-  const careerWinnerCount = metricsForSection.career.filter(
-    (metric) =>
-      winnerFor(metric.a, metric.b) !== "NONE"
-  ).length;
+  const careerWinnerCount =
+    metricsForSection.career.filter(
+      (metric) =>
+        winnerFor(
+          metric.a,
+          metric.b
+        ) !== "NONE"
+    ).length;
 
   const collectionWinnerCount =
     metricsForSection.collections.filter(
       (metric) =>
-        winnerFor(metric.a, metric.b) !== "NONE"
+        winnerFor(
+          metric.a,
+          metric.b
+        ) !== "NONE"
     ).length;
 
   const regionWinnerCount =
     metricsForSection.regions.filter(
       (metric) =>
-        winnerFor(metric.a, metric.b) !== "NONE"
+        winnerFor(
+          metric.a,
+          metric.b
+        ) !== "NONE"
     ).length;
 
   const businessWinnerCount =
@@ -1602,14 +1909,18 @@ export default function JmiPersonComparisonReport({
         winnerFor(
           metric.a,
           metric.b,
-          metric.higherIsBetter ?? true
+          metric.higherIsBetter ??
+            true
         ) !== "NONE"
     ).length;
 
   const milestoneWinnerCount =
     metricsForSection.milestones.filter(
       (metric) =>
-        winnerFor(metric.a, metric.b) !== "NONE"
+        winnerFor(
+          metric.a,
+          metric.b
+        ) !== "NONE"
     ).length;
 
   return (
@@ -1639,27 +1950,23 @@ export default function JmiPersonComparisonReport({
         b={secondStats}
       />
 
-      {/* COLUMN LABELS */}
-      <div className="grid grid-cols-[1fr_72px_72px] gap-2 px-1">
-        <div />
-        <div className="text-right text-[8px] uppercase tracking-[0.12em] text-violet-400">
-          A
-        </div>
-        <div className="text-right text-[8px] uppercase tracking-[0.12em] text-violet-400">
-          B
-        </div>
-      </div>
-
       {/* PROFILE */}
-      <Section title="Personal Profile">
+      <Section
+        title="Personal Profile"
+        nameA={nameA}
+        nameB={nameB}
+      >
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-3">
             <p className="text-[9px] uppercase tracking-[0.12em] text-zinc-600">
               Age
             </p>
+
             <p className="mt-2 text-sm font-semibold text-zinc-200">
-              {firstStats.profile?.age !== null &&
-              firstStats.profile?.age !== undefined
+              {firstStats.profile?.age !==
+                null &&
+              firstStats.profile?.age !==
+                undefined
                 ? `${firstStats.profile.age} years`
                 : "Not enough data"}
             </p>
@@ -1669,9 +1976,12 @@ export default function JmiPersonComparisonReport({
             <p className="text-[9px] uppercase tracking-[0.12em] text-zinc-600">
               Age
             </p>
+
             <p className="mt-2 text-sm font-semibold text-zinc-200">
-              {secondStats.profile?.age !== null &&
-              secondStats.profile?.age !== undefined
+              {secondStats.profile?.age !==
+                null &&
+              secondStats.profile?.age !==
+                undefined
                 ? `${secondStats.profile.age} years`
                 : "Not enough data"}
             </p>
@@ -1683,8 +1993,11 @@ export default function JmiPersonComparisonReport({
             <p className="text-[9px] uppercase tracking-[0.12em] text-zinc-600">
               Career Span
             </p>
+
             <p className="mt-2 text-[11px] font-medium text-zinc-300">
-              {CareerSpan({ stats: firstStats })}
+              {CareerSpan({
+                stats: firstStats,
+              })}
             </p>
           </div>
 
@@ -1692,211 +2005,283 @@ export default function JmiPersonComparisonReport({
             <p className="text-[9px] uppercase tracking-[0.12em] text-zinc-600">
               Career Span
             </p>
+
             <p className="mt-2 text-[11px] font-medium text-zinc-300">
-              {CareerSpan({ stats: secondStats })}
+              {CareerSpan({
+                stats: secondStats,
+              })}
             </p>
           </div>
         </div>
       </Section>
 
       {/* CAREER */}
-      <Section title="Career">
-        {metricsForSection.career.map((metric) => (
-          <MetricRow
-            key={metric.key}
-            metric={metric}
-          />
-        ))}
+      <Section
+        title="Career"
+        nameA={nameA}
+        nameB={nameB}
+      >
+        {metricsForSection.career.map(
+          (metric) => (
+            <MetricRow
+              key={metric.key}
+              metric={metric}
+            />
+          )
+        )}
 
         {careerWinnerCount > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
-            {metricsForSection.career.map((metric) => (
-              <Trophy
-                key={metric.key}
-                label={metric.label}
-                winner={winnerFor(
-                  metric.a,
-                  metric.b
-                )}
-              />
-            ))}
+            {metricsForSection.career.map(
+              (metric) => (
+                <Trophy
+                  key={metric.key}
+                  label={metric.label}
+                  winner={winnerFor(
+                    metric.a,
+                    metric.b
+                  )}
+                />
+              )
+            )}
           </div>
         )}
       </Section>
 
       {/* TOTAL COLLECTIONS */}
-      <Section title="JMI Box Office Performance">
-        {metricsForSection.collections.map((metric) => (
-          <MetricRow
-            key={metric.key}
-            metric={metric}
-          />
-        ))}
+      <Section
+        title="JMI Box Office Performance"
+        nameA={nameA}
+        nameB={nameB}
+      >
+        {metricsForSection.collections.map(
+          (metric) => (
+            <MetricRow
+              key={metric.key}
+              metric={metric}
+            />
+          )
+        )}
 
         {collectionWinnerCount > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
-            {metricsForSection.collections.map((metric) => (
-              <Trophy
-                key={metric.key}
-                label={metric.label}
-                winner={winnerFor(
-                  metric.a,
-                  metric.b
-                )}
-              />
-            ))}
+            {metricsForSection.collections.map(
+              (metric) => (
+                <Trophy
+                  key={metric.key}
+                  label={metric.label}
+                  winner={winnerFor(
+                    metric.a,
+                    metric.b
+                  )}
+                />
+              )
+            )}
           </div>
         )}
       </Section>
 
       {/* REGIONAL */}
-      <Section title="Regional Market Reach">
-        {metricsForSection.regions.map((metric) => (
-          <MetricRow
-            key={metric.key}
-            metric={metric}
-          />
-        ))}
+      <Section
+        title="Regional Market Reach"
+        nameA={nameA}
+        nameB={nameB}
+      >
+        {metricsForSection.regions.map(
+          (metric) => (
+            <MetricRow
+              key={metric.key}
+              metric={metric}
+            />
+          )
+        )}
 
         {regionWinnerCount > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
-            {metricsForSection.regions.map((metric) => (
-              <Trophy
-                key={metric.key}
-                label={metric.label}
-                winner={winnerFor(
-                  metric.a,
-                  metric.b
-                )}
-              />
-            ))}
+            {metricsForSection.regions.map(
+              (metric) => (
+                <Trophy
+                  key={metric.key}
+                  label={metric.label}
+                  winner={winnerFor(
+                    metric.a,
+                    metric.b
+                  )}
+                />
+              )
+            )}
           </div>
         )}
       </Section>
 
       {/* PERSONAL RECORDS */}
-      <Section title="Individual Box Office Records">
+      <Section
+        title="Individual Box Office Records"
+        nameA={nameA}
+        nameB={nameB}
+      >
         <div className="grid grid-cols-2 gap-3">
           <RecordCard
             label="Highest Kerala"
-            movie={firstStats.highestKerala}
+            movie={
+              firstStats.highestKerala
+            }
             field="kerala"
           />
 
           <RecordCard
             label="Highest Kerala"
-            movie={secondStats.highestKerala}
+            movie={
+              secondStats.highestKerala
+            }
             field="kerala"
           />
 
           <RecordCard
             label="Highest Karnataka"
-            movie={firstStats.highestKarnataka}
+            movie={
+              firstStats.highestKarnataka
+            }
             field="karnataka"
           />
 
           <RecordCard
             label="Highest Karnataka"
-            movie={secondStats.highestKarnataka}
+            movie={
+              secondStats.highestKarnataka
+            }
             field="karnataka"
           />
 
           <RecordCard
             label="Highest Tamil Nadu"
-            movie={firstStats.highestTamilNadu}
+            movie={
+              firstStats.highestTamilNadu
+            }
             field="tamilNadu"
           />
 
           <RecordCard
             label="Highest Tamil Nadu"
-            movie={secondStats.highestTamilNadu}
+            movie={
+              secondStats.highestTamilNadu
+            }
             field="tamilNadu"
           />
 
           <RecordCard
             label="Highest Telugu States"
-            movie={firstStats.highestTeluguStates}
+            movie={
+              firstStats.highestTeluguStates
+            }
             field="teluguStates"
           />
 
           <RecordCard
             label="Highest Telugu States"
-            movie={secondStats.highestTeluguStates}
+            movie={
+              secondStats.highestTeluguStates
+            }
             field="teluguStates"
           />
 
           <RecordCard
             label="Highest Overseas"
-            movie={firstStats.highestOverseas}
+            movie={
+              firstStats.highestOverseas
+            }
             field="overseas"
           />
 
           <RecordCard
             label="Highest Overseas"
-            movie={secondStats.highestOverseas}
+            movie={
+              secondStats.highestOverseas
+            }
             field="overseas"
           />
 
           <RecordCard
             label="Highest India"
-            movie={firstStats.highestIndia}
+            movie={
+              firstStats.highestIndia
+            }
             field="india"
           />
 
           <RecordCard
             label="Highest India"
-            movie={secondStats.highestIndia}
+            movie={
+              secondStats.highestIndia
+            }
             field="india"
           />
 
           <RecordCard
             label="Highest Worldwide"
-            movie={firstStats.highestWorldwide}
+            movie={
+              firstStats.highestWorldwide
+            }
             field="worldwide"
           />
 
           <RecordCard
             label="Highest Worldwide"
-            movie={secondStats.highestWorldwide}
+            movie={
+              secondStats.highestWorldwide
+            }
             field="worldwide"
           />
 
           <RecordCard
             label="Biggest Opening Day"
-            movie={firstStats.highestIndia}
+            movie={
+              firstStats.highestIndia
+            }
             field="openingDay"
           />
 
           <RecordCard
             label="Biggest Opening Day"
-            movie={secondStats.highestIndia}
+            movie={
+              secondStats.highestIndia
+            }
             field="openingDay"
           />
         </div>
       </Section>
 
       {/* BUSINESS */}
-      <Section title="Business & Theatrical Performance">
-        {metricsForSection.business.map((metric) => (
-          <MetricRow
-            key={metric.key}
-            metric={metric}
-          />
-        ))}
+      <Section
+        title="Business & Theatrical Performance"
+        nameA={nameA}
+        nameB={nameB}
+      >
+        {metricsForSection.business.map(
+          (metric) => (
+            <MetricRow
+              key={metric.key}
+              metric={metric}
+            />
+          )
+        )}
 
         {businessWinnerCount > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
-            {metricsForSection.business.map((metric) => (
-              <Trophy
-                key={metric.key}
-                label={metric.label}
-                winner={winnerFor(
-                  metric.a,
-                  metric.b,
-                  metric.higherIsBetter ?? true
-                )}
-              />
-            ))}
+            {metricsForSection.business.map(
+              (metric) => (
+                <Trophy
+                  key={metric.key}
+                  label={metric.label}
+                  winner={winnerFor(
+                    metric.a,
+                    metric.b,
+                    metric.higherIsBetter ??
+                      true
+                  )}
+                />
+              )
+            )}
           </div>
         )}
 
@@ -1908,32 +2293,39 @@ export default function JmiPersonComparisonReport({
 
             <p className="mt-2 text-sm font-semibold text-violet-300">
               {formatCrores(
-                firstStats.safestRecoverableBudget?.budget ??
-                  null
+                firstStats
+                  .safestRecoverableBudget
+                  ?.budget ?? null
               )}
             </p>
 
             {firstStats.safestRecoverableBudget && (
               <p className="mt-1 line-clamp-1 text-[9px] text-zinc-600">
                 {
-                  firstStats.safestRecoverableBudget.title
+                  firstStats
+                    .safestRecoverableBudget
+                    .title
                 }
               </p>
             )}
           </div>
-
-         
         </div>
       </Section>
 
       {/* MILESTONES */}
-      <Section title="Worldwide Milestones">
-        {metricsForSection.milestones.map((metric) => (
-          <MetricRow
-            key={metric.key}
-            metric={metric}
-          />
-        ))}
+      <Section
+        title="Worldwide Milestones"
+        nameA={nameA}
+        nameB={nameB}
+      >
+        {metricsForSection.milestones.map(
+          (metric) => (
+            <MetricRow
+              key={metric.key}
+              metric={metric}
+            />
+          )
+        )}
 
         {milestoneWinnerCount > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
@@ -1980,7 +2372,9 @@ export default function JmiPersonComparisonReport({
             }`}
           >
             {finalWinner === "A" && (
-              <div className="mb-2 text-2xl">🏆</div>
+              <div className="mb-2 text-2xl">
+                🏆
+              </div>
             )}
 
             <p className="text-[11px] font-semibold text-zinc-200">
@@ -2004,7 +2398,9 @@ export default function JmiPersonComparisonReport({
             }`}
           >
             {finalWinner === "B" && (
-              <div className="mb-2 text-2xl">🏆</div>
+              <div className="mb-2 text-2xl">
+                🏆
+              </div>
             )}
 
             <p className="text-[11px] font-semibold text-zinc-200">
@@ -2079,7 +2475,7 @@ export default function JmiPersonComparisonReport({
 
       {/* METHODOLOGY */}
       <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-4">
-        <p className="text-[8px] uppercase tracking-[0.18em] text-zinc-600">
+        <p className="text-[8px] uppercase tracking-[0.18em] text-green-500">
           JMI Methodology
         </p>
 

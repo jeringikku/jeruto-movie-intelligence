@@ -1324,138 +1324,252 @@ async function loadMovieData(
 
 
   /* ----------------------------------------------------------
-     INDIA / STATE BOX OFFICE
-  ---------------------------------------------------------- */
+   INDIA / STATE BOX OFFICE
+---------------------------------------------------------- */
 
-  const { data: stateCollections } =
-    await supabase
-      .from("movie_state_box_office")
-      .select(`
-        state_id,
-        gross_jmi
-      `)
-      .eq("movie_id", movieId);
+/*
+ * Telugu States normalization
+ *
+ * Andhra Pradesh       = 1
+ * Telangana             = 24
+ * Telugu States         = 37
+ *
+ * Rule:
+ *
+ * 1. If a Telugu States row exists, use that consolidated
+ *    value and ignore Andhra Pradesh + Telangana for the
+ *    same movie.
+ *
+ * 2. If Telugu States does not exist, combine Andhra Pradesh
+ *    + Telangana.
+ *
+ * 3. Never count Telugu States + Andhra Pradesh + Telangana
+ *    together.
+ */
 
-  let india: number | null = null;
-  let kerala: number | null = null;
-  let tamilNadu: number | null = null;
-  let karnataka: number | null = null;
-  let teluguStates: number | null = null;
+const ANDHRA_PRADESH_STATE_ID = 1;
+const TELANGANA_STATE_ID = 24;
+const TELUGU_STATES_STATE_ID = 37;
 
-  const stateTotals: {
-    stateId: number;
-    gross: number;
-  }[] = [];
+const { data: stateCollections } =
+  await supabase
+    .from("movie_state_box_office")
+    .select(`
+      state_id,
+      gross_jmi
+    `)
+    .eq("movie_id", movieId);
 
-  for (const row of stateCollections ?? []) {
+let india: number | null = null;
+let kerala: number | null = null;
+let tamilNadu: number | null = null;
+let karnataka: number | null = null;
+let teluguStates: number | null = null;
 
-    if (row.gross_jmi === null) continue;
+const stateTotals: {
+  stateId: number;
+  gross: number;
+}[] = [];
 
-    const gross = Number(row.gross_jmi);
+/*
+ * Store Telugu market values separately so that the
+ * consolidated Telugu States row can take priority.
+ */
 
-    if (!Number.isFinite(gross)) continue;
+let teluguStatesGross = 0;
+let hasTeluguStates = false;
 
-    if (row.state_id === null) {
-      continue;
-    }
+let andhraPradeshGross = 0;
+let telanganaGross = 0;
 
-    stateTotals.push({
-      stateId: Number(row.state_id),
-      gross,
-    });
+for (const row of stateCollections ?? []) {
+
+  if (row.gross_jmi === null) {
+    continue;
   }
 
+  const gross = Number(row.gross_jmi);
 
-  /* ----------------------------------------------------------
-     STATE MASTER
-  ---------------------------------------------------------- */
+  if (!Number.isFinite(gross)) {
+    continue;
+  }
 
-  const stateIds = stateTotals.map(
-    (row) => row.stateId
+  if (row.state_id === null) {
+    continue;
+  }
+
+  const stateId = Number(row.state_id);
+
+  /*
+   * Telugu States normalization
+   */
+
+  if (stateId === TELUGU_STATES_STATE_ID) {
+    hasTeluguStates = true;
+    teluguStatesGross += gross;
+    continue;
+  }
+
+  if (stateId === ANDHRA_PRADESH_STATE_ID) {
+    andhraPradeshGross += gross;
+    continue;
+  }
+
+  if (stateId === TELANGANA_STATE_ID) {
+    telanganaGross += gross;
+    continue;
+  }
+
+  /*
+   * All other states retain their normal behaviour.
+   */
+
+  stateTotals.push({
+    stateId,
+    gross,
+  });
+}
+
+
+/* ----------------------------------------------------------
+   NORMALIZED TELUGU STATES
+---------------------------------------------------------- */
+
+if (hasTeluguStates) {
+
+  /*
+   * Consolidated Telugu States takes priority.
+   */
+
+  teluguStates = teluguStatesGross;
+
+} else {
+
+  /*
+   * Fallback:
+   * Andhra Pradesh + Telangana.
+   */
+
+  const fallbackTeluguStates =
+    andhraPradeshGross +
+    telanganaGross;
+
+  if (fallbackTeluguStates > 0) {
+    teluguStates = fallbackTeluguStates;
+  }
+}
+
+
+/* ----------------------------------------------------------
+   ADD NORMALIZED TELUGU STATES TO STATE TOTALS
+---------------------------------------------------------- */
+
+if (
+  teluguStates !== null &&
+  teluguStates > 0
+) {
+  stateTotals.push({
+    stateId: TELUGU_STATES_STATE_ID,
+    gross: teluguStates,
+  });
+}
+
+
+/* ----------------------------------------------------------
+   STATE MASTER
+---------------------------------------------------------- */
+
+const stateIds = stateTotals.map(
+  (row) => row.stateId
+);
+
+const { data: states } =
+  stateIds.length > 0
+    ? await supabase
+        .from("states")
+        .select(`
+          id,
+          name
+        `)
+        .in("id", stateIds)
+    : { data: [] };
+
+
+const stateNameMap =
+  new Map<number, string>();
+
+for (const state of states ?? []) {
+
+  stateNameMap.set(
+    Number(state.id),
+    state.name
   );
-
-  const { data: states } =
-    stateIds.length > 0
-      ? await supabase
-          .from("states")
-          .select(`
-            id,
-            name
-          `)
-          .in("id", stateIds)
-      : { data: [] };
+}
 
 
-  const stateNameMap =
-    new Map<number, string>();
+/* ----------------------------------------------------------
+   STATE TOTALS
+---------------------------------------------------------- */
 
-  for (const state of states ?? []) {
+let stateGrossTotal = 0;
+let hasStateGross = false;
 
-    stateNameMap.set(
-      Number(state.id),
-      state.name
-    );
+let highestState:
+  MovieData["highestState"] = null;
+
+for (const row of stateTotals) {
+
+  stateGrossTotal += row.gross;
+  hasStateGross = true;
+
+  const stateName =
+    stateNameMap.get(row.stateId);
+
+  if (
+    stateName &&
+    (!highestState ||
+      row.gross > highestState.gross)
+  ) {
+    highestState = {
+      name: stateName,
+      gross: row.gross,
+    };
   }
 
 
-  /* ----------------------------------------------------------
-     STATE TOTALS
-  ---------------------------------------------------------- */
+  switch (row.stateId) {
 
-  let stateGrossTotal = 0;
-  let hasStateGross = false;
+    case 11:
+      karnataka =
+        (karnataka ?? 0) + row.gross;
+      break;
 
-  let highestState:
-    MovieData["highestState"] = null;
+    case 12:
+      kerala =
+        (kerala ?? 0) + row.gross;
+      break;
 
-  for (const row of stateTotals) {
+    case 23:
+      tamilNadu =
+        (tamilNadu ?? 0) + row.gross;
+      break;
 
-    stateGrossTotal += row.gross;
-    hasStateGross = true;
+    /*
+     * Telugu States is already normalized above.
+     *
+     * Do not add Andhra Pradesh or Telangana here,
+     * because those rows were handled separately.
+     */
 
-    const stateName =
-      stateNameMap.get(row.stateId);
+    case TELUGU_STATES_STATE_ID:
+      teluguStates =
+        (teluguStates ?? 0) + row.gross;
+      break;
 
-    if (
-      stateName &&
-      (!highestState ||
-        row.gross > highestState.gross)
-    ) {
-      highestState = {
-        name: stateName,
-        gross: row.gross,
-      };
-    }
-
-
-    switch (row.stateId) {
-
-      case 11:
-        karnataka =
-          (karnataka ?? 0) + row.gross;
-        break;
-
-      case 12:
-        kerala =
-          (kerala ?? 0) + row.gross;
-        break;
-
-      case 23:
-        tamilNadu =
-          (tamilNadu ?? 0) + row.gross;
-        break;
-
-      case 1:
-      case 24:
-        teluguStates =
-          (teluguStates ?? 0) + row.gross;
-        break;
-
-      default:
-        break;
-    }
+    default:
+      break;
   }
-
+}
 
   /* ----------------------------------------------------------
      REST OF INDIA

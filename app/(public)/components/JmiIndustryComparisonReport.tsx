@@ -94,28 +94,20 @@ type YearPerformance = {
 
 type IndustryStats = {
   industry: Industry | null;
-
   movieCount: number;
-
   totalWorldwide: number | null;
   totalIndia: number | null;
   totalOverseas: number | null;
-
   totalHits: number;
   totalBlockbusters: number;
   totalFlops: number;
   totalDisasters: number;
-
   averageGross: number | null;
-
   topActors: ActorContribution[];
   topHitActors: ActorHitCount[];
-
   yearWise: YearPerformance[];
-
   averageMoviesPerYear: number | null;
   totalYears: number;
-
   highestWorldwide: MoviePerformance | null;
   highestIndia: MoviePerformance | null;
   highestOverseas: MoviePerformance | null;
@@ -124,7 +116,6 @@ type IndustryStats = {
   highestKerala: MoviePerformance | null;
   highestTeluguStates: MoviePerformance | null;
   highestBudget: MoviePerformance | null;
-
   movies50: number;
   movies100: number;
   movies250: number;
@@ -150,7 +141,7 @@ function formatCrores(value: number | null) {
     return "Not enough data";
   }
 
-  return `₹${(Number(value) / 10000000).toFixed(2)} Cr;`
+  return `₹${(Number(value) / 10000000).toFixed(2)} Cr`;
 }
 
 function formatNumber(value: number | null) {
@@ -174,7 +165,7 @@ function formatPercent(value: number | null) {
     return "Not enough data";
   }
 
-  return `${Number(value).toFixed(1)}%;`
+  return `${Number(value).toFixed(1)}%`;
 }
 
 function normalizeVerdict(value: string | null) {
@@ -248,8 +239,7 @@ async function fetchPaged<T>(
 
     query = filters(query);
 
-    const { data, error } =
-      await query;
+    const { data, error } = await query;
 
     if (error) {
       console.error(
@@ -259,8 +249,7 @@ async function fetchPaged<T>(
       break;
     }
 
-    const page =
-      (data || []) as T[];
+    const page = (data || []) as T[];
 
     rows.push(...page);
 
@@ -292,14 +281,13 @@ async function fetchByIds<T>(
       i + chunkSize
     );
 
-    const result =
-      await fetchPaged<T>(
-        table,
-        select,
-        (query) =>
-          query.in("id", chunk),
-        500
-      );
+    const result = await fetchPaged<T>(
+      table,
+      select,
+      (query) =>
+        query.in("id", chunk),
+      500
+    );
 
     rows.push(...result);
   }
@@ -325,14 +313,13 @@ async function fetchByMovieIds<T>(
       i + chunkSize
     );
 
-    const result =
-      await fetchPaged<T>(
-        table,
-        select,
-        (query) =>
-          query.in("movie_id", chunk),
-        500
-      );
+    const result = await fetchPaged<T>(
+      table,
+      select,
+      (query) =>
+        query.in("movie_id", chunk),
+      500
+    );
 
     rows.push(...result);
   }
@@ -362,8 +349,7 @@ async function loadIndustry(
   }
 
   const industry =
-    (industryData ||
-      null) as Industry | null;
+    (industryData || null) as Industry | null;
 
   /*
    * Industry membership is based on
@@ -388,43 +374,35 @@ async function loadIndustry(
       500
     );
 
-  const movieIds =
-    Array.from(
-      new Set(
-        industryMovies
-          .map((row) =>
-            Number(row.movie_id)
-          )
-          .filter((id) =>
-            Number.isFinite(id)
-          )
-      )
-    );
+  const movieIds = Array.from(
+    new Set(
+      industryMovies
+        .map((row) =>
+          Number(row.movie_id)
+        )
+        .filter((id) =>
+          Number.isFinite(id)
+        )
+    )
+  );
 
   if (!movieIds.length) {
     return {
       industry,
       movieCount: 0,
-
       totalWorldwide: null,
       totalIndia: null,
       totalOverseas: null,
-
       totalHits: 0,
       totalBlockbusters: 0,
       totalFlops: 0,
       totalDisasters: 0,
-
       averageGross: null,
-
       topActors: [],
       topHitActors: [],
-
       yearWise: [],
-
       averageMoviesPerYear: null,
       totalYears: 0,
-
       highestWorldwide: null,
       highestIndia: null,
       highestOverseas: null,
@@ -433,7 +411,6 @@ async function loadIndustry(
       highestKerala: null,
       highestTeluguStates: null,
       highestBudget: null,
-
       movies50: 0,
       movies100: 0,
       movies250: 0,
@@ -508,42 +485,36 @@ async function loadIndustry(
    * credit_type_id = 1 → Lead Role
    * credit_type_id = 2 → Lead Actress
    */
-  const leadPersonIds =
-    Array.from(
-      new Set(
-        moviePeople
-          .filter(
-            (row) =>
-              Number(row.role_id) === 1 &&
-              (
-                Number(
-                  row.credit_type_id
-                ) === 1 ||
-                Number(
-                  row.credit_type_id
-                ) === 2
-              )
-          )
-          .map((row) =>
-            Number(row.person_id)
-          )
-          .filter((id) =>
-            Number.isFinite(id)
-          )
-      )
-    );
-
-  const people =
-    leadPersonIds.length
-      ? await fetchByIds<Person>(
-          "people",
-          `
-            id,
-            full_name
-          `,
-          leadPersonIds
+  const leadPersonIds = Array.from(
+    new Set(
+      moviePeople
+        .filter(
+          (row) =>
+            Number(row.role_id) === 1 &&
+            (
+              Number(row.credit_type_id) === 1 ||
+              Number(row.credit_type_id) === 0
+            )
         )
-      : [];
+        .map((row) =>
+          Number(row.person_id)
+        )
+        .filter((id) =>
+          Number.isFinite(id)
+        )
+    )
+  );
+
+  const people = leadPersonIds.length
+    ? await fetchByIds<Person>(
+        "people",
+        `
+          id,
+          full_name
+        `,
+        leadPersonIds
+      )
+    : [];
 
   const movieMap =
     new Map<number, Movie>();
@@ -571,9 +542,20 @@ async function loadIndustry(
    * Kerala = 12
    * Karnataka = 11
    * Tamil Nadu = 23
+   *
    * Andhra Pradesh = 1
    * Telangana = 24
+   * Telugu States = 37
+   *
+   * Telugu States normalization:
+   * - Prefer the consolidated Telugu States record.
+   * - Otherwise use Andhra Pradesh + Telangana.
+   * - Never double-count AP/Telangana and Telugu States.
    */
+  const ANDHRA_PRADESH_STATE_ID = 1;
+  const TELANGANA_STATE_ID = 24;
+  const TELUGU_STATES_STATE_ID = 37;
+
   const stateMap =
     new Map<
       number,
@@ -583,6 +565,12 @@ async function loadIndustry(
         karnataka: number | null;
         tamilNadu: number | null;
         teluguStates: number | null;
+
+        teluguStatesGross: number;
+        hasTeluguStates: boolean;
+        andhraPradeshGross: number;
+        telanganaGross: number;
+        restOfIndia: number | null;
       }
     >();
 
@@ -597,6 +585,12 @@ async function loadIndustry(
         karnataka: null,
         tamilNadu: null,
         teluguStates: null,
+
+        teluguStatesGross: 0,
+        hasTeluguStates: false,
+        andhraPradeshGross: 0,
+        telanganaGross: 0,
+        restOfIndia: null,
       });
     }
 
@@ -613,44 +607,141 @@ async function loadIndustry(
 
     if (gross === null) return;
 
+    const stateId =
+      row.state_id === null
+        ? null
+        : Number(row.state_id);
+
     /*
-     * Existing JMI state-wise
-     * cumulative methodology.
+     * Null state_id is retained separately
+     * and added to India after Telugu States
+     * normalization.
      */
-    state.india = addValue(
-      state.india,
-      gross
-    );
-
-    if (Number(row.state_id) === 12) {
-      state.kerala = addValue(
-        state.kerala,
-        gross
-      );
+    if (stateId === null) {
+      state.restOfIndia =
+        addValue(
+          state.restOfIndia,
+          gross
+        );
+      return;
     }
 
-    if (Number(row.state_id) === 11) {
-      state.karnataka = addValue(
-        state.karnataka,
-        gross
-      );
+    /*
+     * Consolidated Telugu States record.
+     * This takes priority over AP + Telangana.
+     */
+    if (
+      stateId ===
+      TELUGU_STATES_STATE_ID
+    ) {
+      state.hasTeluguStates = true;
+
+      state.teluguStatesGross +=
+        gross;
+
+      return;
     }
 
-    if (Number(row.state_id) === 23) {
-      state.tamilNadu = addValue(
-        state.tamilNadu,
-        gross
-      );
+    /*
+     * Keep AP and Telangana separate
+     * temporarily. They will be combined
+     * only if no consolidated record exists.
+     */
+    if (
+      stateId ===
+      ANDHRA_PRADESH_STATE_ID
+    ) {
+      state.andhraPradeshGross +=
+        gross;
+
+      return;
     }
 
     if (
-      Number(row.state_id) === 1 ||
-      Number(row.state_id) === 24
+      stateId ===
+      TELANGANA_STATE_ID
     ) {
-      state.teluguStates =
+      state.telanganaGross +=
+        gross;
+
+      return;
+    }
+
+    /*
+     * Normal state-wise India data.
+     */
+    if (stateId === 12) {
+      state.kerala =
         addValue(
-          state.teluguStates,
+          state.kerala,
           gross
+        );
+    }
+
+    if (stateId === 11) {
+      state.karnataka =
+        addValue(
+          state.karnataka,
+          gross
+        );
+    }
+
+    if (stateId === 23) {
+      state.tamilNadu =
+        addValue(
+          state.tamilNadu,
+          gross
+        );
+    }
+
+    state.india =
+      addValue(
+        state.india,
+        gross
+      );
+  });
+
+  /*
+   * Normalize Telugu States and add it
+   * to India exactly once per movie.
+   */
+  stateMap.forEach((state) => {
+    let normalizedTeluguStates:
+      number | null = null;
+
+    if (state.hasTeluguStates) {
+      normalizedTeluguStates =
+        state.teluguStatesGross;
+    } else {
+      const fallback =
+        state.andhraPradeshGross +
+        state.telanganaGross;
+
+      if (fallback > 0) {
+        normalizedTeluguStates =
+          fallback;
+      }
+    }
+
+    state.teluguStates =
+      normalizedTeluguStates;
+
+    if (
+      normalizedTeluguStates !== null &&
+      normalizedTeluguStates > 0
+    ) {
+      state.india =
+        addValue(
+          state.india,
+          normalizedTeluguStates
+        );
+    }
+
+    if (state.restOfIndia !== null) {
+      state.india =
+        addValue(
+          state.india,
+          state.restOfIndia
         );
     }
   });
@@ -685,8 +776,8 @@ async function loadIndustry(
   /*
    * Build movie-level intelligence.
    */
-  const performances: MoviePerformance[] =
-    [];
+  const performances:
+    MoviePerformance[] = [];
 
   movieIds.forEach((movieId) => {
     const movie =
@@ -738,25 +829,18 @@ async function loadIndustry(
       year:
         movie.release_year ??
         null,
-
       india,
       overseas,
       worldwide,
-
       kerala:
         state?.kerala ?? null,
-
       karnataka:
         state?.karnataka ?? null,
-
       tamilNadu:
         state?.tamilNadu ?? null,
-
       teluguStates:
         state?.teluguStates ?? null,
-
       budget,
-
       verdict:
         businessRow
           ?.theatrical_verdict ??
@@ -776,24 +860,26 @@ async function loadIndustry(
   let totalWorldwide: number | null =
     null;
 
-  const worldwideValues: number[] =
-    [];
+  const worldwideValues: number[] = [];
 
   performances.forEach((movie) => {
-    totalIndia = addValue(
-      totalIndia,
-      movie.india
-    );
+    totalIndia =
+      addValue(
+        totalIndia,
+        movie.india
+      );
 
-    totalOverseas = addValue(
-      totalOverseas,
-      movie.overseas
-    );
+    totalOverseas =
+      addValue(
+        totalOverseas,
+        movie.overseas
+      );
 
-    totalWorldwide = addValue(
-      totalWorldwide,
-      movie.worldwide
-    );
+    totalWorldwide =
+      addValue(
+        totalWorldwide,
+        movie.worldwide
+      );
 
     if (movie.worldwide !== null) {
       worldwideValues.push(
@@ -873,10 +959,11 @@ async function loadIndustry(
 
     year.movieCount++;
 
-    year.worldwide = addValue(
-      year.worldwide,
-      movie.worldwide
-    );
+    year.worldwide =
+      addValue(
+        year.worldwide,
+        movie.worldwide
+      );
   });
 
   const sortedYears =
@@ -884,10 +971,12 @@ async function loadIndustry(
       .sort((a, b) => b - a);
 
   const recentYears =
-    sortedYears.slice(0, 5)
+    sortedYears
+      .slice(0, 5)
       .sort((a, b) => a - b);
 
-  const yearWise: YearPerformance[] =
+  const yearWise:
+    YearPerformance[] =
     recentYears.map(
       (year, index) => {
         const current =
@@ -912,9 +1001,11 @@ async function loadIndustry(
             previous.worldwide !== 0
           ) {
             growth =
-              ((current.worldwide -
-                previous.worldwide) /
-                previous.worldwide) *
+              (
+                (current.worldwide -
+                  previous.worldwide) /
+                previous.worldwide
+              ) *
               100;
           }
         }
@@ -975,7 +1066,7 @@ async function loadIndustry(
           ) === 1 ||
           Number(
             row.credit_type_id
-          ) === 1
+          ) === 0
         )
     )
     .forEach((row) => {
@@ -1001,7 +1092,8 @@ async function loadIndustry(
         .add(movieId);
     });
 
-  const topActors: ActorContribution[] =
+  const topActors:
+    ActorContribution[] =
     Array.from(
       actorMovieSets.entries()
     )
@@ -1077,7 +1169,7 @@ async function loadIndustry(
           ) === 1 ||
           Number(
             row.credit_type_id
-          ) === 2
+          ) === 0
         )
     )
     .forEach((row) => {
@@ -1122,7 +1214,8 @@ async function loadIndustry(
         .add(movieId);
     });
 
-  const topHitActors: ActorHitCount[] =
+  const topHitActors:
+    ActorHitCount[] =
     Array.from(
       actorHitMovieSets.entries()
     )
@@ -1184,25 +1277,19 @@ async function loadIndustry(
 
   return {
     industry,
-
-    movieCount: movieIds.length,
-
+    movieCount:
+      movieIds.length,
     totalWorldwide,
     totalIndia,
     totalOverseas,
-
     totalHits,
     totalBlockbusters,
     totalFlops,
     totalDisasters,
-
     averageGross,
-
     topActors,
     topHitActors,
-
     yearWise,
-
     averageMoviesPerYear,
     totalYears,
 
@@ -1251,29 +1338,19 @@ async function loadIndustry(
     highestBudget,
 
     movies50:
-      milestone(
-        500000000
-      ),
+      milestone(500000000),
 
     movies100:
-      milestone(
-        1000000000
-      ),
+      milestone(1000000000),
 
     movies250:
-      milestone(
-        2500000000
-      ),
+      milestone(2500000000),
 
     movies500:
-      milestone(
-        5000000000
-      ),
+      milestone(5000000000),
 
     movies1000:
-      milestone(
-        10000000000
-      ),
+      milestone(10000000000),
   };
 }
 
@@ -1281,7 +1358,11 @@ function winnerFor(
   a: number | null,
   b: number | null,
   higherIsBetter = true
-): "A" | "B" | "TIE" | "NONE" {
+):
+  | "A"
+  | "B"
+  | "TIE"
+  | "NONE" {
   if (
     a === null ||
     b === null ||
@@ -1666,7 +1747,7 @@ function YearBars({
                 <div
                   className="h-full rounded-full bg-violet-500/70 transition-all"
                   style={{
-                    width: `${widthA}%,`
+                    width: `${widthA}%`,
                   }}
                 />
               </div>
@@ -1687,7 +1768,7 @@ function YearBars({
                 <div
                   className="h-full rounded-full bg-yellow-500/60 transition-all"
                   style={{
-                    width: `${widthB}%,`
+                    width: `${widthB}%`,
                   }}
                 />
               </div>
@@ -2115,9 +2196,7 @@ export default function JmiIndustryComparisonReport({
 
   return (
     <div className="space-y-5">
-
       {/* HEADER */}
-
       <div>
         <p className="text-[9px] uppercase tracking-[0.22em] text-violet-400">
           JMI Industry Intelligence
@@ -2137,10 +2216,8 @@ export default function JmiIndustryComparisonReport({
       </div>
 
       {/* INDUSTRY IDENTITIES */}
-
       <section className="overflow-hidden rounded-xl border border-violet-400/20 bg-gradient-to-br from-zinc-950 via-zinc-950 to-violet-950/10">
         <div className="grid grid-cols-2 divide-x divide-zinc-800">
-
           <div className="p-5 text-center">
             <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl border border-violet-500/20 bg-violet-500/5 text-xl text-violet-300">
               ◈
@@ -2168,12 +2245,10 @@ export default function JmiIndustryComparisonReport({
               Industry B
             </p>
           </div>
-
         </div>
       </section>
 
       {/* OVERVIEW */}
-
       <Section
         title="Industry Overview"
         firstName={nameA}
@@ -2227,7 +2302,6 @@ export default function JmiIndustryComparisonReport({
       </Section>
 
       {/* VERDICTS */}
-
       <Section
         title="Theatrical Performance"
         firstName={nameA}
@@ -2281,14 +2355,12 @@ export default function JmiIndustryComparisonReport({
       </Section>
 
       {/* LEAD ACTORS */}
-
       <Section
         title="Top 5 Highest Contributing Lead Actors"
         firstName={nameA}
         secondName={nameB}
       >
         <div className="grid grid-cols-2 gap-4">
-
           <div>
             <p className="mb-3 text-[8px] uppercase tracking-[0.14em] text-violet-400">
               {nameA}
@@ -2312,7 +2384,6 @@ export default function JmiIndustryComparisonReport({
               }
             />
           </div>
-
         </div>
 
         <p className="mt-4 border-t border-zinc-900 pt-3 text-[8px] leading-4 text-zinc-700">
@@ -2324,14 +2395,12 @@ export default function JmiIndustryComparisonReport({
       </Section>
 
       {/* HIT ACTORS */}
-
       <Section
         title="Top 5 Actors With Most Hits / Blockbusters"
         firstName={nameA}
         secondName={nameB}
       >
         <div className="grid grid-cols-2 gap-4">
-
           <div>
             <p className="mb-3 text-[8px] uppercase tracking-[0.14em] text-violet-400">
               {nameA}
@@ -2355,7 +2424,6 @@ export default function JmiIndustryComparisonReport({
               }
             />
           </div>
-
         </div>
 
         <p className="mt-4 border-t border-zinc-900 pt-3 text-[8px] leading-4 text-zinc-700">
@@ -2367,7 +2435,6 @@ export default function JmiIndustryComparisonReport({
       </Section>
 
       {/* YEAR WISE */}
-
       <Section
         title="Recent 5 Years — Worldwide Collection"
         firstName={nameA}
@@ -2394,6 +2461,7 @@ export default function JmiIndustryComparisonReport({
         <div className="mt-4 flex flex-wrap gap-3 border-t border-zinc-900 pt-3">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-violet-500/70" />
+
             <span className="text-[8px] text-zinc-600">
               {nameA}
             </span>
@@ -2401,6 +2469,7 @@ export default function JmiIndustryComparisonReport({
 
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-yellow-500/60" />
+
             <span className="text-[8px] text-zinc-600">
               {nameB}
             </span>
@@ -2409,7 +2478,6 @@ export default function JmiIndustryComparisonReport({
       </Section>
 
       {/* GROWTH */}
-
       <Section
         title="Year-to-Year Growth Intelligence"
         firstName={nameA}
@@ -2434,7 +2502,6 @@ export default function JmiIndustryComparisonReport({
       </Section>
 
       {/* ANNUAL OUTPUT */}
-
       <Section
         title="Annual Industry Output"
         firstName={nameA}
@@ -2452,7 +2519,6 @@ export default function JmiIndustryComparisonReport({
         />
 
         <div className="mt-3 grid grid-cols-2 gap-3">
-
           <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-3">
             <p className="text-[8px] uppercase tracking-[0.12em] text-zinc-600">
               Years Represented
@@ -2476,19 +2542,16 @@ export default function JmiIndustryComparisonReport({
               )}
             </p>
           </div>
-
         </div>
       </Section>
 
       {/* HIGHEST GROSSING */}
-
       <Section
         title="Highest Grossing Intelligence"
         firstName={nameA}
         secondName={nameB}
       >
         <div className="grid grid-cols-2 gap-3">
-
           <RecordCard
             label="Highest Worldwide"
             movie={
@@ -2600,11 +2663,9 @@ export default function JmiIndustryComparisonReport({
             }
             field="teluguStates"
           />
-
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-3">
-
           <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-3">
             <p className="text-[8px] uppercase tracking-[0.12em] text-zinc-600">
               Highest Budgeted Movie
@@ -2664,12 +2725,10 @@ export default function JmiIndustryComparisonReport({
               </p>
             )}
           </div>
-
         </div>
       </Section>
 
       {/* RECORDS */}
-
       <Section
         title="Worldwide Records"
         firstName={nameA}
@@ -2727,14 +2786,12 @@ export default function JmiIndustryComparisonReport({
       </Section>
 
       {/* CATEGORY CHAMPIONS */}
-
       <Section
         title="JMI Category Champions"
         firstName={nameA}
         secondName={nameB}
       >
         <div className="flex flex-wrap gap-2">
-
           <Trophy
             label="Movie Scale"
             winner={winnerFor(
@@ -2830,14 +2887,11 @@ export default function JmiIndustryComparisonReport({
               secondStats.movies1000
             )}
           />
-
         </div>
       </Section>
 
       {/* FINAL WINNER */}
-
       <section className="overflow-hidden rounded-xl border border-yellow-500/20 bg-gradient-to-br from-yellow-500/5 via-zinc-950 to-violet-500/5">
-
         <div className="border-b border-yellow-500/10 px-4 py-3">
           <p className="text-[9px] uppercase tracking-[0.22em] text-yellow-400">
             JMI Championship
@@ -2856,7 +2910,6 @@ export default function JmiIndustryComparisonReport({
         </div>
 
         <div className="grid grid-cols-2 divide-x divide-zinc-800">
-
           <div
             className={`p-5 text-center ${
               finalWinner === "A"
@@ -2908,11 +2961,9 @@ export default function JmiIndustryComparisonReport({
               JMI points
             </p>
           </div>
-
         </div>
 
         <div className="border-t border-yellow-500/10 p-4 text-center">
-
           {finalWinner === "A" && (
             <>
               <p className="text-[9px] uppercase tracking-[0.2em] text-yellow-400">
@@ -2969,13 +3020,12 @@ export default function JmiIndustryComparisonReport({
       </section>
 
       {/* METHODOLOGY */}
-
       <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-4">
-        <p className="text-[8px] uppercase tracking-[0.18em] text-zinc-600">
+        <p className="text-[8px] uppercase tracking-[0.18em] text-green-500">
           JMI Industry Methodology
         </p>
 
-        <p className="mt-2 text-[9px] leading-5 text-zinc-600">
+        <p className="mt-2 text-[9px] leading-5 text-zinc-500">
           Industry membership is determined from
           the existing movie-industry relationships.
           Multi-industry movies may contribute to
@@ -2983,7 +3033,10 @@ export default function JmiIndustryComparisonReport({
           collection is derived from JMI India plus
           JMI overseas collection. Regional figures
           use the existing cumulative state-wise
-          methodology. Lead actor analysis uses
+          methodology, with the consolidated Telugu
+          States record preferred when available
+          and Andhra Pradesh plus Telangana used
+          as fallback. Lead actor analysis uses
           actor relationships with Lead Role or Lead
           Actress credit types. Year-wise analysis
           uses release year. Worldwide milestone
@@ -2993,7 +3046,6 @@ export default function JmiIndustryComparisonReport({
           Not enough data.
         </p>
       </div>
-
     </div>
   );
 }
