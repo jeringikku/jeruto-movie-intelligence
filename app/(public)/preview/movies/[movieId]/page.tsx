@@ -127,14 +127,14 @@ export default async function MovieIntelligencePage({
       stateBoxOfficeError
     );
   }
-
-  const { data: overseasBoxOffice, error: overseasBoxOfficeError } =
-    await supabase
-      .from("movie_overseas_box_office")
-      .select(`
-        gross_inr
-      `)
-      .eq("movie_id", movie.id);
+const { data: overseasBoxOffice, error: overseasBoxOfficeError } =
+  await supabase
+    .from("movie_overseas_box_office")
+    .select(`
+      gross_inr,
+      gross_usd
+    `)
+    .eq("movie_id", movie.id);
 
   if (overseasBoxOfficeError) {
     console.error(
@@ -194,15 +194,20 @@ export default async function MovieIntelligencePage({
       (total, row) => total + Number(row.gross_jmi || 0),
       0
     ) ?? 0;
+const overseasGross =
+  overseasBoxOffice?.reduce(
+    (total, row) => total + Number(row.gross_inr || 0),
+    0
+  ) ?? 0;
 
-  const overseasGross =
-    overseasBoxOffice?.reduce(
-      (total, row) => total + Number(row.gross_inr || 0),
-      0
-    ) ?? 0;
+const overseasGrossUsd =
+  overseasBoxOffice?.reduce(
+    (total, row) => total + Number(row.gross_usd || 0),
+    0
+  ) ?? 0;
 
-  const worldwideGross =
-    indiaGross + overseasGross;
+const worldwideGross =
+  indiaGross + overseasGross;
 
   function formatCrores(value: number) {
     if (!value || value <= 0) return "—";
@@ -213,6 +218,20 @@ export default async function MovieIntelligencePage({
 
     return `₹${(value / 100000).toFixed(2)} L`;
   }
+
+  function formatUSD(value: number) {
+  if (!value || value <= 0) return "—";
+
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(2)}M`;
+  }
+
+  if (value >= 1000) {
+    return `$${(value / 1000).toFixed(2)}K`;
+  }
+
+  return `$${value.toFixed(2)}`;
+}
 
   const primaryLanguageItem =
     movie.movie_languages?.find(
@@ -701,10 +720,10 @@ export default async function MovieIntelligencePage({
                   value={formatCrores(indiaGross)}
                 />
 
-                <BoxOfficeCard
-                  label="Overseas Gross"
-                  value={formatCrores(overseasGross)}
-                />
+              <BoxOfficeCard
+  label="Overseas Gross"
+  value={`${formatCrores(overseasGross)} / ${formatUSD(overseasGrossUsd)}`}
+/>
 
                 <BoxOfficeCard
                   label="Worldwide Gross"
@@ -1023,10 +1042,12 @@ function IntelligenceCard({
 function BoxOfficeCard({
   label,
   value,
+  secondaryValue,
   highlight = false,
 }: {
   label: string;
   value: string;
+  secondaryValue?: string;
   highlight?: boolean;
 }) {
   return (
@@ -1050,20 +1071,26 @@ function BoxOfficeCard({
       </p>
 
       <p
-        className={`
-          mt-2
-          text-xl
-          font-medium
-          tracking-[-0.03em]
-          ${
-            highlight
-              ? "text-violet-400"
-              : "text-zinc-200"
-          }
-        `}
-      >
-        {value}
-      </p>
+  className={`
+    mt-2
+    text-xl
+    font-medium
+    tracking-[-0.03em]
+    ${
+      highlight
+        ? "text-violet-400"
+        : "text-zinc-200"
+    }
+  `}
+>
+  {value}
+</p>
+
+{secondaryValue && (
+  <p className="mt-1 text-[14px] font-medium tracking-[-0.01em] text-yellow-400">
+    {secondaryValue}
+  </p>
+)}
 
     </div>
   );

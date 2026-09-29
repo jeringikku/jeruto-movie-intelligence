@@ -52,6 +52,17 @@ export default function ComparisonIntelligenceBanner() {
         <span className="h-px flex-1 bg-zinc-900" />
       </div>
 
+      <div className="mx-auto max-w-6xl px-5 pb-3 sm:px-6 lg:px-8">
+
+  <p className="max-w-2xl text-[12px] leading-5 text-zinc-500">
+    Compare movies, people, companies and industries using JMI's
+    structured records to understand differences in performance,
+    markets and theatrical business.
+  </p>
+
+</div>
+
+
      {/* Main Banner */}
 <div className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-black shadow-2xl">
 

@@ -49,6 +49,16 @@ export default function TicketBookingBanner() {
         <span className="h-px flex-1 bg-zinc-900" />
       </div>
 
+      <p className="max-w-2xl text-[12px] leading-5 text-pink-500/90">
+    Explore JMI's Ticket Booking Section. Choose your Favorite Movie and lock your Favorite day and Show Time, We will redirect to your booking point on your favorite booking platforms.
+  </p>
+
+      <div className="mt=5 mx-auto max-w-6xl px-5 pb-3 sm:px-6 lg:px-8">
+
+  
+
+</div>
+
       {/* Main Banner */}
       <div className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
 

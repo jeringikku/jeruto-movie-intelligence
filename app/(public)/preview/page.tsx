@@ -8,7 +8,26 @@ import JmiLiveTicker from "../components/JmiLiveTicker";
 import JmiLiveTrackingBanner from "../components/JmiLiveTrackingBanner";
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export default async function PublicPreview() {
+
+  // ============================================================
+  // JMI HOMEPAGE VIEW COUNT
+  // ============================================================
+
+  const { data: homepageViewCount, error: homepageViewCountError } =
+    await supabase.rpc("jmi_increment_homepage_views");
+
+  if (homepageViewCountError) {
+    console.error(
+      "Homepage view count error:",
+      homepageViewCountError
+    );
+  }
+
+  const homepageViews =
+    Number(homepageViewCount ?? 0);
 
   // ============================================================
   // JMI HOMEPAGE BANNERS
@@ -187,6 +206,36 @@ export default async function PublicPreview() {
       <PublicHeader />
 
       <JmiLiveTicker />
+
+      {/* =====================================================
+    HOMEPAGE VIEW COUNT
+===================================================== */}
+
+<div className="border-b border-zinc-900">
+
+  <div className="mx-auto max-w-6xl px-5 py-2.5 sm:px-6 lg:px-8">
+
+    <div className="flex justify-center">
+
+      <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-zinc-950 px-3 py-1.5">
+
+        <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+
+        <span className="text-[6px] font-small uppercase tracking-[0.18em] text-zinc-300">
+          JMI Live Visitors Count
+        </span>
+
+        <span className="text-[7px] font-semibold text-violet-400">
+          {homepageViews.toLocaleString("en-IN")}
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
 
       <main>
 
@@ -373,13 +422,17 @@ export default async function PublicPreview() {
 
             <div className="mb-7">
 
-              <p className="text-[9.5px] font-semibold uppercase tracking-[0.28em] text-violet-400">
+              <p className="text-[9.5px] font-semibold uppercase tracking-[0.28em] text-pink-400">
                 Box Office Intelligence
               </p>
 
-              <h2 className="mt-2 max-w-2xl text-[12px] font-medium tracking-[-0.025em] text-zinc-400 sm:text-2xl">
-                We are aiming to build the single largest database in the History of Cinema Analytics. Our database currently contains..
-              </h2>
+              <h2 className="mt-2 max-w-2xl text-[12px] font-medium tracking-[-0.025em] text-violet-400/90 sm:text-2xl">
+               JMI tracks the theatrical performance across India and overseas markets,
+  bringing together continuously updated collection data into one
+  structured box-office intelligence system. </h2>
+  
+ <h3 className="mt-2 max-w-2xl text-[11.5px] font-medium tracking-[-0.025em] text-zinc-400 sm:text-2xl"> We are aiming to build the single largest database in the History of Cinema Analytics. Our database currently contains..
+              </h3>
 
 
             </div>
@@ -427,7 +480,11 @@ export default async function PublicPreview() {
 
         </section>
 
+
+
         <TicketBookingBanner />
+
+  
 
         <JmiLiveTrackingBanner />
 

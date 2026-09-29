@@ -10,18 +10,20 @@ type DashboardStats = {
   companies: number;
   indiaGross: number;
   overseasGross: number;
+  overseasGrossUsd: number;
   worldwideGross: number;
 };
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats>({
-    movies: 0,
-    people: 0,
-    companies: 0,
-    indiaGross: 0,
-    overseasGross: 0,
-    worldwideGross: 0,
-  });
+ const [stats, setStats] = useState<DashboardStats>({
+  movies: 0,
+  people: 0,
+  companies: 0,
+  indiaGross: 0,
+  overseasGross: 0,
+  overseasGrossUsd: 0,
+  worldwideGross: 0,
+}); 
 
   const [loading, setLoading] = useState(true);
   const [recentMovies, setRecentMovies] = useState<
@@ -137,7 +139,7 @@ const [recentPeople, setRecentPeople] = useState<
         error: overseasError,
       } = await supabase
         .from("movie_overseas_box_office")
-        .select("gross_inr");
+.select("gross_inr, gross_usd");
 
       if (overseasError) {
         console.error(
@@ -153,6 +155,14 @@ const [recentPeople, setRecentPeople] = useState<
           total + Number(row.gross_inr || 0),
         0
       );
+
+      const overseasGrossUsd = (
+  overseasData || []
+).reduce(
+  (total, row) =>
+    total + Number(row.gross_usd || 0),
+  0
+);
 
       // ============================================
       // WORLDWIDE
@@ -208,13 +218,14 @@ setRecentPeople(peopleData || []);
 // ============================================
 
 setStats({
-        movies: moviesResult.count ?? 0,
-        people: peopleResult.count ?? 0,
-        companies: companiesResult.count ?? 0,
-        indiaGross,
-        overseasGross,
-        worldwideGross,
-      });
+  movies: moviesResult.count ?? 0,
+  people: peopleResult.count ?? 0,
+  companies: companiesResult.count ?? 0,
+  indiaGross,
+  overseasGross,
+  overseasGrossUsd,
+  worldwideGross,
+});
     } catch (error) {
       console.error(
         "Dashboard statistics error:",
@@ -247,6 +258,35 @@ setStats({
       }).format(value)
     );
   }
+
+  function formatUSD(value: number) {
+  if (!value) {
+    return "$0";
+  }
+
+  if (value >= 1000000) {
+    return (
+      "$" +
+      (value / 1000000).toFixed(2) +
+      "M"
+    );
+  }
+
+  if (value >= 1000) {
+    return (
+      "$" +
+      (value / 1000).toFixed(2) +
+      "K"
+    );
+  }
+
+  return (
+    "$" +
+    new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 2,
+    }).format(value)
+  );
+}
 
   // ============================================
   // LOADING
@@ -304,6 +344,11 @@ setStats({
           title="Worldwide Gross"
           value={formatMoney(stats.worldwideGross)}
         />
+
+        <StatCard
+  title="Overseas Gross (USD)"
+  value={formatUSD(stats.overseasGrossUsd)}
+/>
 
       </div>
 
