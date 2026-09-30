@@ -1,22 +1,70 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import Link from "next/link";
 import PublicHeader from "../../components/PublicHeader";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
-    setSubmitted(true);
+
+    if (submitting) return;
+
+    setSubmitting(true);
+    setError("");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    const payload = {
+      name: String(formData.get("name") || ""),
+      email: String(formData.get("email") || ""),
+      subject: String(formData.get("subject") || ""),
+      message: String(formData.get("message") || ""),
+      website: String(formData.get("website") || ""),
+    };
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ||
+            "Something went wrong while sending your enquiry."
+        );
+      }
+
+      setSubmitted(true);
+      form.reset();
+    } catch (err) {
+      console.error("Contact form error:", err);
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong while sending your enquiry. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
     <main className="min-h-screen bg-black text-zinc-300">
       <PublicHeader />
-
-      
 
       {/* Hero */}
       <section className="border-b border-zinc-900 bg-zinc-950/60">
@@ -79,6 +127,34 @@ export default function ContactPage() {
               />
             </div>
 
+            {/* Email Contact */}
+            <div className="mt-8 border-t border-zinc-900 pt-6">
+              <div className="text-[8px] font-semibold uppercase tracking-[0.18em] text-violet-500">
+                Email JMI
+              </div>
+
+              <p className="mt-3 text-[11px] leading-5 text-zinc-500">
+                You can also contact the JMI team directly using either of
+                the following email addresses.
+              </p>
+
+              <div className="mt-4 space-y-2">
+                <a
+                  href="mailto:janalytics6@gmail.com"
+                  className="block text-[11px] text-zinc-300 transition hover:text-violet-300"
+                >
+                  janalytics6@gmail.com
+                </a>
+
+                <a
+                  href="mailto:support@jeruto.com"
+                  className="block text-[11px] text-zinc-300 transition hover:text-violet-300"
+                >
+                  support@jeruto.com
+                </a>
+              </div>
+            </div>
+
             <div className="mt-8 border-t border-zinc-900 pt-6">
               <div className="text-[8px] font-semibold uppercase tracking-[0.18em] text-red-500">
                 Before contacting us
@@ -105,27 +181,54 @@ export default function ContactPage() {
             </div>
 
             {submitted ? (
-              <div className="border border-green-500/20 bg-green-500/5 p-5">
+              <div
+                className="border border-green-500/20 bg-green-500/5 p-5"
+                aria-live="polite"
+              >
                 <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-green-400">
                   Message received
                 </div>
 
                 <p className="mt-3 text-[12px] leading-6 text-zinc-500">
-                  Your message has been prepared successfully. The contact
-                  form backend can be connected when JMI&apos;s production
-                  communication system is configured.
+                  Your enquiry has been successfully sent to the JMI team.
+                  Your message has also been recorded securely for our
+                  reference.
                 </p>
 
                 <button
                   type="button"
-                  onClick={() => setSubmitted(false)}
+                  onClick={() => {
+                    setSubmitted(false);
+                    setError("");
+                  }}
                   className="mt-5 text-[9px] font-semibold uppercase tracking-[0.16em] text-zinc-500 transition hover:text-white"
                 >
                   Send another message
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-5"
+              >
+                {/* Honeypot field */}
+                <div
+                  className="absolute -left-[9999px] h-0 w-0 overflow-hidden"
+                  aria-hidden="true"
+                >
+                  <label htmlFor="website">
+                    Website
+                  </label>
+
+                  <input
+                    id="website"
+                    name="website"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </div>
+
                 <div>
                   <label
                     htmlFor="name"
@@ -139,6 +242,7 @@ export default function ContactPage() {
                     name="name"
                     type="text"
                     required
+                    maxLength={100}
                     placeholder="Your name"
                     className="w-full border border-zinc-800 bg-black px-3 py-2.5 text-[12px] text-zinc-200 outline-none placeholder:text-zinc-700 focus:border-violet-500/50"
                   />
@@ -157,6 +261,7 @@ export default function ContactPage() {
                     name="email"
                     type="email"
                     required
+                    maxLength={254}
                     placeholder="you@example.com"
                     className="w-full border border-zinc-800 bg-black px-3 py-2.5 text-[12px] text-zinc-200 outline-none placeholder:text-zinc-700 focus:border-violet-500/50"
                   />
@@ -180,18 +285,23 @@ export default function ContactPage() {
                     <option value="" disabled>
                       Select a topic
                     </option>
+
                     <option value="data-correction">
                       Data Correction
                     </option>
+
                     <option value="box-office">
                       Box Office / Trade Data
                     </option>
+
                     <option value="copyright">
                       Copyright &amp; Content
                     </option>
+
                     <option value="business">
                       Business / Collaboration
                     </option>
+
                     <option value="general">
                       General Enquiry
                     </option>
@@ -210,17 +320,33 @@ export default function ContactPage() {
                     id="message"
                     name="message"
                     required
+                    minLength={10}
+                    maxLength={5000}
                     rows={7}
                     placeholder="Write your message..."
                     className="w-full resize-y border border-zinc-800 bg-black px-3 py-2.5 text-[12px] leading-5 text-zinc-200 outline-none placeholder:text-zinc-700 focus:border-violet-500/50"
                   />
                 </div>
 
+                {error && (
+                  <div
+                    className="border border-red-500/20 bg-red-500/5 px-4 py-3"
+                    aria-live="polite"
+                  >
+                    <p className="text-[10px] leading-5 text-red-400">
+                      {error}
+                    </p>
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full border border-violet-500/40 bg-violet-500/10 px-4 py-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-violet-300 transition hover:border-violet-400/60 hover:bg-violet-500/15 hover:text-white"
+                  disabled={submitting}
+                  className="w-full border border-violet-500/40 bg-violet-500/10 px-4 py-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-violet-300 transition hover:border-violet-400/60 hover:bg-violet-500/15 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Send Enquiry
+                  {submitting
+                    ? "Sending..."
+                    : "Send Enquiry"}
                 </button>
 
                 <p className="text-[9px] leading-5 text-zinc-500">
@@ -262,20 +388,13 @@ export default function ContactPage() {
             </p>
           </div>
         </div>
-
       </section>
-
-      
 
       {/* Footer */}
       <footer className="border-t border-zinc-900">
-
         <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
-
           <div className="flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
-
             <div>
-
               <p className="font-serif text-sm font-medium text-zinc-300">
                 Jeruto{" "}
                 <span className="text-yellow-400">
@@ -284,19 +403,15 @@ export default function ContactPage() {
               </p>
 
               <p className="mt-1 text-[9px] text-zinc-500">
-                India's Next Generation Movie Intelligence Platform
+                India&apos;s Next Generation Movie Intelligence Platform
               </p>
-
             </div>
 
             <p className="text-[9px] text-zinc-500">
-              JMI · People Intelligence
+              JMI · Contact
             </p>
-
           </div>
-
         </div>
-
       </footer>
     </main>
   );

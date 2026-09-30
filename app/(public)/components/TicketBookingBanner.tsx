@@ -49,7 +49,7 @@ export default function TicketBookingBanner() {
         <span className="h-px flex-1 bg-zinc-900" />
       </div>
 
-      <p className="max-w-2xl text-[12px] leading-5 text-pink-500/90">
+      <p className="max-w-2xl text-[12px] leading-5 text-zinc-500/90">
     Explore JMI's Ticket Booking Section. Choose your Favorite Movie and lock your Favorite day and Show Time, We will redirect to your booking point on your favorite booking platforms.
   </p>
 

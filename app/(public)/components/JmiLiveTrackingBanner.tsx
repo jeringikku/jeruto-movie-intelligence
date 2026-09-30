@@ -60,7 +60,7 @@ export default function AdvanceBookingBanner() {
 
       <div className="mx-auto max-w-6xl px-5 pb-3 sm:px-6 lg:px-8">
 
-  <p className="max-w-2xl text-[12px] leading-5 text-zinc-500">
+  <p className="max-w-xl text-[11px] leading-5 text-zinc-500/95">
     JMI's Exclusive Live Tracking intelligence follows upcoming movies through ongoing theatrical
     advance bookings and pre-sales box office numbers that keep updates real-time.
   </p>
