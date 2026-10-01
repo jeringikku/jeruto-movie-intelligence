@@ -6,6 +6,7 @@ import TicketBookingBanner from "../components/TicketBookingBanner";
 import ComparisonIntelligenceBanner from "../components/ComparisonIntelligenceBanner";
 import JmiLiveTicker from "../components/JmiLiveTicker";
 import JmiLiveTrackingBanner from "../components/JmiLiveTrackingBanner";
+import JmiExclusiveNewsBanner from "../components/JmiExclusiveNewsBanner";
 import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -49,6 +50,36 @@ export default async function PublicPreview() {
     console.error(
       "Homepage banners error:",
       homepageBannersError
+    );
+  }
+
+  // ============================================================
+  // JMI EXCLUSIVE NEWS
+  // ============================================================
+
+  const { data: exclusiveNews, error: exclusiveNewsError } =
+    await supabase
+      .from("jmi_news_articles")
+      .select(`
+        id,
+        slug,
+        article_type,
+        title,
+        excerpt,
+        thumbnail_url,
+        published_at
+      `)
+      .eq("status", "published")
+      .not("published_at", "is", null)
+      .order("published_at", {
+        ascending: false,
+      })
+      .limit(8);
+
+  if (exclusiveNewsError) {
+    console.error(
+      "JMI Exclusive News error:",
+      exclusiveNewsError
     );
   }
 
@@ -487,6 +518,10 @@ export default async function PublicPreview() {
   
 
         <JmiLiveTrackingBanner />
+
+         <JmiExclusiveNewsBanner
+          articles={exclusiveNews ?? []}
+        />
 
         {/* =====================================================
     WHAT JMI PROVIDES

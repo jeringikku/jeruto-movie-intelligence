@@ -12,10 +12,10 @@ export async function generateMetadata({
   const { movieId } = await params;
 
   const { data: movie } = await supabase
-    .from("movies")
-    .select("id, title, original_title, release_year, synopsis, poster_url")
-    .eq("id", movieId)
-    .maybeSingle();
+  .from("movies")
+  .select("id, title, original_title, release_year, synopsis, poster_url, slug")
+  .eq("slug", movieId)
+  .maybeSingle();
 
   if (!movie) {
     return {
@@ -74,6 +74,7 @@ export default async function MovieIntelligencePage({
     .from("movies")
     .select(`
       id,
+      slug,
       title,
       original_title,
       release_year,
@@ -106,6 +107,25 @@ export default async function MovieIntelligencePage({
   if (error || !movie) {
     console.error("JMI Movie Intelligence Error:", error);
     notFound();
+  }
+
+  // =====================================================
+  // MOVIE PAGE VIEWS
+  // =====================================================
+
+  const { data: movieViewCount, error: movieViewError } =
+    await supabase.rpc(
+      "jmi_increment_movie_views",
+      {
+        p_movie_id: movie.id,
+      }
+    );
+
+  if (movieViewError) {
+    console.error(
+      "JMI Movie View Counter Error:",
+      movieViewError
+    );
   }
 
   // =====================================================
@@ -274,14 +294,34 @@ const worldwideGross =
 
           <div className="mx-auto max-w-6xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
 
-            {/* Back */}
+  {/* Top Navigation + Movie Views */}
 
-            <Link
-              href="/preview/movies"
-              className="text-[9px] uppercase tracking-[0.2em] text-violet-500 transition hover:text-violet-400"
-            >
-              ← All Movies
-            </Link>
+  <div className="flex items-start justify-between gap-4">
+
+    {/* Back */}
+
+    <Link
+      href="/preview/movies"
+      className="pt-2 text-[9px] uppercase tracking-[0.2em] text-violet-500 transition hover:text-violet-400"
+    >
+      ← All Movies
+    </Link>
+
+    {/* Movie Page Views */}
+
+    <div className="flex flex-shrink-0 items-center gap-2 rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1">
+
+  <p className="text-[6px] uppercase tracking-[0.12em] text-zinc-400">
+    Total Page Views
+  </p>
+
+  <p className="text-[9px] font-medium text-pink-400">
+    {Number(movieViewCount || 0).toLocaleString("en-IN")}
+  </p>
+
+</div>
+
+  </div>
 
             {/* Movie Hero */}
 
