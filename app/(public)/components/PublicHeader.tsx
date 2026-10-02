@@ -120,6 +120,10 @@ export default function PublicHeader() {
       href: "/preview/industries",
     },
     {
+  label: "JMI Fun Zone",
+  href: "/preview/fun-zone",
+},
+    {
       label: "Book Tickets With JMI",
       href: "/preview/book-tickets",
     },

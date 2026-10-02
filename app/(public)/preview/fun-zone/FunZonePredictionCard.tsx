@@ -114,7 +114,7 @@ function FunZonePredictionCard({
       {/* CARD BODY */}
 
       <div className="p-5">
-        <p className="text-xs leading-5 text-zinc-500">
+        <p className="text-xs leading-5 text-zinc-400">
           Predict the movie's next-day collection. Your
           prediction will be compared with the actual JMI
           collection after the day is completed.
@@ -132,7 +132,7 @@ function FunZonePredictionCard({
                   Prediction Submitted
                 </p>
 
-                <p className="mt-1 text-[10px] text-zinc-600">
+                <p className="mt-1 text-[10px] text-zinc-400">
                   Your prediction is locked for this challenge.
                 </p>
               </div>
@@ -140,11 +140,11 @@ function FunZonePredictionCard({
           </div>
         ) : !isPredictionWindow ? (
           <div className="mt-5 rounded-lg border border-zinc-800 bg-black p-4">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-red-500">
               Challenge Locked
             </p>
 
-            <p className="mt-1 text-xs text-zinc-700">
+            <p className="mt-1 text-xs text-green-500">
               Predictions open at 07:00 AM IST.
             </p>
           </div>
@@ -155,7 +155,7 @@ function FunZonePredictionCard({
             <div className="mt-5">
               <label
                 htmlFor={`prediction-${challenge.id}`}
-                className="mb-2 block text-[8px] font-semibold uppercase tracking-[0.15em] text-zinc-500"
+                className="mb-2 block text-[8px] font-semibold uppercase tracking-[0.15em] text-zinc-400"
               >
                 Your Predicted Collection
               </label>
@@ -181,7 +181,7 @@ function FunZonePredictionCard({
                 />
               </div>
 
-              <p className="mt-2 text-[8px] text-zinc-700">
+              <p className="mt-2 text-[8px] text-zinc-500">
                 Enter the expected JMI collection figure.
               </p>
             </div>
@@ -209,7 +209,7 @@ function FunZonePredictionCard({
                 : "Submit Prediction"}
             </button>
 
-            <p className="mt-3 text-center text-[8px] text-zinc-700">
+            <p className="mt-3 text-center text-[8px] text-zinc-500">
               One prediction per movie. Predictions cannot be
               changed after submission.
             </p>

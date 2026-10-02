@@ -7,6 +7,7 @@ import ComparisonIntelligenceBanner from "../components/ComparisonIntelligenceBa
 import JmiLiveTicker from "../components/JmiLiveTicker";
 import JmiLiveTrackingBanner from "../components/JmiLiveTrackingBanner";
 import JmiExclusiveNewsBanner from "../components/JmiExclusiveNewsBanner";
+import JmiFunZoneBanner from "../components/JmiFunZoneBanner";
 import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -725,6 +726,8 @@ export default async function PublicPreview() {
 
 <ComparisonIntelligenceBanner />
 
+<JmiFunZoneBanner />
+
         {/* =====================================================
     RECENT MOVIES
 ===================================================== */}
@@ -983,15 +986,9 @@ export default async function PublicPreview() {
 
                 <div className="mt-7 grid gap-2 md:grid-cols-3">
 
-                  <FutureCard
-                    title="Live Tracking 🚨"
-                    description="Real-time India and overseas market intelligence."
-                  />
+                  
 
-                  <FutureCard
-                    title="JMI Game Zone 🎮"
-                    description="Engage in Cinema oriented Games and entertainments."
-                  />
+                 
 
                   <FutureCard
                     title="JMI AI 👨‍🔧"
