@@ -74,7 +74,7 @@ export default function JmiFunZoneBanner() {
           </h2>
 
           <p className="mt-2 max-w-2xl text-[11px] leading-5 text-zinc-400 sm:text-xs">
-            JMI Fun Zone is purely desinged for entertainment and Fun & not any serous game. Test your box-office instincts in the JMI Fun Zone, Mark your projected guesses about tomorrow's numbers and
+            JMI Fun Zone is purely desinged for the entertainment purpose only &  includes any serious games involving real money or money worth rewards. Test your box-office instincts in the JMI Fun Zone, Mark your projected guesses about tomorrow's numbers and
             see how closely your predictions match the actual JMI
             collection figures.
           </p>

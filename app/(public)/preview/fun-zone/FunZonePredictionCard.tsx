@@ -7,6 +7,7 @@ type Challenge = {
   movie_id: number;
   challenge_date: string;
   movie_title: string;
+  poster_url: string | null;
 };
 
 type Props = {
@@ -89,27 +90,59 @@ function FunZonePredictionCard({
 
   return (
     <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
-      {/* CARD HEADER */}
+     {/* CARD HEADER */}
 
-      <div className="border-b border-zinc-900 px-5 py-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-[8px] uppercase tracking-[0.18em] text-zinc-600">
-              Movie Challenge
-            </p>
+<div className="border-b border-zinc-900 px-5 py-4">
+  <div className="flex items-center justify-between gap-4">
 
-            <h3 className="mt-1 text-lg font-semibold text-white">
-              {challenge.movie_title}
-            </h3>
+    {/* MOVIE IDENTITY */}
+
+    <div className="flex min-w-0 items-center gap-3">
+
+      {/* POSTER */}
+
+      <div className="h-32 w-22 shrink-0 overflow-hidden rounded-md border border-zinc-800 bg-black">
+        {challenge.poster_url ? (
+          <img
+            src={challenge.poster_url}
+            alt={`${challenge.movie_title} poster`}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-[7px] uppercase tracking-[0.08em] text-zinc-700">
+            JMI
           </div>
-
-          <div className="rounded-md border border-violet-500/20 bg-violet-500/10 px-2 py-1">
-            <span className="text-[8px] font-semibold uppercase tracking-[0.12em] text-violet-400">
-              Daily
-            </span>
-          </div>
-        </div>
+        )}
       </div>
+
+      {/* TITLE */}
+
+      <div className="min-w-0">
+        <p className="text-[8px] uppercase tracking-[0.18em] text-green-500">
+          Active Challenge
+        </p>
+
+        <h3 className="mt-1 truncate text-base font-semibold text-white sm:text-lg">
+          {challenge.movie_title}
+        </h3>
+
+        <p className="mt-1 text-[7px] uppercase tracking-[0.12em] text-yellow-500">
+          Next-Day Collection Prediction
+        </p>
+      </div>
+
+    </div>
+
+    {/* DAILY BADGE */}
+
+    <div className="shrink-0 rounded-md border border-violet-500/20 bg-violet-500/10 px-2 py-1">
+      <span className="text-[8px] font-semibold uppercase tracking-[0.12em] text-violet-400">
+        Daily
+      </span>
+    </div>
+
+  </div>
+</div>
 
       {/* CARD BODY */}
 

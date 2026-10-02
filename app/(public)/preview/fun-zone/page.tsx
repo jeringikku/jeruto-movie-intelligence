@@ -96,7 +96,8 @@ export default async function FunZonePage() {
         .from("movies")
         .select(`
           id,
-          title
+          title,
+          poster_url
         `)
         .in("id", movieIds);
 
@@ -114,13 +115,16 @@ export default async function FunZonePage() {
   });
 
   const funZoneChallenges = challengeRows.map((challenge) => ({
-    id: Number(challenge.id),
-    movie_id: Number(challenge.movie_id),
-    challenge_date: challenge.challenge_date,
-    movie_title:
-      movieMap.get(Number(challenge.movie_id))?.title ||
-      "Unknown Movie",
-  }));
+  id: Number(challenge.id),
+  movie_id: Number(challenge.movie_id),
+  challenge_date: challenge.challenge_date,
+  movie_title:
+    movieMap.get(Number(challenge.movie_id))?.title ||
+    "Unknown Movie",
+  poster_url:
+    movieMap.get(Number(challenge.movie_id))?.poster_url ||
+    null,
+}));
 
   // ---------------------------------------------------------
   // LOAD EXISTING USER PREDICTIONS
@@ -271,26 +275,34 @@ export default async function FunZonePage() {
         {/* NOT LOGGED IN */}
 
         {!user ? (
-          <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-8 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-violet-500/30 bg-violet-500/10 text-xl">
-              🎯
-            </div>
+  <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-8 text-center">
+    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-violet-500/30 bg-violet-500/10 text-xl">
+      🎯
+    </div>
 
-            <h2 className="mt-4 text-lg font-semibold text-white">
-              Sign in to enter the Fun Zone
-            </h2>
+    <h2 className="mt-4 text-lg font-semibold text-white">
+      Sign in to enter the Fun Zone
+    </h2>
 
-            <p className="mx-auto mt-2 max-w-md text-xs leading-5 text-zinc-500">
-              JMI Fun Zone is available to registered JMI members.
-              Sign in to participate in daily movie collection
-              challenges and build your JMI Points.
-            </p>
+    <p className="mx-auto mt-2 max-w-md text-xs leading-5 text-zinc-500">
+      JMI Fun Zone is available to registered JMI members.
+      Sign in to participate in daily movie collection
+      challenges and build your JMI Points.
+    </p>
 
-            <p className="mt-5 text-[9px] uppercase tracking-[0.16em] text-yellow-400">
-              Use the Sign In option in the JMI navigation
-            </p>
-          </div>
-        ) : (
+    <a
+      href="/login"
+      className="mt-6 inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-400 px-6 py-3 text-[9px] font-bold uppercase tracking-[0.16em] text-black transition hover:bg-yellow-300"
+    >
+      Sign In to JMI
+      <span className="text-xs">→</span>
+    </a>
+
+    <p className="mt-4 text-[8px] uppercase tracking-[0.14em] text-zinc-600">
+      Registered JMI members only
+    </p>
+  </div>
+) : (
           <>
             {/* LOCKED WINDOW */}
 
