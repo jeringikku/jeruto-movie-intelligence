@@ -123,6 +123,10 @@ export default function PublicHeader() {
       label: "Book Tickets With JMI",
       href: "/preview/book-tickets",
     },
+     {
+    label: "JMI Exclusive News",
+    href: "/preview/news",
+  },
   ];
 
   /* =========================================================
