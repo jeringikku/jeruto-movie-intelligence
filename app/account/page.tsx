@@ -7,132 +7,75 @@ import { supabaseBrowser } from "@/lib/supabase-browser";
 import PublicHeader from "@/app/(public)/components/PublicHeader";
 
 /* ============================================================
-   JMI PROFILE AVATARS
+   JMI PROFESSIONAL AVATARS
 
-   Human-style illustrated profile portraits.
-   Different age groups, genders and appearances.
+   Clean, professional profile identities.
+   No comic characters or exaggerated faces.
+
+   These use DiceBear's initials style, so no image files
+   are stored in Supabase.
    ============================================================ */
 
 const avatarOptions = [
   {
-    id: "young-man-01",
-    label: "Young Man",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=young-man-01&backgroundColor=1f2937",
+    id: "jmi-black",
+    label: "JMI Black",
+    url: "https://api.dicebear.com/10.x/initials/svg?seed=JMI&backgroundColor=09090b&fontFamily=Arial&fontWeight=600&fontSize=38&textColor=f4f4f5",
   },
   {
-    id: "young-woman-01",
-    label: "Young Woman",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=young-woman-01&backgroundColor=312e81",
+    id: "jmi-violet",
+    label: "JMI Violet",
+    url: "https://api.dicebear.com/10.x/initials/svg?seed=JMI&backgroundColor=312e81&fontFamily=Arial&fontWeight=600&fontSize=38&textColor=ede9fe",
   },
   {
-    id: "young-man-02",
-    label: "Young Man",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=young-man-02&backgroundColor=334155",
+    id: "jmi-gold",
+    label: "JMI Gold",
+    url: "https://api.dicebear.com/10.x/initials/svg?seed=JMI&backgroundColor=713f12&fontFamily=Arial&fontWeight=600&fontSize=38&textColor=fef3c7",
   },
   {
-    id: "young-woman-02",
-    label: "Young Woman",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=young-woman-02&backgroundColor=4c1d95",
+    id: "professional-01",
+    label: "Professional 01",
+    url: "https://api.dicebear.com/10.x/initials/svg?seed=Alex&backgroundColor=18181b&fontFamily=Arial&fontWeight=600&fontSize=38&textColor=e4e4e7",
   },
   {
-    id: "adult-man-01",
-    label: "Adult Man",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=adult-man-01&backgroundColor=1e293b",
+    id: "professional-02",
+    label: "Professional 02",
+    url: "https://api.dicebear.com/10.x/initials/svg?seed=Aria&backgroundColor=1e1b4b&fontFamily=Arial&fontWeight=600&fontSize=38&textColor=e0e7ff",
   },
   {
-    id: "adult-woman-01",
-    label: "Adult Woman",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=adult-woman-01&backgroundColor=3b0764",
+    id: "professional-03",
+    label: "Professional 03",
+    url: "https://api.dicebear.com/10.x/initials/svg?seed=Sam&backgroundColor=172554&fontFamily=Arial&fontWeight=600&fontSize=38&textColor=dbeafe",
   },
   {
-    id: "adult-man-02",
-    label: "Adult Man",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=adult-man-02&backgroundColor=172554",
+    id: "professional-04",
+    label: "Professional 04",
+    url: "https://api.dicebear.com/10.x/initials/svg?seed=Riya&backgroundColor=4a044e&fontFamily=Arial&fontWeight=600&fontSize=38&textColor=f5d0fe",
   },
   {
-    id: "adult-woman-02",
-    label: "Adult Woman",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=adult-woman-02&backgroundColor=422006",
+    id: "professional-05",
+    label: "Professional 05",
+    url: "https://api.dicebear.com/10.x/initials/svg?seed=Dev&backgroundColor=422006&fontFamily=Arial&fontWeight=600&fontSize=38&textColor=fef3c7",
   },
   {
-    id: "young-man-03",
-    label: "Young Man",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=young-man-03&backgroundColor=0f172a",
+    id: "professional-06",
+    label: "Professional 06",
+    url: "https://api.dicebear.com/10.x/initials/svg?seed=Maya&backgroundColor=0c4a6e&fontFamily=Arial&fontWeight=600&fontSize=38&textColor=e0f2fe",
   },
   {
-    id: "young-woman-03",
-    label: "Young Woman",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=young-woman-03&backgroundColor=581c87",
+    id: "professional-07",
+    label: "Professional 07",
+    url: "https://api.dicebear.com/10.x/initials/svg?seed=Ryan&backgroundColor=1c1917&fontFamily=Arial&fontWeight=600&fontSize=38&textColor=f5f5f4",
   },
   {
-    id: "adult-man-03",
-    label: "Adult Man",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=adult-man-03&backgroundColor=1c1917",
+    id: "professional-08",
+    label: "Professional 08",
+    url: "https://api.dicebear.com/10.x/initials/svg?seed=Anya&backgroundColor=581c87&fontFamily=Arial&fontWeight=600&fontSize=38&textColor=f3e8ff",
   },
   {
-    id: "adult-woman-03",
-    label: "Adult Woman",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=adult-woman-03&backgroundColor=172554",
-  },
-  {
-    id: "mature-man-01",
-    label: "Mature Man",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=mature-man-01&backgroundColor=292524",
-  },
-  {
-    id: "mature-woman-01",
-    label: "Mature Woman",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=mature-woman-01&backgroundColor=3f3f46",
-  },
-  {
-    id: "mature-man-02",
-    label: "Mature Man",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=mature-man-02&backgroundColor=1e293b",
-  },
-  {
-    id: "mature-woman-02",
-    label: "Mature Woman",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=mature-woman-02&backgroundColor=4c1d95",
-  },
-  {
-    id: "adult-man-04",
-    label: "Adult Man",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=adult-man-04&backgroundColor=0c4a6e",
-  },
-  {
-    id: "adult-woman-04",
-    label: "Adult Woman",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=adult-woman-04&backgroundColor=701a75",
-  },
-  {
-    id: "young-man-04",
-    label: "Young Man",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=young-man-04&backgroundColor=1e1b4b",
-  },
-  {
-    id: "young-woman-04",
-    label: "Young Woman",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=young-woman-04&backgroundColor=3f3f46",
-  },
-  {
-    id: "mature-man-03",
-    label: "Mature Man",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=mature-man-03&backgroundColor=18181b",
-  },
-  {
-    id: "mature-woman-03",
-    label: "Mature Woman",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=mature-woman-03&backgroundColor=312e81",
-  },
-  {
-    id: "adult-man-05",
-    label: "Adult Man",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=adult-man-05&backgroundColor=111827",
-  },
-  {
-    id: "adult-woman-05",
-    label: "Adult Woman",
-    url: "https://api.dicebear.com/10.x/personas/svg?seed=adult-woman-05&backgroundColor=4a044e",
+    id: "professional-09",
+    label: "Professional 09",
+    url: "https://api.dicebear.com/10.x/initials/svg?seed=Noah&backgroundColor=334155&fontFamily=Arial&fontWeight=600&fontSize=38&textColor=e2e8f0",
   },
 ];
 
@@ -234,6 +177,26 @@ type ProfileInfo = {
   avatarUrl: string;
 };
 
+type FunZoneStats = {
+  totalPredictions: number;
+  scoredPredictions: number;
+  totalPoints: number;
+  accuratePredictions: number;
+  averageAccuracy: number;
+  bestAccuracy: number;
+  bestPoints: number;
+};
+
+const emptyStats: FunZoneStats = {
+  totalPredictions: 0,
+  scoredPredictions: 0,
+  totalPoints: 0,
+  accuratePredictions: 0,
+  averageAccuracy: 0,
+  bestAccuracy: 0,
+  bestPoints: 0,
+};
+
 const emptyProfile: ProfileInfo = {
   fullName: "",
   age: null,
@@ -260,7 +223,16 @@ export default function AccountPage() {
   const [editProfile, setEditProfile] =
     useState<ProfileInfo>(emptyProfile);
 
+  const [funZoneStats, setFunZoneStats] =
+    useState<FunZoneStats>(emptyStats);
+
+  const [statsLoading, setStatsLoading] =
+    useState(true);
+
   const [showAvatars, setShowAvatars] =
+    useState(false);
+
+  const [showCustomImage, setShowCustomImage] =
     useState(false);
 
   const [editing, setEditing] =
@@ -371,8 +343,74 @@ export default function AccountPage() {
       setProfile(loadedProfile);
       setEditProfile(loadedProfile);
 
-      if (mounted) {
-        setLoading(false);
+      setLoading(false);
+
+      /* --------------------------------------------------------
+         Load JMI Fun Zone statistics
+         -------------------------------------------------------- */
+
+      try {
+        const response =
+          await fetch(
+            "/api/fun-zone/stats",
+            {
+              method: "GET",
+              cache: "no-store",
+            }
+          );
+
+        if (response.ok) {
+          const data =
+            await response.json();
+
+          if (mounted) {
+            setFunZoneStats({
+              totalPredictions:
+                Number(
+                  data.totalPredictions || 0
+                ),
+
+              scoredPredictions:
+                Number(
+                  data.scoredPredictions || 0
+                ),
+
+              totalPoints:
+                Number(
+                  data.totalPoints || 0
+                ),
+
+              accuratePredictions:
+                Number(
+                  data.accuratePredictions || 0
+                ),
+
+              averageAccuracy:
+                Number(
+                  data.averageAccuracy || 0
+                ),
+
+              bestAccuracy:
+                Number(
+                  data.bestAccuracy || 0
+                ),
+
+              bestPoints:
+                Number(
+                  data.bestPoints || 0
+                ),
+            });
+          }
+        }
+      } catch (error) {
+        console.error(
+          "Fun Zone statistics loading error:",
+          error
+        );
+      } finally {
+        if (mounted) {
+          setStatsLoading(false);
+        }
       }
     }
 
@@ -401,7 +439,8 @@ export default function AccountPage() {
 
       profile.country,
 
-      profile.avatarId,
+      profile.avatarId ||
+        profile.avatarUrl,
     ];
 
     const completed =
@@ -506,6 +545,41 @@ export default function AccountPage() {
     }
 
     /* ==========================================================
+       VALIDATE CUSTOM IMAGE URL
+       ========================================================== */
+
+    const trimmedAvatarUrl =
+      editProfile.avatarUrl.trim();
+
+    if (trimmedAvatarUrl) {
+      try {
+        const parsedUrl =
+          new URL(
+            trimmedAvatarUrl
+          );
+
+        if (
+          parsedUrl.protocol !==
+            "http:" &&
+          parsedUrl.protocol !==
+            "https:"
+        ) {
+          throw new Error(
+            "Invalid protocol"
+          );
+        }
+      } catch {
+        setErrorMessage(
+          "Please enter a valid public image URL beginning with http:// or https://."
+        );
+
+        setSaving(false);
+
+        return;
+      }
+    }
+
+    /* ==========================================================
        FIND SELECTED AVATAR
        ========================================================== */
 
@@ -516,9 +590,14 @@ export default function AccountPage() {
           editProfile.avatarId
       );
 
+    /*
+     * If a custom URL exists, use it.
+     * Otherwise use the selected JMI avatar.
+     */
+
     const avatarUrl =
+      trimmedAvatarUrl ||
       avatar?.url ||
-      editProfile.avatarUrl ||
       "";
 
     /* ==========================================================
@@ -546,9 +625,15 @@ export default function AccountPage() {
         editProfile.country ||
         null,
 
+      /*
+       * A custom image does not need an avatar ID.
+       */
+
       avatar_id:
-        editProfile.avatarId ||
-        null,
+        trimmedAvatarUrl
+          ? null
+          : editProfile.avatarId ||
+            null,
 
       avatar_url:
         avatarUrl ||
@@ -570,7 +655,7 @@ export default function AccountPage() {
       .maybeSingle();
 
     /* ==========================================================
-       HANDLE EXPIRED SESSION / UPDATE ERROR
+       HANDLE UPDATE ERROR
        ========================================================== */
 
     if (updateError) {
@@ -662,7 +747,9 @@ export default function AccountPage() {
         editProfile.country,
 
       avatarId:
-        editProfile.avatarId,
+        trimmedAvatarUrl
+          ? ""
+          : editProfile.avatarId,
 
       avatarUrl,
     };
@@ -674,6 +761,8 @@ export default function AccountPage() {
     setEditing(false);
 
     setShowAvatars(false);
+
+    setShowCustomImage(false);
 
     setMessage(
       "Profile updated successfully."
@@ -690,6 +779,7 @@ export default function AccountPage() {
     setEditProfile(profile);
     setEditing(false);
     setShowAvatars(false);
+    setShowCustomImage(false);
     setMessage("");
     setErrorMessage("");
   }
@@ -710,7 +800,24 @@ export default function AccountPage() {
       })
     );
 
+    setShowCustomImage(false);
     setShowAvatars(false);
+  }
+
+  /* ==========================================================
+     CUSTOM IMAGE URL
+     ========================================================== */
+
+  function handleCustomImageUrlChange(
+    value: string
+  ) {
+    setEditProfile(
+      (current) => ({
+        ...current,
+        avatarId: "",
+        avatarUrl: value,
+      })
+    );
   }
 
   /* ==========================================================
@@ -768,6 +875,20 @@ export default function AccountPage() {
   }
 
   /* ==========================================================
+     NUMBER FORMAT
+     ========================================================== */
+
+  function formatNumber(
+    value: number
+  ) {
+    return Number(
+      value || 0
+    ).toLocaleString(
+      "en-IN"
+    );
+  }
+
+  /* ==========================================================
      DISPLAY AVATARS
      ========================================================== */
 
@@ -790,7 +911,7 @@ export default function AccountPage() {
 
         <main className="min-h-screen bg-[#050507] px-4 pb-20 pt-28 text-zinc-100">
 
-          <div className="mx-auto max-w-4xl">
+          <div className="mx-auto max-w-5xl">
 
             <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-8 text-center shadow-2xl">
 
@@ -819,26 +940,21 @@ export default function AccountPage() {
 
       <main className="min-h-screen bg-[#050507] px-4 pb-20 pt-24 text-zinc-100 sm:px-6">
 
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-5xl">
 
           {/* ==================================================
               PAGE HEADER
           ================================================== */}
 
-          <div className="mb-1">
+          <div className="mb-7">
 
-            {/* ==================================================
-                BACK TO JMI HOME
-            ================================================== */}
-
-            <div className="mb-6">
+            <div className="mb-5">
 
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 text-[9px] text-violet-400 transition hover:text-zinc-300"
+                className="inline-flex items-center gap-2 text-[9px] font-medium uppercase tracking-[0.12em] text-violet-400 transition hover:text-violet-300"
               >
                 <span>←</span>
-
                 <span>
                   Back to JMI Home
                 </span>
@@ -846,23 +962,23 @@ export default function AccountPage() {
 
             </div>
 
-            <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-violet-400/20 bg-violet-500/[0.08] px-3 py-1">
+            <div className="inline-flex items-center gap-3 rounded-full border border-violet-400/20 bg-violet-500/[0.08] px-3 py-1">
 
               <span className="h-1.5 w-1.5 rounded-full bg-violet-400 shadow-[0_0_10px_rgba(167,139,250,0.9)]" />
 
               <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-violet-300">
-                JMI Member Profile
+                JMI Member Dashboard
               </span>
 
             </div>
 
-            <h1 className="text-2xl font-semibold tracking-tight text-yellow-500 sm:text-3xl">
+            <h1 className="mt-3 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
               My Account
             </h1>
 
-            <p className="mt-1.5 max-w-xl text-xs leading-5 text-zinc-400">
-              Manage your JMI profile and account
-              information from one place.
+            <p className="mt-1.5 max-w-xl text-xs leading-5 text-zinc-500">
+              Your personal JMI profile, activity,
+              points and member statistics.
             </p>
 
           </div>
@@ -871,13 +987,15 @@ export default function AccountPage() {
               PROFILE HERO
           ================================================== */}
 
-          <section className="relative mb-8 overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-violet-500/[0.10] via-white/[0.025] to-transparent p-5 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:p-6">
+          <section className="relative mb-5 overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-violet-500/[0.11] via-white/[0.025] to-transparent p-5 shadow-[0_20px_80px_rgba(0,0,0,0.38)] sm:p-6">
 
-            <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-violet-500/10 blur-3xl" />
+            <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-violet-500/10 blur-3xl" />
 
-            <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-yellow-500/[0.04] blur-3xl" />
 
-              <div className="flex items-center gap-4">
+            <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+
+              <div className="flex min-w-0 items-center gap-4">
 
                 {/* Avatar */}
 
@@ -887,7 +1005,7 @@ export default function AccountPage() {
                     setEditing(true);
                     setShowAvatars(true);
                   }}
-                  className="group relative h-[78px] w-[78px] shrink-0 overflow-hidden rounded-full border-2 border-violet-300/30 bg-zinc-900 shadow-[0_0_0_3px_rgba(139,92,246,0.08),0_12px_40px_rgba(0,0,0,0.5)] transition duration-300 hover:scale-[1.03] hover:border-violet-300/60"
+                  className="group relative h-[82px] w-[82px] shrink-0 overflow-hidden rounded-full border-2 border-violet-300/30 bg-zinc-900 shadow-[0_0_0_3px_rgba(139,92,246,0.08),0_15px_45px_rgba(0,0,0,0.5)] transition duration-300 hover:scale-[1.03] hover:border-violet-300/60"
                 >
 
                   <img
@@ -896,9 +1014,9 @@ export default function AccountPage() {
                     className="h-full w-full object-cover"
                   />
 
-                  <span className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/70 via-transparent to-transparent pb-1 opacity-0 transition group-hover:opacity-100">
+                  <span className="absolute inset-x-0 bottom-0 flex justify-center bg-black/70 py-1 opacity-0 transition group-hover:opacity-100">
 
-                    <span className="text-[8px] font-medium uppercase tracking-wider text-white">
+                    <span className="text-[7px] font-semibold uppercase tracking-[0.15em] text-white">
                       Change
                     </span>
 
@@ -906,18 +1024,26 @@ export default function AccountPage() {
 
                 </button>
 
-                <div>
+                <div className="min-w-0">
 
-                  <p className="text-lg font-semibold tracking-tight text-white">
-                    {profile.fullName ||
-                      "JMI User"}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
 
-                  <p className="mt-0.5 break-all text-[11px] text-zinc-500">
+                    <p className="truncate text-lg font-semibold tracking-tight text-white">
+                      {profile.fullName ||
+                        "JMI User"}
+                    </p>
+
+                    <span className="rounded-full border border-yellow-400/20 bg-yellow-400/[0.07] px-2 py-0.5 text-[7px] font-semibold uppercase tracking-[0.12em] text-yellow-400">
+                      Member
+                    </span>
+
+                  </div>
+
+                  <p className="mt-1 break-all text-[11px] text-zinc-500">
                     {user.email}
                   </p>
 
-                  <p className="mt-1.5 text-[10px] text-zinc-600">
+                  <p className="mt-1.5 text-[9px] uppercase tracking-[0.12em] text-green-500">
                     Member since{" "}
                     {formatDate(
                       user.createdAt
@@ -928,39 +1054,200 @@ export default function AccountPage() {
 
               </div>
 
-              {/* Completion */}
+              {/* Profile completion */}
 
-              <div className="min-w-[180px] rounded-2xl border border-white/[0.07] bg-black/20 p-3.5 backdrop-blur-xl">
+              <div className="w-full sm:w-[210px]">
 
-                <div className="mb-2 flex items-center justify-between">
+                <div className="rounded-2xl border border-white/[0.07] bg-black/25 p-3.5 backdrop-blur-xl">
 
-                  <span className="text-[10px] font-medium text-zinc-400">
-                    Profile completion
-                  </span>
+                  <div className="mb-2 flex items-center justify-between">
 
-                  <span className="text-xs font-semibold text-violet-300">
-                    {profileCompletion}%
-                  </span>
+                    <span className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+                      Profile completion
+                    </span>
+
+                    <span className="text-xs font-semibold text-violet-300">
+                      {profileCompletion}%
+                    </span>
+
+                  </div>
+
+                  <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-violet-600 via-violet-400 to-fuchsia-300 shadow-[0_0_12px_rgba(167,139,250,0.55)] transition-all duration-700"
+                      style={{
+                        width: `${profileCompletion}%`,
+                      }}
+                    />
+
+                  </div>
+
+                  <p className="mt-2 text-[8px] leading-4 text-zinc-600">
+                    Complete your profile for
+                    a better JMI experience.
+                  </p>
 
                 </div>
 
-                <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+              </div>
 
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-violet-600 via-violet-400 to-fuchsia-300 shadow-[0_0_12px_rgba(167,139,250,0.55)] transition-all duration-700"
-                    style={{
-                      width: `${profileCompletion}%`,
-                    }}
-                  />
+            </div>
+
+          </section>
+
+          {/* ==================================================
+              JMI POINTS / PRIMARY STATS
+          ================================================== */}
+
+          <section className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+
+            {/* JMI Points */}
+
+            <StatCard
+              eyebrow="JMI Points"
+              value={
+                statsLoading
+                  ? "—"
+                  : formatNumber(
+                      funZoneStats.totalPoints
+                    )
+              }
+              description="Total points earned"
+              accent="yellow"
+              large
+            />
+
+            {/* Predictions */}
+
+            <StatCard
+              eyebrow="Predictions"
+              value={
+                statsLoading
+                  ? "—"
+                  : formatNumber(
+                      funZoneStats.totalPredictions
+                    )
+              }
+              description="Fun Zone predictions"
+              accent="violet"
+            />
+
+            {/* Accuracy */}
+
+            <StatCard
+              eyebrow="Avg Accuracy"
+              value={
+                statsLoading
+                  ? "—"
+                  : `${funZoneStats.averageAccuracy.toFixed(
+                      1
+                    )}%`
+              }
+              description="Across scored predictions"
+              accent="violet"
+            />
+
+            {/* Best Accuracy */}
+
+            <StatCard
+              eyebrow="Best Accuracy"
+              value={
+                statsLoading
+                  ? "—"
+                  : `${funZoneStats.bestAccuracy.toFixed(
+                      1
+                    )}%`
+              }
+              description="Highest recorded accuracy"
+              accent="yellow"
+            />
+
+          </section>
+
+          {/* ==================================================
+              JMI MEMBER PERFORMANCE
+          ================================================== */}
+
+          <section className="mb-5 overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.025] shadow-[0_15px_60px_rgba(0,0,0,0.25)]">
+
+            <div className="flex flex-col gap-3 border-b border-white/[0.06] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+
+              <div>
+
+                <div className="flex items-center gap-2">
+
+                  <span className="h-1.5 w-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
+
+                  <h2 className="text-sm font-semibold text-white">
+                    JMI Member Performance
+                  </h2>
 
                 </div>
 
-                <p className="mt-2 text-[9px] text-zinc-400">
-                  Complete your profile for a better
-                  JMI experience.
+                <p className="mt-1 text-[9px] text-zinc-600">
+                  Your Fun Zone activity and prediction
+                  performance.
                 </p>
 
               </div>
+
+              <Link
+                href="/preview/fun-zone"
+                className="inline-flex items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/[0.07] px-3.5 py-2 text-[9px] font-semibold uppercase tracking-[0.1em] text-violet-300 transition hover:border-violet-400/40 hover:bg-violet-500/[0.12]"
+              >
+                Enter Fun Zone →
+              </Link>
+
+            </div>
+
+            <div className="grid gap-px bg-white/[0.04] sm:grid-cols-2 lg:grid-cols-4">
+
+              <PerformanceMetric
+                label="Scored Predictions"
+                value={
+                  statsLoading
+                    ? "—"
+                    : formatNumber(
+                        funZoneStats.scoredPredictions
+                      )
+                }
+                note="Results evaluated"
+              />
+
+              <PerformanceMetric
+                label="90%+ Accuracy"
+                value={
+                  statsLoading
+                    ? "—"
+                    : formatNumber(
+                        funZoneStats.accuratePredictions
+                      )
+                }
+                note="High-accuracy results"
+              />
+
+              <PerformanceMetric
+                label="Best Prediction"
+                value={
+                  statsLoading
+                    ? "—"
+                    : `${funZoneStats.bestAccuracy.toFixed(
+                        1
+                      )}%`
+                }
+                note="Personal best"
+              />
+
+              <PerformanceMetric
+                label="Best Score"
+                value={
+                  statsLoading
+                    ? "—"
+                    : `${funZoneStats.bestPoints} pts`
+                }
+                note="Maximum points in one result"
+              />
 
             </div>
 
@@ -992,12 +1279,12 @@ export default function AccountPage() {
 
               <div>
 
-                <h2 className="text-sm font-semibold text-pink-500">
+                <h2 className="text-sm font-semibold text-white">
                   Profile
                 </h2>
 
-                <p className="mt-0.5 text-[10px] text-zinc-400">
-                  Keep your JMI member information up to date.
+                <p className="mt-0.5 text-[10px] text-zinc-500">
+                  Manage your JMI member information.
                 </p>
 
               </div>
@@ -1036,11 +1323,12 @@ export default function AccountPage() {
                     <div>
 
                       <p className="text-xs font-medium text-zinc-300">
-                        Profile Avatar
+                        Profile Picture
                       </p>
 
                       <p className="mt-0.5 text-[10px] text-zinc-600">
-                        Your selected JMI identity image.
+                        JMI professional avatar or
+                        your external profile image.
                       </p>
 
                     </div>
@@ -1100,66 +1388,120 @@ export default function AccountPage() {
               ) : (
                 <>
                   {/* ==================================================
-                      EDIT FORM
+                      PROFILE PICTURE
                   ================================================== */}
 
-                  <div className="mb-6">
+                  <div className="mb-7">
 
-                    <div className="mb-3 flex items-center gap-3">
+                    <div className="mb-4 flex items-center gap-3">
 
                       <img
                         src={editingAvatar}
-                        alt="Selected avatar"
+                        alt="Selected profile picture"
                         className="h-16 w-16 rounded-full border-2 border-violet-400/30 bg-zinc-900 object-cover shadow-[0_0_28px_rgba(139,92,246,0.20)]"
                       />
 
                       <div>
 
                         <p className="text-xs font-medium text-white">
-                          Choose your avatar
+                          Profile Picture
                         </p>
 
-                        <p className="mt-0.5 text-[10px] text-zinc-600">
-                          Select a human-style JMI profile avatar.
+                        <p className="mt-1 text-[10px] leading-4 text-zinc-400">
+                          Choose a professional JMI
+                          avatar or use your own
+                          image URL.
                         </p>
 
                       </div>
 
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowAvatars(
-                          (value) => !value
-                        )
-                      }
-                      className="rounded-xl border border-white/[0.08] bg-white/[0.035] px-3.5 py-2 text-[10px] font-semibold text-zinc-300 transition hover:border-violet-400/30 hover:bg-violet-500/[0.06]"
-                    >
-                      {showAvatars
-                        ? "Hide Avatars"
-                        : "Choose Avatar"}
-                    </button>
+                    {/* Profile picture methods */}
+
+                    <div className="grid gap-2 sm:grid-cols-2">
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAvatars(
+                            (value) => !value
+                          );
+                          setShowCustomImage(
+                            false
+                          );
+                        }}
+                        className={`rounded-xl border px-4 py-3 text-left transition ${
+                          showAvatars
+                            ? "border-violet-400/40 bg-violet-500/[0.09]"
+                            : "border-white/[0.08] bg-white/[0.025] hover:border-violet-400/30 hover:bg-violet-500/[0.05]"
+                        }`}
+                      >
+
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-300">
+                          JMI Avatars
+                        </p>
+
+                        <p className="mt-1 text-[9px] leading-4 text-zinc-600">
+                          Choose a clean professional
+                          profile identity.
+                        </p>
+
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowCustomImage(
+                            (value) => !value
+                          );
+                          setShowAvatars(
+                            false
+                          );
+                        }}
+                        className={`rounded-xl border px-4 py-3 text-left transition ${
+                          showCustomImage
+                            ? "border-yellow-400/40 bg-yellow-400/[0.06]"
+                            : "border-white/[0.08] bg-white/[0.025] hover:border-yellow-400/30 hover:bg-yellow-400/[0.04]"
+                        }`}
+                      >
+
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-yellow-400">
+                          Use Image URL
+                        </p>
+
+                        <p className="mt-1 text-[9px] leading-4 text-zinc-600">
+                          Use your own externally hosted
+                          profile picture.
+                        </p>
+
+                      </button>
+
+                    </div>
+
+                    {/* ==================================================
+                        JMI AVATARS
+                    ================================================== */}
 
                     {showAvatars && (
-                      <div className="mt-4 rounded-2xl border border-white/[0.07] bg-black/30 p-3.5">
+                      <div className="mt-4 rounded-2xl border border-white/[0.07] bg-black/30 p-4">
 
-                        <div className="mb-3 flex items-center justify-between">
+                        <div className="mb-4 flex items-center justify-between">
 
                           <div>
 
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-zinc-500">
-                              Choose Avatar
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-zinc-400">
+                              Professional Avatars
                             </p>
 
                             <p className="mt-0.5 text-[9px] text-zinc-700">
-                              Human profile characters
+                              Minimal JMI member identities.
                             </p>
 
                           </div>
 
                           <span className="text-[9px] text-zinc-700">
-                            24 avatars
+                            {avatarOptions.length} options
                           </span>
 
                         </div>
@@ -1177,7 +1519,9 @@ export default function AccountPage() {
                                     avatar.url
                                   )
                                 }
-                                title={avatar.label}
+                                title={
+                                  avatar.label
+                                }
                                 className={`group relative aspect-square overflow-hidden rounded-full border-2 transition duration-200 ${
                                   editProfile.avatarId ===
                                   avatar.id
@@ -1208,6 +1552,93 @@ export default function AccountPage() {
                           )}
 
                         </div>
+
+                      </div>
+                    )}
+
+                    {/* ==================================================
+                        CUSTOM IMAGE URL
+                    ================================================== */}
+
+                    {showCustomImage && (
+                      <div className="mt-4 rounded-2xl border border-yellow-400/10 bg-yellow-400/[0.025] p-4">
+
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-yellow-400">
+                          Custom Profile Picture
+                        </p>
+
+                        <p className="mt-1 max-w-xl text-[9px] leading-4 text-zinc-500">
+                          Paste a publicly accessible image
+                          URL. JMI stores only the URL and
+                          does not upload the image to
+                          our records.
+                        </p>
+
+                        <label className="mt-4 block">
+
+                          <span className="mb-1.5 block text-[9px] font-semibold uppercase tracking-[0.14em] text-green-500">
+                            Profile Image URL
+                          </span>
+
+                          <input
+                            type="url"
+                            value={
+                              editProfile.avatarUrl
+                            }
+                            onChange={(event) =>
+                              handleCustomImageUrlChange(
+                                event.target.value
+                              )
+                            }
+                            placeholder="https://example.com/your-photo.jpg"
+                            className="w-full rounded-xl border border-white/[0.08] bg-black/30 px-3.5 py-3 text-xs text-zinc-200 outline-none transition placeholder:text-zinc-700 focus:border-yellow-400/40 focus:bg-yellow-400/[0.02] focus:ring-2 focus:ring-yellow-500/10"
+                          />
+
+                        </label>
+
+                        <div className="mt-3 flex items-start gap-2 rounded-xl border border-white/[0.05] bg-black/20 px-3 py-2.5">
+
+                          <span className="mt-0.5 text-[10px] text-yellow-500">
+                            ℹ️
+                          </span>
+
+                          <p className="text-[8px] leading-4 text-zinc-600">
+                            Use a direct, publicly accessible
+                            image URL.
+                          </p>
+
+                        </div>
+
+                        {editProfile.avatarUrl && (
+                          <div className="mt-4 flex items-center gap-3">
+
+                            <img
+                              src={
+                                editProfile.avatarUrl
+                              }
+                              alt="Custom profile preview"
+                              className="h-14 w-14 rounded-full border border-yellow-400/20 bg-zinc-900 object-cover"
+                              onError={(event) => {
+                                event.currentTarget.style.display =
+                                  "none";
+                              }}
+                            />
+
+                            <div>
+
+                              <p className="text-[9px] font-medium text-zinc-300">
+                                Image Preview
+                              </p>
+
+                              <p className="mt-0.5 text-[8px] text-zinc-700">
+                                Your image will be stored as
+                                an external URL.
+                              </p>
+
+                            </div>
+
+                          </div>
+                        )}
 
                       </div>
                     )}
@@ -1380,6 +1811,54 @@ export default function AccountPage() {
           </section>
 
           {/* ==================================================
+              QUICK ACCESS
+          ================================================== */}
+
+          <section className="mb-5">
+
+            <div className="mb-3">
+
+              <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-pink-500">
+                Quick Access
+              </p>
+
+            </div>
+
+            <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+
+              <QuickAccess
+                href="/preview/fun-zone"
+                icon="🎯"
+                title="JMI Fun Zone"
+                description="Play and earn JMI Points."
+              />
+
+              <QuickAccess
+                href="/preview/movies"
+                icon="🎬"
+                title="Movies"
+                description="Explore JMI movie intelligence."
+              />
+
+              <QuickAccess
+                href="/preview/news"
+                icon="◈"
+                title="JMI News"
+                description="Exclusive cinema intelligence."
+              />
+
+              <QuickAccess
+                href="/"
+                icon="⌂"
+                title="JMI Home"
+                description="Return to the main platform."
+              />
+
+            </div>
+
+          </section>
+
+          {/* ==================================================
               ACCOUNT SETTINGS
           ================================================== */}
 
@@ -1465,7 +1944,7 @@ export default function AccountPage() {
               disabled={
                 loggingOut
               }
-              className="rounded-xl border border-white/[0.6] bg-white/[0.025] px-7 py-2.5 text-[10px] font-semibold text-zinc-500 shadow-[0_5px_25px_rgba(0,0,0,0.2)] transition hover:border-red-400/20 hover:bg-red-500/[0.04] hover:text-red-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-xl border border-white/[0.08] bg-white/[0.025] px-7 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-500 shadow-[0_5px_25px_rgba(0,0,0,0.2)] transition hover:border-red-400/20 hover:bg-red-500/[0.04] hover:text-red-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
             >
               {loggingOut
                 ? "Signing out..."
@@ -1500,7 +1979,7 @@ export default function AccountPage() {
                 </div>
 
                 <p className="text-[9px] text-zinc-500">
-                  JMI · Account
+                  JMI · Member Dashboard
                 </p>
 
               </div>
@@ -1513,6 +1992,139 @@ export default function AccountPage() {
 
       </main>
     </>
+  );
+}
+
+/* ============================================================
+   STAT CARD
+   ============================================================ */
+
+function StatCard({
+  eyebrow,
+  value,
+  description,
+  accent,
+  large = false,
+}: {
+  eyebrow: string;
+  value: string;
+  description: string;
+  accent: "yellow" | "violet";
+  large?: boolean;
+}) {
+  const accentClass =
+    accent === "yellow"
+      ? "text-yellow-400"
+      : "text-violet-300";
+
+  const borderClass =
+    accent === "yellow"
+      ? "border-yellow-400/10"
+      : "border-violet-400/10";
+
+  return (
+    <div
+      className={`relative overflow-hidden rounded-2xl border ${borderClass} bg-white/[0.025] p-4 shadow-[0_12px_40px_rgba(0,0,0,0.18)]`}
+    >
+
+      <div className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-violet-500/[0.035] blur-2xl" />
+
+      <p className="relative text-[8px] font-semibold uppercase tracking-[0.16em] text-green-400">
+        {eyebrow}
+      </p>
+
+      <p
+        className={`relative mt-2 font-semibold tracking-tight ${accentClass} ${
+          large
+            ? "text-2xl"
+            : "text-xl"
+        }`}
+      >
+        {value}
+      </p>
+
+      <p className="relative mt-1 text-[9px] text-zinc-400">
+        {description}
+      </p>
+
+    </div>
+  );
+}
+
+/* ============================================================
+   PERFORMANCE METRIC
+   ============================================================ */
+
+function PerformanceMetric({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: string;
+  note: string;
+}) {
+  return (
+    <div className="bg-black/20 px-4 py-4 sm:px-5">
+
+      <p className="text-[8px] font-semibold uppercase tracking-[0.13em] text-yellow-400">
+        {label}
+      </p>
+
+      <p className="mt-2 text-lg font-semibold tracking-tight text-white">
+        {value}
+      </p>
+
+      <p className="mt-1 text-[8px] text-zinc-500">
+        {note}
+      </p>
+
+    </div>
+  );
+}
+
+/* ============================================================
+   QUICK ACCESS
+   ============================================================ */
+
+function QuickAccess({
+  href,
+  icon,
+  title,
+  description,
+}: {
+  href: string;
+  icon: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 transition hover:border-violet-400/20 hover:bg-violet-500/[0.04]"
+    >
+
+      <div className="flex items-start gap-3">
+
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.07] bg-black/30 text-sm transition group-hover:border-violet-400/20">
+          {icon}
+        </div>
+
+        <div className="min-w-0">
+
+          <p className="text-[10px] font-semibold text-green-400 transition group-hover:text-white">
+            {title}
+          </p>
+
+          <p className="mt-1 text-[8px] leading-4 text-zinc-400">
+            {description}
+          </p>
+
+        </div>
+
+      </div>
+
+    </Link>
   );
 }
 
@@ -1570,7 +2182,7 @@ function ProfileInput({
   return (
     <label className="block">
 
-      <span className="mb-1.5 block text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-600">
+      <span className="mb-1.5 block text-[9px] font-semibold uppercase tracking-[0.14em] text-violet-400">
         {label}
       </span>
 
@@ -1655,8 +2267,6 @@ function ProfileSelect({
           )}
 
         </select>
-
-        {/* Custom arrow */}
 
         <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
 
