@@ -359,6 +359,100 @@ export default async function PublicPreview() {
           banners={homepageBanners ?? []}
         />
 
+
+ {/* =====================================================
+            DATABASE INTELLIGENCE
+        ===================================================== */}
+
+        <section className="border-b border-zinc-900">
+
+          <div className="mx-auto max-w-6xl px-5 py-12 sm:px-6 sm:py-16 lg:px-8">
+
+            <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+
+              <div>
+
+                <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-pink-400">
+                  JMI Database
+                </p>
+
+                <h2 className="mt-2 text-lg font-semibold tracking-[-0.02em] text-yellow-400 sm:text-xl">
+                  Intelligence built from structured data.
+                </h2>
+
+              </div>
+
+              <p className="max-w-sm text-[11px] leading-5 text-zinc-400">
+                JMI is a growing knowledge based movie analytics platform covering the movies, people,
+                companies, markets and infrastructure of Indian cinema.
+              </p>
+
+            </div>
+
+
+            {/* Intelligence Statistics */}
+
+            <div className="overflow-x-auto rounded-xl border border-pink-400 bg-zinc-950">
+
+              <div className="grid min-w-[700px] grid-cols-7 divide-x divide-zinc-800">
+
+                <DatabaseMetric
+                  value={String(movieCount).padStart(2, "0")}
+                  label="Movies"
+                  description="Films indexed"
+                />
+
+                <DatabaseMetric
+                  value={peopleCount.toLocaleString("en-IN")}
+                  label="People"
+                  description="Professionals"
+                />
+
+                <DatabaseMetric
+                  value={companyCount.toLocaleString("en-IN")}
+                  label="Companies"
+                  description="Film businesses"
+                />
+
+                <DatabaseMetric
+                  value={languageCount.toLocaleString("en-IN")}
+                  label="Languages"
+                  description="Languages covered"
+                />
+
+                <DatabaseMetric
+                  value={industryCount.toLocaleString("en-IN")}
+                  label="Industries"
+                  description="Industries covered"
+                />
+
+                <DatabaseMetric
+                  value="7,822"
+                  label="Screens"
+                  description="Screens tracked"
+                />
+
+                <DatabaseMetric
+                  value={cityCount.toLocaleString("en-IN")}
+                  label="Cities"
+                  description="Cities covered"
+                />
+
+              </div>
+
+            </div>
+
+
+            <p className="mt-3 text-[9px] text-zinc-400 sm:hidden">
+              Swipe horizontally to explore all metrics →
+            </p>
+
+          </div>
+
+        </section>
+
+
+
 {/* =====================================================
     JMI MOVIE LIBRARY — VINTAGE RECORD BOOK
 ===================================================== */}
@@ -795,97 +889,7 @@ export default async function PublicPreview() {
 
 </div>
 
-        {/* =====================================================
-            DATABASE INTELLIGENCE
-        ===================================================== */}
-
-        <section className="border-b border-zinc-900">
-
-          <div className="mx-auto max-w-6xl px-5 py-12 sm:px-6 sm:py-16 lg:px-8">
-
-            <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-
-              <div>
-
-                <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-pink-400">
-                  JMI Database
-                </p>
-
-                <h2 className="mt-2 text-lg font-semibold tracking-[-0.02em] text-yellow-400 sm:text-xl">
-                  Intelligence built from structured data.
-                </h2>
-
-              </div>
-
-              <p className="max-w-sm text-[11px] leading-5 text-zinc-400">
-                JMI is a growing knowledge based movie analytics platform covering the movies, people,
-                companies, markets and infrastructure of Indian cinema.
-              </p>
-
-            </div>
-
-
-            {/* Intelligence Statistics */}
-
-            <div className="overflow-x-auto rounded-xl border border-pink-400 bg-zinc-950">
-
-              <div className="grid min-w-[700px] grid-cols-7 divide-x divide-zinc-800">
-
-                <DatabaseMetric
-                  value={String(movieCount).padStart(2, "0")}
-                  label="Movies"
-                  description="Films indexed"
-                />
-
-                <DatabaseMetric
-                  value={peopleCount.toLocaleString("en-IN")}
-                  label="People"
-                  description="Professionals"
-                />
-
-                <DatabaseMetric
-                  value={companyCount.toLocaleString("en-IN")}
-                  label="Companies"
-                  description="Film businesses"
-                />
-
-                <DatabaseMetric
-                  value={languageCount.toLocaleString("en-IN")}
-                  label="Languages"
-                  description="Languages covered"
-                />
-
-                <DatabaseMetric
-                  value={industryCount.toLocaleString("en-IN")}
-                  label="Industries"
-                  description="Industries covered"
-                />
-
-                <DatabaseMetric
-                  value="7,822"
-                  label="Screens"
-                  description="Screens tracked"
-                />
-
-                <DatabaseMetric
-                  value={cityCount.toLocaleString("en-IN")}
-                  label="Cities"
-                  description="Cities covered"
-                />
-
-              </div>
-
-            </div>
-
-
-            <p className="mt-3 text-[9px] text-zinc-400 sm:hidden">
-              Swipe horizontally to explore all metrics →
-            </p>
-
-          </div>
-
-        </section>
-
+       
 
         {/* =====================================================
     BOX OFFICE INTELLIGENCE
