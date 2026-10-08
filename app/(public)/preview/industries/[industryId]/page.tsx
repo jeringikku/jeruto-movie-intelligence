@@ -1221,128 +1221,158 @@ setTopDomesticMarkets(
   domesticMarkets
 );
 
-    /* =======================================================
-       17. TOP 5 OVERSEAS MARKETS
-    ======================================================= */
+   // ─────────────────────────────────────────────────────────────
+// 17. Top-5 Overseas Markets
+// GCC + United Arab Emirates are treated as ONE territory.
+// UAE is never shown separately.
+// ─────────────────────────────────────────────────────────────
 
-    const overseasMap: Record<
-      number,
-      {
-        gross: number;
-        movieIds: Set<number>;
-      }
-    > = {};
+const overseasMap: Record<
+  number,
+  {
+    gross: number;
+    movieIds: Set<number>;
+  }
+> = {};
 
-    countryBoxOffice?.forEach(
-      (row) => {
-        if (row.country_id === null) {
-          return;
-        }
+countryBoxOffice?.forEach((row) => {
+  const countryId = Number(row.country_id);
 
-        const countryId =
-          Number(row.country_id);
+  if (!countryId) return;
 
-        if (!overseasMap[countryId]) {
-          overseasMap[countryId] = {
-            gross: 0,
-            movieIds:
-              new Set<number>(),
-          };
-        }
+  if (!overseasMap[countryId]) {
+    overseasMap[countryId] = {
+      gross: 0,
+      movieIds: new Set<number>(),
+    };
+  }
 
-        overseasMap[countryId].gross +=
-          Number(row.gross_usd || 0);
+  overseasMap[countryId].gross += Number(row.gross_usd || 0);
 
-        overseasMap[
-          countryId
-        ].movieIds.add(
-          Number(row.movie_id)
-        );
-      }
-    );
+  if (row.movie_id) {
+    overseasMap[countryId].movieIds.add(Number(row.movie_id));
+  }
+});
 
-    const overseasCountryIds =
-      Object.keys(overseasMap)
-        .map(Number)
-        .filter((id) =>
-          Number.isFinite(id)
-        );
+const overseasCountryIds = Object.keys(overseasMap)
+  .map(Number)
+  .filter((id) => id !== 1); // India excluded
 
-    let overseasMarkets: MarketIntelligence[] =
-      [];
+const { data: countries } = await supabase
+  .from("countries")
+  .select("id, name");
 
-    if (
-      overseasCountryIds.length > 0
-    ) {
-      const {
-        data: countries,
-        error: countriesError,
-      } = await supabase
-        .from("countries")
-        .select("id, name")
-        .in(
-          "id",
-          overseasCountryIds
-        );
+const countryNameMap: Record<number, string> = {};
 
-      if (countriesError) {
-        console.error(
-          "Public industry countries error:",
-          countriesError
-        );
+countries?.forEach((country) => {
+  countryNameMap[Number(country.id)] = country.name;
+});
 
-        setError(
-          countriesError.message
-        );
+const normalizeCountryName = (name: string) =>
+  name
+    .trim()
+    .toLowerCase()
+    .replace(/[.\-_]/g, " ")
+    .replace(/\s+/g, " ");
 
-        setLoading(false);
-        return;
-      }
+// Identify GCC and UAE from the actual country names in the database.
+const gccCountryIds = overseasCountryIds.filter((countryId) => {
+  const normalizedName = normalizeCountryName(
+    countryNameMap[countryId] || ""
+  );
 
-      const countryNameMap: Record<
-        number,
-        string
-      > = {};
+  return (
+    normalizedName === "gcc" ||
+    normalizedName === "gcc countries" ||
+    normalizedName === "gulf cooperation council"
+  );
+});
 
-      countries?.forEach(
-        (country) => {
-          countryNameMap[
-            Number(country.id)
-          ] = country.name;
-        }
-      );
+const uaeCountryIds = overseasCountryIds.filter((countryId) => {
+  const normalizedName = normalizeCountryName(
+    countryNameMap[countryId] || ""
+  );
 
-      overseasMarkets =
-        overseasCountryIds
-          .map((countryId) => ({
-            id: countryId,
+  return (
+    normalizedName === "uae" ||
+    normalizedName === "united arab emirates"
+  );
+});
 
-            name:
-              countryNameMap[
-                countryId
-              ] ||
-              `Country ${countryId}`,
+// Keep track of every GCC/UAE country ID so UAE can NEVER
+// appear as an independent overseas market.
+const processedCountryIds = new Set<number>([
+  ...gccCountryIds,
+  ...uaeCountryIds,
+]);
 
-            gross:
-              overseasMap[
-                countryId
-              ].gross,
+const overseasMarkets: {
+  id: number;
+  name: string;
+  gross: number;
+  movies: number;
+}[] = [];
 
-            movies:
-              overseasMap[
-                countryId
-              ].movieIds.size,
-          }))
-          .sort(
-            (a, b) =>
-              b.gross - a.gross
-          )
-          .slice(0, 5);
-    }
+// ─────────────────────────────────────────────────────────────
+// Combine GCC + UAE into ONE GCC territory
+// ─────────────────────────────────────────────────────────────
 
-    setTopOverseasMarkets(
-      overseasMarkets
-    );
+const combinedGccMovieIds = new Set<number>();
+let combinedGccGross = 0;
+
+[...gccCountryIds, ...uaeCountryIds].forEach((countryId) => {
+  const market = overseasMap[countryId];
+
+  if (!market) return;
+
+  combinedGccGross += market.gross;
+
+  market.movieIds.forEach((movieId) => {
+    combinedGccMovieIds.add(movieId);
+  });
+});
+
+// Add GCC only when either GCC or UAE data exists.
+if (gccCountryIds.length > 0 || uaeCountryIds.length > 0) {
+  overseasMarkets.push({
+    id: gccCountryIds[0] ?? uaeCountryIds[0],
+    name: "GCC",
+    gross: combinedGccGross,
+    movies: combinedGccMovieIds.size,
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// Add all other overseas countries
+// UAE and GCC are already handled above.
+// ─────────────────────────────────────────────────────────────
+
+overseasCountryIds.forEach((countryId) => {
+  if (processedCountryIds.has(countryId)) {
+    return;
+  }
+
+  const market = overseasMap[countryId];
+
+  if (!market) return;
+
+  const countryName =
+    countryNameMap[countryId] || `Country ${countryId}`;
+
+  overseasMarkets.push({
+    id: countryId,
+    name: countryName,
+    gross: market.gross,
+    movies: market.movieIds.size,
+  });
+});
+
+// Rank by combined gross and keep Top 5.
+const topFiveOverseasMarkets = overseasMarkets
+  .sort((a, b) => b.gross - a.gross)
+  .slice(0, 5);
+
+setTopOverseasMarkets(topFiveOverseasMarkets);
 
     /* =======================================================
        18. TOP 10 CONTRIBUTING LEAD ACTORS

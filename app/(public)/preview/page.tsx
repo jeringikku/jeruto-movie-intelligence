@@ -324,20 +324,30 @@ export default async function PublicPreview() {
 
               {/* Search */}
 
-              <div className="mx-auto mt-7 max-w-xl">
+              <div className="mx-auto mt-6 max-w-md">
   <MovieSearch />
 </div>
 
 
-              <p className="mt-2 text-[10px] text-green-400">
+              <p className="mt-3 text-[10px] text-green-400">
                 Explore the data behind Indian cinema
               </p>
 
+          
+
+
+
+</div>
+
+</div>
+  
+
+
               
 
-            </div>
+           
 
-          </div>
+          
 
         </section>
 
@@ -349,6 +359,441 @@ export default async function PublicPreview() {
           banners={homepageBanners ?? []}
         />
 
+{/* =====================================================
+    JMI MOVIE LIBRARY — VINTAGE RECORD BOOK
+===================================================== */}
+
+<div className="mx-auto mt-7 max-w-md px-4">
+
+  {/* =================================================
+      BOOK
+  ================================================= */}
+
+  <Link
+    href="/preview/movies/library"
+    className="
+      group
+      relative
+      mx-auto
+      block
+      w-full
+      max-w-[240px]
+      transition-all
+      duration-500
+      hover:-translate-y-1
+      active:translate-y-0
+      active:scale-[0.98]
+    "
+  >
+
+    {/* =================================================
+        BOOK SHADOW
+    ================================================= */}
+
+    <div
+      className="
+        pointer-events-none
+        absolute
+        -bottom-3
+        left-[8%]
+        h-5
+        w-[84%]
+        rounded-[50%]
+        bg-black/70
+        blur-xl
+      "
+    />
+
+    {/* =================================================
+        BOOK BACK / PAGE BLOCK
+    ================================================= */}
+
+    <div
+      className="
+        absolute
+        inset-y-2
+        left-[5px]
+        right-[-5px]
+        rounded-r-md
+        border
+        border-[#4a2d17]
+        bg-gradient-to-r
+        from-[#b18a58]
+        via-[#d0b27d]
+        to-[#76512e]
+        shadow-[2px_4px_8px_rgba(0,0,0,0.45)]
+      "
+    />
+
+    {/* =================================================
+        MAIN BOOK COVER
+    ================================================= */}
+
+    <div
+      className="
+        relative
+        aspect-[1.25/1]
+        overflow-hidden
+        rounded-md
+        border
+        border-[#684321]
+        bg-gradient-to-br
+        from-[#4a2b16]
+        via-[#2b170b]
+        to-[#160904]
+        shadow-[0_12px_25px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(205,150,85,0.14),inset_0_-3px_0_rgba(0,0,0,0.45)]
+      "
+    >
+
+      {/* =================================================
+          SLOW ANTIQUE LIGHT
+      ================================================= */}
+
+      <div
+        className="
+          jmi-book-light
+          pointer-events-none
+          absolute
+          inset-y-0
+          -left-1/2
+          w-full
+          bg-gradient-to-r
+          from-transparent
+          via-[#c08a4d]/[0.09]
+          to-transparent
+        "
+      />
+
+      {/* =================================================
+          OLD WOOD / LEATHER GRAIN
+      ================================================= */}
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          inset-0
+          opacity-35
+          bg-[repeating-linear-gradient(
+            168deg,
+            transparent 0px,
+            transparent 9px,
+            rgba(180,120,65,0.035) 10px,
+            transparent 12px,
+            rgba(0,0,0,0.09) 20px
+          )]
+        "
+      />
+
+      {/* =================================================
+          NATURAL AGED PATCHES
+      ================================================= */}
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          left-[12%]
+          top-[18%]
+          h-[18%]
+          w-[22%]
+          rounded-full
+          bg-black/[0.10]
+          blur-md
+        "
+      />
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          right-[12%]
+          bottom-[16%]
+          h-[22%]
+          w-[18%]
+          rounded-full
+          bg-[#8b5b30]/[0.07]
+          blur-md
+        "
+      />
+
+      {/* =================================================
+          OUTER INNER FRAME
+      ================================================= */}
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          inset-[9px]
+          rounded-[4px]
+          border
+          border-[#8b5a2e]/45
+        "
+      />
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          inset-[13px]
+          rounded-[3px]
+          border
+          border-[#1a0b04]/70
+        "
+      />
+
+      {/* =================================================
+          BOOK SPINE
+      ================================================= */}
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          inset-y-0
+          left-0
+          w-[13px]
+          border-r
+          border-[#160903]
+          bg-gradient-to-r
+          from-[#160803]
+          via-[#573218]
+          to-[#291408]
+          shadow-[inset_-2px_0_3px_rgba(0,0,0,0.45)]
+        "
+      />
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          bottom-[10%]
+          left-[4px]
+          top-[10%]
+          w-[2px]
+          bg-[#9a6838]/25
+        "
+      />
+
+      {/* =================================================
+          BRASS CORNER DETAILS
+      ================================================= */}
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          left-3
+          top-3
+          h-3
+          w-3
+          rounded-sm
+          border
+          border-[#9b6a38]/70
+          bg-gradient-to-br
+          from-[#b78347]
+          via-[#68411f]
+          to-[#291408]
+          shadow-[0_1px_2px_rgba(0,0,0,0.6)]
+        "
+      />
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          right-3
+          top-3
+          h-3
+          w-3
+          rounded-sm
+          border
+          border-[#9b6a38]/70
+          bg-gradient-to-br
+          from-[#b78347]
+          via-[#68411f]
+          to-[#291408]
+          shadow-[0_1px_2px_rgba(0,0,0,0.6)]
+        "
+      />
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          bottom-3
+          left-3
+          h-3
+          w-3
+          rounded-sm
+          border
+          border-[#9b6a38]/45
+          bg-gradient-to-br
+          from-[#8a5b31]
+          via-[#543319]
+          to-[#261307]
+        "
+      />
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          bottom-3
+          right-3
+          h-3
+          w-3
+          rounded-sm
+          border
+          border-[#9b6a38]/45
+          bg-gradient-to-br
+          from-[#8a5b31]
+          via-[#543319]
+          to-[#261307]
+        "
+      />
+
+      {/* =================================================
+          BOOK TITLE AREA
+      ================================================= */}
+
+      <div
+        className="
+          absolute
+          inset-0
+          flex
+          flex-col
+          items-center
+          justify-center
+          px-8
+          text-center
+        "
+      >
+
+        {/* Small emblem */}
+
+        <div
+          className="
+            mb-3
+            flex
+            h-10
+            w-10
+            items-center
+            justify-center
+            rounded-sm
+            border
+            border-[#9a6838]/55
+            bg-[#160904]/60
+            text-lg
+            text-[#c09258]
+            shadow-[inset_0_1px_2px_rgba(210,160,95,0.12),0_2px_4px_rgba(0,0,0,0.4)]
+            transition-all
+            duration-500
+            group-hover:border-[#c09258]/70
+            group-hover:text-[#dfb77c]
+          "
+        >
+          📚
+        </div>
+
+        {/* Title */}
+
+        <p
+          className="
+            text-[17px]
+            font-semibold
+            tracking-[0.01em]
+            text-[#d7b27b]
+            drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]
+            transition-colors
+            duration-500
+            group-hover:text-[#ebc993]
+            sm:text-lg
+          "
+        >
+          JMI Movie Library
+        </p>
+
+        {/* Decorative divider */}
+
+        <div className="mt-3 flex items-center gap-2">
+          <div className="h-px w-8 bg-[#9a6838]/45" />
+          <div className="h-1 w-1 rotate-45 bg-[#b47a41]/70" />
+          <div className="h-px w-8 bg-[#9a6838]/45" />
+        </div>
+
+        {/* Small book label */}
+
+        <p
+          className="
+            mt-2
+            text-[6px]
+            uppercase
+            tracking-[0.24em]
+            text-[#8e6844]
+          "
+        >
+          Indian Cinema Archive
+        </p>
+
+      </div>
+
+      {/* =================================================
+          BOOK HIGHLIGHT
+      ================================================= */}
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          inset-x-0
+          top-0
+          h-px
+          bg-gradient-to-r
+          from-transparent
+          via-[#c08a4d]/45
+          to-transparent
+        "
+      />
+
+    </div>
+
+  </Link>
+
+  {/* =================================================
+      DESCRIPTION UNDER BOOK
+  ================================================= */}
+
+  <div className="mx-auto mt-4 max-w-sm text-[12px]">
+
+    <p
+      className="
+        text-[11px]
+        leading-5
+        text-zinc-300
+        sm:text-[11px]
+      "
+    >
+      Tap on this Book to enter into JMI's Exclusive Movie Library and
+      explore all movies in JMI database.
+    </p>
+
+    <div
+      className="
+        mt-2
+        text-[7px]
+        uppercase
+        tracking-[0.18em]
+        text-green-500
+      "
+    >
+      Open the Archive →
+    </div>
+
+  </div>
+
+</div>
 
         {/* =====================================================
             DATABASE INTELLIGENCE

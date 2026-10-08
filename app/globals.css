@@ -24,3 +24,30 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* =====================================================
+   JMI MOVIE LIBRARY — ANTIQUE BOOK LIGHT
+===================================================== */
+
+@keyframes jmiBookLight {
+  0%,
+  100% {
+    transform: translateX(-10%);
+    opacity: 0.55;
+  }
+
+  50% {
+    transform: translateX(10%);
+    opacity: 1;
+  }
+}
+
+.jmi-book-light {
+  animation: jmiBookLight 11s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jmi-book-light {
+    animation: none;
+  }
+}
