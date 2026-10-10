@@ -9,6 +9,7 @@ import JmiLiveTrackingBanner from "../components/JmiLiveTrackingBanner";
 import JmiExclusiveNewsBanner from "../components/JmiExclusiveNewsBanner";
 import JmiFunZoneBanner from "../components/JmiFunZoneBanner";
 import { supabase } from "@/lib/supabase";
+import TechnicianRankingsBanner from "../components/TechnicianRankingsBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -1266,7 +1267,7 @@ export default async function PublicPreview() {
         </section>
 
 
-
+<TechnicianRankingsBanner />
 
         {/* =====================================================
     FOUNDER'S NOTE

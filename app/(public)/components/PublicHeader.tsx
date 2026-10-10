@@ -146,6 +146,10 @@ export default function PublicHeader() {
     label: "Advance Booking LIVE Tracking",
     href: "/preview/advance-booking",
   },
+  {
+  label: "Technician Rankings",
+  href: "/preview/technicians",
+},
     {
       label: "JMI Comparison Tool",
       href: "/preview/compare",
