@@ -1370,7 +1370,7 @@ export default async function PublicPreview() {
                   <div>
 
                     <p className="text-[8px] font-medium text-yellow-500">
-                      — JERIN GEORGEKUTTY - MA | MBA | PGDAS | PDDS
+                      — JERIN GEORGEKUTTY - BCOM | MA | MBA | PGDAS | PDDS
                     </p>
 
                     <div className="mt-2 h-[85px] w-[85px] overflow-hidden rounded-full border-round border-zinc-500 bg-zinc-950 sm:h-[135px] sm:w-[140px]">

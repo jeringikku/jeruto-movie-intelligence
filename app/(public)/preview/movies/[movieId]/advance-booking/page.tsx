@@ -646,9 +646,8 @@ export default async function AdvanceBookingPublicPage({
           <p className="mt-1 text-[9px] leading-5 text-zinc-500">
             Figures shown on this page are based on
             the day-wise territory-level advance booking
-            records manually tracked and updated by JMI.
-            Historical days remain preserved when newer
-            tracking data is entered.
+            records tracked and updated by JMI.
+          
           </p>
 
         </section>

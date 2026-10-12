@@ -291,7 +291,7 @@ export default async function FunZonePage() {
     </p>
 
     <a
-      href="/login"
+      href="/account/login"
       className="mt-6 inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-400 px-6 py-3 text-[9px] font-bold uppercase tracking-[0.16em] text-black transition hover:bg-yellow-300"
     >
       Sign In to JMI

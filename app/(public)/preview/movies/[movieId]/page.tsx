@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PublicHeader from "../../../components/PublicHeader";
+import MovieRating from "../../../components/MovieRating";
 import { supabase } from "@/lib/supabase";
 
 export async function generateMetadata({
@@ -438,6 +439,16 @@ const worldwideGross =
 
           </div>
 
+        </section>
+
+        {/* =====================================================
+            JMI AUDIENCE RATING
+        ===================================================== */}
+
+        <section className="border-b border-zinc-900">
+          <div className="mx-auto max-w-6xl px-5 py-6 sm:px-6 sm:py-8 lg:px-8">
+            <MovieRating movieId={movie.id} />
+          </div>
         </section>
 
         {/* =====================================================
