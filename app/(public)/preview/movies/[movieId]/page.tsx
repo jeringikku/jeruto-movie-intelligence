@@ -81,6 +81,9 @@ export default async function MovieIntelligencePage({
       release_year,
       release_date,
       runtime_minutes,
+      certifications (
+        name
+      ),
       synopsis,
       poster_url,
       backdrop_url,
@@ -280,6 +283,12 @@ const worldwideGross =
       .filter(Boolean)
       .join(" · ") || "—";
 
+      const certificationItem = movie.certifications;
+
+const certification = Array.isArray(certificationItem)
+  ? certificationItem[0]?.name ?? null
+  : (certificationItem as { name?: string } | null)?.name ?? null;
+
   return (
     <div className="min-h-screen bg-black text-white">
 
@@ -332,7 +341,7 @@ const worldwideGross =
                   POSTER
               ================================================= */}
 
-              <div className="mx-auto h-[210px] w-[140px] flex-shrink-0 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 sm:mx-0 sm:h-[270px] sm:w-[180px]">
+              <div className="mx-auto h-[250px] w-[180px] flex-shrink-0 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 sm:mx-0 sm:h-[270px] sm:w-[180px]">
 
                 {movie.poster_url ? (
                   <img
@@ -371,59 +380,116 @@ const worldwideGross =
                     </p>
                   )}
 
-                {/* Movie metadata */}
+                
+ 
 
-                <div className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-2 text-[10px] text-zinc-400">
+{/* =================================================
+    PREMIUM MOVIE METADATA
+================================================= */}
 
-                  <span>
-                    {movie.release_year ?? "—"}
-                  </span>
+<div className="mt-4 space-y-3">
 
-                  <span className="text-pink-400">
-                    •
-                  </span>
+  {/* Core metadata */}
 
-                  <span className="text-pink-400/80">
-                    {primaryLanguage}
-                  </span>
+  <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-[11px] sm:text-xs">
 
-                  <span className="text-pink-400">
-                    •
-                  </span>
+    <span className="font-medium text-pink-400">
+      {movie.release_year ?? "—"}
+    </span>
 
-                  <span>
-                    {movieGenres}
-                  </span>
+    <span className="text-violet-500 text-[5px]">💠</span>
 
-                  {movie.runtime_minutes && (
-                    <>
-                      <span className="text-pink-400">
-                        •
-                      </span>
+    <span className="text-yellow-400">
+      {primaryLanguage}
+    </span>
 
-                      <span>
-                        Runtime {movie.runtime_minutes} min
-                      </span>
-                    </>
-                  )}
+    <span className="text-violet-500 text-[5px]">💠</span>
 
-                </div>
+    <span className="text-green-400 text-[10px]">
+      {movie.runtime_minutes
+        ? `Runtime : ${movie.runtime_minutes} min`
+        : "Runtime unavailable"}
+    </span>
 
-                {/* Release date */}
+    {certification && (
+      <>
+        <span className="text-violet-500 text-[5px]">💠</span>
 
-                {movie.release_date && (
-                  <div className="mt-5">
+        <span className="inline-flex items-center rounded border border-yellow-500/35 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-yellow-400">
+          {certification}
+        </span>
+      </>
+    )}
 
-                    <p className="text-[8px] uppercase tracking-[0.18em] text-yellow-400">
-                      Release Date
-                    </p>
+  </div>
 
-                    <p className="mt-1 text-[9px] text-green-500">
-                      {movie.release_date}
-                    </p>
+  {/* Genres */}
 
-                  </div>
-                )}
+  <div className="flex flex-wrap items-center gap-1.5">
+
+    {movie.movie_genres?.length > 0 ? (
+      movie.movie_genres.map((item, index) => {
+        const genre = item.genres;
+
+        const genreName = Array.isArray(genre)
+          ? genre[0]?.name
+          : (genre as { name?: string } | null)?.name;
+
+        if (!genreName) return null;
+
+        return (
+          <span
+            key={`${genreName}-${index}`}
+            className="rounded-full border border-pink-400 px-2.5 py-1 text-[9px] text-zinc-300 transition-colors hover:border-violet-500/40 hover:text-violet-400"
+          >
+            {genreName}
+          </span>
+        );
+      })
+    ) : (
+      <span className="text-[10px] text-zinc-400">
+        Genre unavailable
+      </span>
+    )}
+
+  </div>
+
+  {/* Release date */}
+
+  <div className="flex items-center gap-2 pt-0.5 text-[10px]">
+
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      className="h-3.5 w-3.5 shrink-0 text-yellow-500/80"
+      aria-hidden="true"
+    >
+      <rect x="3.5" y="5" width="17" height="15" rx="2" />
+      <path d="M7.5 3.5v3M16.5 3.5v3M3.5 9.5h17" />
+    </svg>
+
+    <span className=" tracking-[0.12em] text-green-500 text-[10px]">
+      Release Date
+    </span>
+
+    <span className="text-zinc-300">
+      {movie.release_date
+        ? new Date(
+            `${movie.release_date}T00:00:00`
+          ).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
+        : "Not announced"}
+    </span>
+
+  </div>
+
+</div>
 
                 {/* Synopsis */}
 
@@ -785,6 +851,56 @@ const worldwideGross =
               </div>
 
             </div>
+
+            {/* =================================================
+    HISTORICAL DATA DISCLAIMER
+================================================= */}
+
+<div className="mt-5 rounded-lg border border-amber-500/20 bg-amber-500/[0.035] px-4 py-3.5 sm:px-5">
+
+  <div className="flex items-start gap-3">
+
+    {/* Information icon */}
+
+    <div className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-amber-500/20 bg-amber-500/[0.06]">
+
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="h-3.5 w-3.5 text-amber-400"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v5M12 8h.01" />
+      </svg>
+
+    </div>
+
+    {/* Disclaimer content */}
+
+    <div className="min-w-0">
+
+      <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-amber-400">
+        Historical Box Office Data Disclaimer
+      </p>
+
+      <p className="mt-2 text-[10px] leading-5 text-zinc-400 sm:text-[11px]">
+        For movies released before 2015, during the pre-tracking era,
+        JMI has used external sources, older databases and research
+        notes to establish historical box-office figures. JMI does
+        not guarantee 100% accuracy for these figures and accepts no
+        liability for discrepancies. These figures should be
+        considered as trade figures, not official producer verified collections.
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
 
             {/* =================================================
                 ADVANCED BOX OFFICE INTELLIGENCE

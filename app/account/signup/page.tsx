@@ -64,7 +64,7 @@ export default function SignupPage() {
     }
 
     setSuccessMessage(
-      "Account created successfully. Please check your email to verify your account."
+      "Account created successfully. Now you can login to your account."
     );
 
     setPassword("");

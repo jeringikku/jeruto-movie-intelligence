@@ -129,7 +129,7 @@ export default async function IndustryRecordsLandingPage({
 
           </div>
 
-          <p className="mt-3 max-w-xl text-[10px] leading-5 text-zinc-500">
+          <p className="mt-3 max-w-xl text-[10px] leading-5 text-zinc-400">
             {industry.description ||
               `Explore the all-time box-office records of ${industry.name}.`}
           </p>
@@ -150,7 +150,7 @@ export default async function IndustryRecordsLandingPage({
 
             <Link
               href={`/preview/records/industry-wise/${industry.slug}/worldwide`}
-              className="group block rounded-xl border border-zinc-900 bg-zinc-950/40 p-5 transition hover:border-violet-500/30 hover:bg-zinc-950/80"
+              className="group block rounded-xl border border-zinc-500 bg-zinc-950/40 p-5 transition hover:border-violet-500/30 hover:bg-zinc-950/80"
             >
 
               <div className="flex items-center justify-between gap-4">
@@ -185,7 +185,7 @@ export default async function IndustryRecordsLandingPage({
 
             <Link
               href={`/preview/records/industry-wise/${industry.slug}/india`}
-              className="group block rounded-xl border border-zinc-900 bg-zinc-950/40 p-5 transition hover:border-violet-500/30 hover:bg-zinc-950/80"
+              className="group block rounded-xl border border-zinc-500 bg-zinc-950/40 p-5 transition hover:border-violet-500/30 hover:bg-zinc-950/80"
             >
 
               <div className="flex items-center justify-between gap-4">
@@ -220,7 +220,7 @@ export default async function IndustryRecordsLandingPage({
 
             <Link
               href={`/preview/records/industry-wise/${industry.slug}/overseas`}
-              className="group block rounded-xl border border-zinc-900 bg-zinc-950/40 p-5 transition hover:border-violet-500/30 hover:bg-zinc-950/80"
+              className="group block rounded-xl border border-zinc-500 bg-zinc-950/40 p-5 transition hover:border-violet-500/30 hover:bg-zinc-950/80"
             >
 
               <div className="flex items-center justify-between gap-4">

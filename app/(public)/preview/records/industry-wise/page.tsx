@@ -140,7 +140,7 @@ export default async function IndustryWiseRecordsPage() {
 
                       </div>
 
-                      <div className="shrink-0 text-[10px] text-zinc-700 transition group-hover:text-violet-400">
+                      <div className="shrink-0 text-[10px] text-zinc-500 transition group-hover:text-violet-400">
                         →
                       </div>
 

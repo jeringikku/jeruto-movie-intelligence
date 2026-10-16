@@ -624,6 +624,42 @@ setStats({
         </div>
       </div>
 
+      {/* ======================================== */}
+{/* JMI USER ANALYTICS */}
+{/* ======================================== */}
+
+<div className="mt-8">
+  <button
+    onClick={() => {
+      window.location.href = "/admin/user-analytics";
+    }}
+    className="group w-full rounded-xl border border-violet-500/30 bg-gradient-to-r from-violet-950/40 to-zinc-900 p-6 text-left transition hover:border-violet-400 hover:bg-zinc-800"
+  >
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-violet-500/30 bg-violet-500/10 text-2xl">
+          👥
+        </div>
+
+        <div>
+          <h2 className="text-lg font-semibold text-zinc-100">
+            JMI User Analytics
+          </h2>
+
+          <p className="mt-1 text-sm text-zinc-400">
+            Monitor registered accounts, website traffic and
+            the most-viewed movies on JMI.
+          </p>
+        </div>
+      </div>
+
+      <span className="shrink-0 text-sm font-medium text-violet-400 transition group-hover:translate-x-1">
+        Open Analytics →
+      </span>
+    </div>
+  </button>
+</div>
+
 
       {/* ======================================== */}
       {/* JMI AUTOMATED INSIGHTS */}
