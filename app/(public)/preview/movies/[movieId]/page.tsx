@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PublicHeader from "../../../components/PublicHeader";
 import MovieRating from "../../../components/MovieRating";
+import WalkingVerdictDuck from "@/app/(public)/components/WalkingVerdictDuck";
+import WalkingVerdictDuck3D from "@/app/(public)/components/WalkingVerdictDuck3D";
 import { supabase } from "@/lib/supabase";
 
 export async function generateMetadata({
@@ -112,6 +114,35 @@ export default async function MovieIntelligencePage({
     console.error("JMI Movie Intelligence Error:", error);
     notFound();
   }
+
+  // =====================================================
+// MOVIE BUSINESS VERDICTS
+// =====================================================
+
+const {
+  data: movieBusiness,
+  error: movieBusinessError,
+} = await supabase
+  .from("movie_business")
+  .select(`
+    theatrical_verdict,
+    business_verdict
+  `)
+  .eq("movie_id", movie.id)
+  .maybeSingle();
+
+if (movieBusinessError) {
+  console.error(
+    "JMI Movie Verdict Error:",
+    movieBusinessError
+  );
+}
+
+const theatricalVerdict =
+  movieBusiness?.theatrical_verdict?.trim() || null;
+
+const overallBusinessVerdict =
+  movieBusiness?.business_verdict?.trim() || null;
 
   // =====================================================
   // MOVIE PAGE VIEWS
@@ -290,11 +321,10 @@ const certification = Array.isArray(certificationItem)
   : (certificationItem as { name?: string } | null)?.name ?? null;
 
   return (
-    <div className="min-h-screen bg-black text-white">
-
+  <div className="min-h-screen w-full max-w-full overflow-x-clip bg-black text-white">
       <PublicHeader />
 
-      <main>
+      <main className="w-full min-w-0 max-w-full">
 
         {/* =====================================================
             MOVIE HERO
@@ -341,7 +371,7 @@ const certification = Array.isArray(certificationItem)
                   POSTER
               ================================================= */}
 
-              <div className="mx-auto h-[250px] w-[180px] flex-shrink-0 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 sm:mx-0 sm:h-[270px] sm:w-[180px]">
+              <div className="mx-auto h-[280px] w-[210px] flex-shrink-0 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 sm:mx-0 sm:h-[270px] sm:w-[180px]">
 
                 {movie.poster_url ? (
                   <img
@@ -358,6 +388,12 @@ const certification = Array.isArray(certificationItem)
                 )}
 
               </div>
+
+               {/* WALKING THEATRICAL VERDICT DUCK */}
+
+  <div className="w-full">
+    <WalkingVerdictDuck3D verdict={theatricalVerdict} />
+  </div>
 
               {/* =================================================
                   MOVIE INFORMATION
@@ -499,6 +535,98 @@ const certification = Array.isArray(certificationItem)
                   </p>
                 )}
 
+                {/* =================================================
+    JMI MOVIE VERDICTS
+================================================= */}
+
+{(theatricalVerdict || overallBusinessVerdict) && (
+  <div className="mt-6 max-w-2xl">
+
+    {/* Section heading */}
+
+    <div className="mb-3 flex items-center gap-2">
+
+      <span className="h-4 w-0.5 rounded-full bg-violet-400" />
+
+      <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-pink-400">
+        JMI Movie Verdicts
+      </p>
+
+    </div>
+
+    {/* Verdict cards */}
+
+    <div className="grid gap-2 sm:grid-cols-2">
+
+      {/* Theatrical Verdict */}
+
+      {theatricalVerdict && (
+        <div className="relative overflow-hidden rounded-lg border border-violet-500/20 bg-gradient-to-br from-violet-500/[0.07] to-zinc-950 px-4 py-3.5">
+
+          <div className="flex items-start gap-3">
+
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border border-violet-400/20 bg-violet-500/[0.08]">
+
+              <span className="text-sm text-violet-300">
+                🎬
+              </span>
+
+            </div>
+
+            <div className="min-w-0">
+
+              <p className="text-[7px] font-medium uppercase leading-4 tracking-[0.14em] text-zinc-400">
+                Theatrical Run Verdict
+              </p>
+
+              <p className="mt-1 break-words text-sm font-semibold tracking-tight text-violet-300">
+                {theatricalVerdict}
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
+      {/* Overall Business Verdict */}
+
+      {overallBusinessVerdict && (
+        <div className="relative overflow-hidden rounded-lg border border-yellow-500/20 bg-gradient-to-br from-yellow-500/[0.06] to-zinc-950 px-4 py-3.5">
+
+          <div className="flex items-start gap-3">
+
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border border-yellow-500/20 bg-yellow-500/[0.07]">
+
+              <span className="text-sm text-yellow-400">
+                💰
+              </span>
+
+            </div>
+
+            <div className="min-w-0">
+
+              <p className="text-[7px] font-medium uppercase leading-4 tracking-[0.14em] text-zinc-400">
+                Overall Verdict After Total Business
+              </p>
+
+              <p className="mt-1 break-words text-sm font-semibold tracking-tight text-yellow-500">
+                {overallBusinessVerdict}
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
+    </div>
+
+  </div>
+)}
+
               </div>
 
             </div>
@@ -623,9 +751,9 @@ const certification = Array.isArray(certificationItem)
 <div className="mt-5">
 
   <Link
-    href={`/preview/movies/${movie.id}/performance-report`}
-    className="group inline-block overflow-hidden rounded-xl border border-violet-400/20 bg-gradient-to-r from-violet-500/[0.07] via-zinc-950 to-yellow-500/[0.04] transition-all duration-300 hover:border-violet-400/40 hover:shadow-[0_0_35px_rgba(139,92,246,0.08)]"
-  >
+  href={`/preview/movies/${movie.id}/performance-report`}
+  className="group relative block w-full max-w-full overflow-hidden rounded-xl border border-violet-400/20 bg-gradient-to-r from-violet-500/[0.07] via-zinc-950 to-yellow-500/[0.04] transition-all duration-300 hover:border-violet-400/40 hover:shadow-[0_0_35px_rgba(139,92,246,0.08)]"
+>
 
     {/* Premium glow */}
 

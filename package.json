@@ -14,6 +14,8 @@
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.9.0",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.110.8",
     "@vinext/cloudflare": "^1.0.0-beta.7",
@@ -24,6 +26,7 @@
     "react-dom": "^19.3.0",
     "react-server-dom-webpack": "^19.3.0",
     "slugify": "^1.6.9",
+    "three": "^0.186.1",
     "vinext": "^1.0.0-beta.9"
   },
   "devDependencies": {

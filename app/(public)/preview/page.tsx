@@ -1355,7 +1355,7 @@ export default async function PublicPreview() {
                   " Our commitment is simple — to build a transparent,
                   unbiased and structured source of movie intelligence,
                   where every movie, every actor and every part of the
-                  film business can be understood by everyone through data."
+                  film business can be understood by everyone through data. We are not claiming all numbers provided by JMI are 100% accurate, we are trying harder to find out and share the maximum closest numbers with the original figures through our tracking methodology and reseach. So consider JMI data only as Trade figures, not officially verified information."
                 </blockquote>
 
 
@@ -1381,10 +1381,47 @@ export default async function PublicPreview() {
   />
 </div>
 
-                    <p className="mt-2 text-[8px] uppercase tracking-[0.18em] text-pink-500">
+                    <p className="mt-2 text-[8px] uppercase tracking-[0.18em] text-green-500">
                       Founder & CEO · Jeruto Group
                     </p>
 
+                   {/* Connect with Founder Button */}
+
+<div className="mt-5">
+  <Link
+    href="/preview/founder"
+    className="
+      inline-flex
+      items-center
+      justify-center
+      gap-2
+      rounded-lg
+      border border-violet-400/50
+      bg-violet-500/15
+      px-4 py-2
+      text-[9px]
+      font-normal
+      tracking-wide
+      text-violet-200
+      shadow-sm
+      transition-all duration-300
+      hover:border-violet-400
+      hover:bg-violet-500/25
+      hover:text-white
+      hover:shadow-[0_0_18px_rgba(139,92,246,0.15)]
+      active:scale-95
+      focus:outline-none
+      focus:ring-2
+      focus:ring-violet-400/50
+    "
+  >
+    Connect with the Founder
+
+    <span aria-hidden="true" className="text-sm text-[9px]">
+      →
+    </span>
+  </Link>
+</div>
                   </div>
 
                 </div>
