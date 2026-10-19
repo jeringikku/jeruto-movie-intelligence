@@ -367,34 +367,24 @@ const certification = Array.isArray(certificationItem)
 
             <div className="mt-8 flex flex-col gap-7 sm:flex-row sm:items-start sm:gap-8">
 
-              {/* =================================================
-                  POSTER
-              ================================================= */}
-
-              <div className="mx-auto h-[280px] w-[210px] flex-shrink-0 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 sm:mx-0 sm:h-[270px] sm:w-[180px]">
-
-                {movie.poster_url ? (
-                  <img
-                    src={movie.poster_url}
-                    alt={`${movie.title} poster`}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <span className="text-2xl text-zinc-800">
-                      ◈
-                    </span>
-                  </div>
-                )}
-
-              </div>
-
-               {/* WALKING THEATRICAL VERDICT DUCK */}
-
-  <div className="w-full">
-    <WalkingVerdictDuck3D verdict={theatricalVerdict} />
+              {/* POSTER + WALKING VERDICT DUCK */}
+<div className="mx-auto w-full min-w-0 max-w-[210px] flex-shrink-0 sm:mx-0 sm:w-[180px] sm:max-w-[180px]">
+  <div className="h-[320px] w-full overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 sm:h-[290px]">
+    {movie.poster_url ? (
+      <img
+        src={movie.poster_url}
+        alt={`${movie.title} poster`}
+        className="h-full w-full object-cover"
+      />
+    ) : (
+      <div className="flex h-full w-full items-center justify-center">
+        <span className="text-2xl text-zinc-800">◈</span>
+      </div>
+    )}
   </div>
 
+  
+</div>
               {/* =================================================
                   MOVIE INFORMATION
               ================================================= */}
@@ -535,6 +525,12 @@ const certification = Array.isArray(certificationItem)
                   </p>
                 )}
 
+                {/* FULL-WIDTH WALKING VERDICT DUCK */}
+<div className="relative w-full min-w-0 overflow-hidden">
+  <WalkingVerdictDuck3D verdict={theatricalVerdict} />
+</div>
+
+
                 {/* =================================================
     JMI MOVIE VERDICTS
 ================================================= */}
@@ -633,6 +629,7 @@ const certification = Array.isArray(certificationItem)
 
           </div>
 
+          
         </section>
 
         {/* =====================================================
@@ -748,32 +745,30 @@ const certification = Array.isArray(certificationItem)
     JMI PREMIUM PERFORMANCE REPORT
 ================================================= */}
 
-<div className="mt-5">
+<div className="mx-auto mt-5 w-full max-w-6xl px-0">
 
   <Link
-  href={`/preview/movies/${movie.id}/performance-report`}
-  className="group relative block w-full max-w-full overflow-hidden rounded-xl border border-violet-400/20 bg-gradient-to-r from-violet-500/[0.07] via-zinc-950 to-yellow-500/[0.04] transition-all duration-300 hover:border-violet-400/40 hover:shadow-[0_0_35px_rgba(139,92,246,0.08)]"
->
+    href={`/preview/movies/${movie.id}/performance-report`}
+    className="group relative block w-full overflow-hidden rounded-xl border border-violet-400/20 bg-gradient-to-r from-violet-500/[0.06] via-zinc-950 to-yellow-500/[0.03] transition-all duration-300 hover:border-violet-400/40 hover:shadow-[0_0_25px_rgba(139,92,246,0.08)]"
+  >
 
     {/* Premium glow */}
 
-    <div className="pointer-events-none absolute -right-16 -top-16 h-32 w-32 rounded-full bg-violet-500/[0.07] blur-3xl transition-all duration-500 group-hover:bg-violet-500/[0.12]" />
+    <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-violet-500/[0.06] blur-3xl transition-all duration-500 group-hover:bg-violet-500/[0.10]" />
 
-    <div className="pointer-events-none absolute -bottom-20 -left-10 h-28 w-28 rounded-full bg-yellow-500/[0.04] blur-3xl" />
+    <div className="pointer-events-none absolute -bottom-12 -left-8 h-20 w-20 rounded-full bg-yellow-500/[0.03] blur-3xl" />
 
-    <div className="relative flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+    <div className="relative flex items-center justify-between gap-3 px-3 py-3 sm:px-4 sm:py-3.5">
 
-      {/* Left */}
+      {/* Left content */}
 
-      <div className="flex items-start gap-3.5">
+      <div className="flex min-w-0 items-center gap-3">
 
         {/* Icon */}
 
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/[0.08]">
+        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/[0.08]">
 
-          <span className="text-lg">
-            📄
-          </span>
+          <span className="text-base">📄</span>
 
         </div>
 
@@ -783,40 +778,33 @@ const certification = Array.isArray(certificationItem)
 
           <div className="flex flex-wrap items-center gap-2">
 
-            <p className="text-[8px] font-semibold uppercase tracking-[0.24em] text-violet-400">
+            <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-violet-400">
               JMI Premium
             </p>
 
-            <span className="rounded-full border border-yellow-500/20 bg-yellow-500/[0.05] px-2 py-0.5 text-[7px] font-medium uppercase tracking-[0.14em] text-yellow-500">
+            <span className="rounded-full border border-yellow-500/20 bg-yellow-500/[0.05] px-1.5 py-0.5 text-[7px] font-medium uppercase tracking-[0.1em] text-yellow-500">
               Exclusive
             </span>
 
           </div>
 
-          <h3 className="mt-1.5 text-sm font-medium tracking-[-0.02em] text-green-500">
+          <h3 className="mt-1 text-xs font-semibold tracking-[-0.01em] text-green-500 sm:text-sm">
             JMI Movie Performance Report
           </h3>
 
-          <p className="mt-1 text-[9px] leading-4 text-zinc-400">
-            Generate an AI-powered analysis of this movie's
-            box office, markets, business and theatrical performance.
+          <p className="mt-1 text-[9px] leading-4 text-zinc-400 sm:text-[10px]">
+            AI-powered analysis of box office, markets, business and theatrical performance.
           </p>
 
-          <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[7px] uppercase tracking-[0.14em] text-pink-400">
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[7px] uppercase tracking-[0.12em] text-pink-400 sm:gap-x-3">
 
             <span>AI Analysis</span>
-
             <span>•</span>
-
             <span>Trade Data</span>
-
             <span>•</span>
-
             <span>Box Office</span>
-
             <span>•</span>
-
-            <span>Downlodable PDF Report</span>
+            <span>PDF Report</span>
 
           </div>
 
@@ -824,17 +812,11 @@ const certification = Array.isArray(certificationItem)
 
       </div>
 
-      {/* Right CTA */}
+      {/* Compact navigation arrow */}
 
-      <div className="flex flex-shrink-0 items-center justify-between gap-3 sm:justify-end">
-
-       
-
-        <span className="flex h-9 w-9 items-center justify-center rounded-full border border-violet-400/20 bg-violet-500/[0.06] text-sm text-violet-400 transition-transform duration-300 group-hover:translate-x-1">
-          →
-        </span>
-
-      </div>
+      <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-violet-400/20 bg-violet-500/[0.06] text-sm text-violet-400 transition-transform duration-300 group-hover:translate-x-1">
+        →
+      </span>
 
     </div>
 

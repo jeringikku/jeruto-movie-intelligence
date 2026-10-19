@@ -10,6 +10,8 @@ import JmiExclusiveNewsBanner from "../components/JmiExclusiveNewsBanner";
 import JmiFunZoneBanner from "../components/JmiFunZoneBanner";
 import { supabase } from "@/lib/supabase";
 import TechnicianRankingsBanner from "../components/TechnicianRankingsBanner";
+import ActorsRankingsBanner from "../components/ActorsRankingsBanner";
+import JmiNightSky from "../components/JmiNightSky";
 
 export const dynamic = "force-dynamic";
 
@@ -234,7 +236,8 @@ export default async function PublicPreview() {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white"> 
+     
 
       <PublicHeader />
 
@@ -270,13 +273,20 @@ export default async function PublicPreview() {
 
 </div>
 
+ 
+
       <main>
+
+        
 
         {/* =====================================================
             HERO
         ===================================================== */}
 
+        
         <section className="relative overflow-hidden border-b border-zinc-900">
+
+          <JmiNightSky />
 
           {/* Subtle ambient light */}
           <div className="pointer-events-none absolute inset-0">
@@ -297,6 +307,8 @@ export default async function PublicPreview() {
                 </span>
 
               </div>
+
+            
 
 
               {/* Premium Brand Title */}
@@ -457,6 +469,146 @@ export default async function PublicPreview() {
 {/* =====================================================
     JMI MOVIE LIBRARY — VINTAGE RECORD BOOK
 ===================================================== */}
+
+{/* =====================================================
+    JMI MOVIE LIBRARY — WEATHERED WOOD BANNER
+===================================================== */}
+
+<div className="mx-auto mt-8 max-w-2xl px-4 sm:mt-10">
+
+  <div
+    className="
+      group
+      relative
+      isolate
+      overflow-hidden
+      border
+      border-[#65452f]
+      bg-gradient-to-br
+      from-[#765137]
+      via-[#49301f]
+      to-[#24160e]
+      px-7
+      py-5
+      shadow-[0_8px_20px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(220,180,130,0.12)]
+      transition-all
+      duration-300
+      sm:px-10
+      sm:py-6
+    "
+  >
+
+    {/* WEATHERED WOOD GRAIN */}
+
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 -z-10 opacity-90"
+      style={{
+        backgroundImage: `
+          repeating-linear-gradient(
+            2deg,
+            transparent 0px,
+            transparent 8px,
+            rgba(207, 158, 106, 0.13) 9px,
+            rgba(25, 14, 8, 0.20) 10px,
+            transparent 12px,
+            transparent 19px
+          ),
+          repeating-linear-gradient(
+            178deg,
+            transparent 0px,
+            transparent 27px,
+            rgba(20, 11, 6, 0.18) 28px,
+            transparent 30px,
+            transparent 39px
+          ),
+          linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.30),
+            transparent 20%,
+            rgba(208, 156, 100, 0.08) 50%,
+            transparent 78%,
+            rgba(0, 0, 0, 0.25)
+          )
+        `,
+      }}
+    />
+
+    {/* SMALL WOOD CRACKS */}
+
+    <div className="pointer-events-none absolute left-[58%] top-0 h-8 w-px rotate-[18deg] bg-[#d1a477]/40" />
+
+    <div className="pointer-events-none absolute right-[62%] top-[35%] h-3 w-px -rotate-[25deg] bg-black/50" />
+
+    <div className="pointer-events-none absolute bottom-[12%] left-[42%] h-px w-7 rotate-[-8deg] bg-[#d1a477]/30" />
+
+    {/* WORN EDGES */}
+
+    <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-b from-[#160904]/70 to-transparent" />
+
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[4px] bg-gradient-to-t from-[#130b06] via-[#2c1a10] to-transparent" />
+
+    <div className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-gradient-to-r from-[#160d07] to-transparent" />
+
+    <div className="pointer-events-none absolute inset-y-0 right-0 w-[3px] bg-gradient-to-l from-[#160d07] to-transparent" />
+
+    {/* WOODEN NAIL — TOP LEFT */}
+
+    <div className="pointer-events-none absolute left-2 top-2 z-20 flex h-[11px] w-[11px] items-center justify-center rounded-full border border-[#c1a17a]/60 bg-gradient-to-br from-[#94714c] via-[#493321] to-[#1c120b] shadow-[1px_2px_3px_rgba(0,0,0,0.8)] sm:left-3 sm:top-3">
+
+      <span className="h-[4px] w-[4px] rounded-full bg-[#160d08] shadow-[0_1px_1px_rgba(255,220,170,0.35)]" />
+
+    </div>
+
+    {/* WOODEN NAIL — TOP RIGHT */}
+
+    <div className="pointer-events-none absolute right-2 top-2 z-20 flex h-[11px] w-[11px] items-center justify-center rounded-full border border-[#c1a17a]/60 bg-gradient-to-br from-[#94714c] via-[#493321] to-[#1c120b] shadow-[1px_2px_3px_rgba(0,0,0,0.8)] sm:right-3 sm:top-3">
+
+      <span className="h-[4px] w-[4px] rounded-full bg-[#160d08] shadow-[0_1px_1px_rgba(255,220,170,0.35)]" />
+
+    </div>
+
+    {/* BANNER MESSAGE */}
+
+    <div className="relative z-10 flex items-center justify-center gap-3 text-center">
+
+      {/* Small archive emblem */}
+
+      <span className="shrink-0 text-lg text-[#d1a477] sm:text-xl">
+        
+      </span>
+
+      <p className="font-serif text-[12px] font-semibold leading-5 tracking-[0.025em] text-[#f0d1a7] drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] sm:text-sm sm:leading-6">
+        Click on this Book to Enter into  JMI's Exclusive Movie Library
+      </p>
+
+      <span className="shrink-0 text-lg text-[#d1a477] sm:text-xl">
+        
+      </span>
+
+    </div>
+
+    {/* ENGRAVED ACCENT */}
+
+    <div className="relative z-10 mx-auto mt-3 flex items-center justify-center gap-2">
+
+      <div className="h-px w-10 bg-gradient-to-r from-transparent to-[#c19a6c]/80 sm:w-16" />
+
+      <div className="h-1 w-1 rotate-45 bg-[#c19a6c]/80" />
+
+      <div className="h-px w-10 bg-gradient-to-l from-transparent to-[#c19a6c]/80 sm:w-16" />
+
+    </div>
+
+    {/* WORN CORNERS */}
+
+    <div className="pointer-events-none absolute bottom-0 left-0 h-4 w-4 bg-gradient-to-tr from-[#76512e]/80 to-transparent" />
+
+    <div className="pointer-events-none absolute right-0 top-0 h-4 w-4 bg-gradient-to-bl from-[#a47b50]/30 to-transparent" />
+
+  </div>
+
+</div>
 
 <div className="mx-auto mt-7 max-w-md px-4">
 
@@ -867,11 +1019,11 @@ export default async function PublicPreview() {
         text-[11px]
         leading-5
         text-zinc-300
-        sm:text-[11px]
+        sm:text-[14px]
       "
     >
-      Tap on this Book to enter into JMI's Exclusive Movie Library and
-      explore all movies in JMI database.
+      Taping on this Book will make you to enter into the JMI's Exclusive Movie Library and
+      explore all movies inside JMI database.
     </p>
 
     <div
@@ -965,6 +1117,9 @@ export default async function PublicPreview() {
 
 
         <TicketBookingBanner />
+
+
+        <ActorsRankingsBanner />
 
   
 

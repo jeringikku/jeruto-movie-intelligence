@@ -355,9 +355,9 @@ export default async function MoviesPage({
 
         <section className="border-b border-zinc-600">
 
-          <div className="mx-auto max-w-6xl px-5 py-8 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl px-6 py-5 sm:px-6 lg:px-8">
 
-            <div className="overflow-hidden rounded-xl border border-violet-500/50 bg-zinc-950">
+            <div className="overflow-hidden rounded-lg border border-[#765137]/80 bg-gradient-to-br from-[#49301f] via-[#2d1d14] to-[#1b110b] shadow-[0_8px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(220,180,130,0.12)]">
 
               <div className="grid grid-cols-3 divide-x divide-zinc-800">
 
@@ -400,7 +400,7 @@ export default async function MoviesPage({
                   Discover
                 </p>
 
-                <h2 className="mt-2 text-lg font-medium tracking-[-0.02em] text-zinc-100">
+                <h2 className="mt-2 text-lg font-medium tracking-[-0.02em] text-pink-400">
                   Explore Indian cinema.
                 </h2>
 
@@ -504,7 +504,7 @@ export default async function MoviesPage({
 
               </div>
             ) : (
-              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-6 grid grid-cols-3 gap-x-2 gap-y-4 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-4 lg:gap-x-7 lg:gap-y-9">
 
                 {resultMovies.map((movie) => {
 
@@ -736,7 +736,7 @@ export default async function MoviesPage({
 
 
 /* ============================================================
-   MOVIE STAT
+   MOVIE STAT — WEATHERED WOOD WALL PLAQUE
 ============================================================ */
 
 function MovieStat({
@@ -747,20 +747,152 @@ function MovieStat({
   label: string;
 }) {
   return (
-    <div className="px-3 py-4 sm:px-5 sm:py-5">
+    <div
+      className="
+        group
+        relative
+        isolate
+        overflow-hidden
+        border-r
+        border-[#21140d]/80
+        bg-gradient-to-br
+        from-[#765137]
+        via-[#49301f]
+        to-[#24160e]
+        px-3
+        py-5
+        shadow-[inset_0_1px_0_rgba(220,180,130,0.12),inset_0_-3px_5px_rgba(0,0,0,0.35)]
+        transition-all
+        duration-300
+        hover:brightness-110
+        sm:px-5
+        sm:py-6
+      "
+    >
+      {/* WEATHERED WOOD GRAIN */}
 
-      <p className="text-lg font-medium tracking-[-0.03em] text-violet-400 sm:text-xl">
-        {value}
-      </p>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 opacity-90"
+        style={{
+          backgroundImage: `
+            repeating-linear-gradient(
+              2deg,
+              transparent 0px,
+              transparent 8px,
+              rgba(207, 158, 106, 0.13) 9px,
+              rgba(25, 14, 8, 0.20) 10px,
+              transparent 12px,
+              transparent 19px
+            ),
+            repeating-linear-gradient(
+              178deg,
+              transparent 0px,
+              transparent 27px,
+              rgba(20, 11, 6, 0.18) 28px,
+              transparent 30px,
+              transparent 39px
+            ),
+            linear-gradient(
+              90deg,
+              rgba(0, 0, 0, 0.30),
+              transparent 20%,
+              rgba(208, 156, 100, 0.08) 50%,
+              transparent 78%,
+              rgba(0, 0, 0, 0.25)
+            )
+          `,
+        }}
+      />
 
-      <p className="mt-1 text-[8px] uppercase tracking-[0.15em] text-zinc-400">
-        {label}
-      </p>
+      {/* SMALL CRACKS IN THE WOOD */}
+
+      <div className="pointer-events-none absolute left-[15%] top-0 h-4 w-px rotate-[18deg] bg-[#d1a477]/35" />
+
+      <div className="pointer-events-none absolute right-[20%] top-[35%] h-3 w-px -rotate-[25deg] bg-black/40" />
+
+      <div className="pointer-events-none absolute bottom-[12%] left-[45%] h-px w-6 rotate-[-8deg] bg-[#d1a477]/25" />
+
+      {/* WORN WOOD EDGES */}
+
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-b from-[#a98054]/70 to-transparent" />
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[4px] bg-gradient-to-t from-[#130b06] via-[#2c1a10] to-transparent" />
+
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-gradient-to-r from-[#160d07] to-transparent" />
+
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-[3px] bg-gradient-to-l from-[#160d07] to-transparent" />
+
+      {/* WOODEN NAIL — TOP LEFT */}
+
+      <div className="pointer-events-none absolute left-2 top-2 z-20 flex h-[9px] w-[9px] items-center justify-center rounded-full border border-[#c1a17a]/50 bg-gradient-to-br from-[#94714c] via-[#493321] to-[#1c120b] shadow-[1px_2px_3px_rgba(0,0,0,0.8)] sm:left-3 sm:top-3">
+
+        <span className="h-[3px] w-[3px] rounded-full bg-[#160d08] shadow-[0_1px_1px_rgba(255,220,170,0.35)]" />
+
+      </div>
+
+      {/* WOODEN NAIL — TOP RIGHT */}
+
+      <div className="pointer-events-none absolute right-2 top-2 z-20 flex h-[9px] w-[9px] items-center justify-center rounded-full border border-[#c1a17a]/50 bg-gradient-to-br from-[#94714c] via-[#493321] to-[#1c120b] shadow-[1px_2px_3px_rgba(0,0,0,0.8)] sm:right-3 sm:top-3">
+
+        <span className="h-[3px] w-[3px] rounded-full bg-[#160d08] shadow-[0_1px_1px_rgba(255,220,170,0.35)]" />
+
+      </div>
+
+      {/* STAT CONTENT */}
+
+      <div className="relative z-10">
+
+        {/* VALUE */}
+
+        <p
+          className="
+            text-xl
+            font-semibold
+            tracking-[-0.04em]
+            text-[#f0d1a7]
+            drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]
+            transition-colors
+            duration-300
+            group-hover:text-[#ffe2ba]
+            sm:text-2xl
+          "
+        >
+          {value}
+        </p>
+
+        {/* LABEL */}
+
+        <p
+          className="
+            mt-1.5
+            text-[8px]
+            font-semibold
+            uppercase
+            tracking-[0.18em]
+            text-[#d1b394]
+            drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]
+            sm:text-[9px]
+          "
+        >
+          {label}
+        </p>
+
+        {/* WEATHERED ENGRAVED ACCENT */}
+
+        <div className="mt-3 h-[2px] w-7 bg-gradient-to-r from-[#c19a6c]/80 via-[#8b6440]/40 to-transparent shadow-[0_1px_1px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:w-12" />
+
+      </div>
+
+      {/* WORN CORNERS */}
+
+      <div className="pointer-events-none absolute bottom-0 left-0 h-3 w-3 bg-gradient-to-tr from-[#100904]/80 to-transparent" />
+
+      <div className="pointer-events-none absolute right-0 top-0 h-3 w-3 bg-gradient-to-bl from-[#a47b50]/30 to-transparent" />
 
     </div>
   );
 }
-
 
 /* ============================================================
    FILTER CHIP
@@ -794,7 +926,7 @@ function FilterChip({
         border
         px-3
         py-1.5
-        text-[9px]
+        text-[10px]
         transition-all
         ${
           active
@@ -808,9 +940,8 @@ function FilterChip({
   );
 }
 
-
 /* ============================================================
-   MOVIE CARD
+   MOVIE CARD — PREMIUM DVD CASE COLLECTION
 ============================================================ */
 
 function MovieCard({
@@ -834,97 +965,234 @@ function MovieCard({
     <Link
       href={`/preview/movies/${movieId}`}
       className="
-        group
-        relative
-        overflow-hidden
-        rounded-xl
-        border
-        border-zinc-800
-        bg-zinc-950
-        p-4
-        transition-all
-        duration-300
-        hover:border-violet-400/25
-        hover:bg-zinc-900/70
-        active:scale-[0.99]
-      "
+  group
+  relative
+  block
+  min-w-0
+  max-w-[260px]
+
+  overflow-hidden
+  rounded-md
+  border
+  border-[#765137]
+bg-gradient-to-br
+from-[#68472f]
+via-[#49301f]
+to-[#2b1b12]
+  shadow-[0_5px_14px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(220,180,130,0.15)]
+  transition-all
+  duration-300
+  hover:-translate-y-1
+  hover:border-[#a67c52]
+  hover:shadow-[0_12px_30px_rgba(0,0,0,0.65),0_0_18px_rgba(139,92,246,0.10)]
+  active:scale-[0.99]
+"
     >
 
-      <div className="flex gap-3">
+      {/* REALISTIC WALNUT WOOD TEXTURE */}
 
-        <div className="flex h-20 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-md border border-zinc-800 bg-black transition-colors group-hover:border-violet-400/20">
+<div
+  aria-hidden="true"
+  className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-md opacity-80 transition-opacity duration-300 group-hover:opacity-100"
+>
+  {/* Natural wood grain */}
+  <div
+    className="absolute inset-0"
+    style={{
+      backgroundImage: `
+        repeating-linear-gradient(
+          3deg,
+          transparent 0px,
+          transparent 8px,
+          rgba(190, 139, 91, 0.16) 9px,
+          rgba(30, 17, 10, 0.12) 10px,
+          transparent 12px,
+          transparent 21px
+        ),
+        repeating-linear-gradient(
+          177deg,
+          transparent 0px,
+          transparent 27px,
+          rgba(215, 169, 118, 0.10) 28px,
+          transparent 30px,
+          transparent 43px
+        ),
+        linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0.22),
+          transparent 15%,
+          rgba(210, 158, 105, 0.08) 48%,
+          transparent 78%,
+          rgba(0, 0, 0, 0.18)
+        )
+      `,
+    }}
+  />
 
-          {posterUrl ? (
-            <img
-              src={posterUrl}
-              alt={`${title} poster`}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <span className="text-[15px] text-zinc-800 transition-colors group-hover:text-violet-400/40">
-              ◈
-            </span>
-          )}
+  {/* Fine scratches */}
+  <div
+    className="absolute inset-0"
+    style={{
+      backgroundImage: `
+        linear-gradient(
+          112deg,
+          transparent 0%,
+          transparent 23%,
+          rgba(230, 194, 153, 0.22) 23.08%,
+          transparent 23.18%,
+          transparent 100%
+        ),
+        linear-gradient(
+          167deg,
+          transparent 0%,
+          transparent 57%,
+          rgba(235, 204, 167, 0.16) 57.08%,
+          transparent 57.18%,
+          transparent 100%
+        )
+      `,
+    }}
+  />
+
+  {/* Small edge scuffs */}
+  <div className="absolute left-[4px] top-[17%] h-4 w-px rotate-[8deg] bg-[#d5b18a]/30" />
+
+  <div className="absolute right-[5px] top-[38%] h-3 w-px -rotate-[12deg] bg-[#d5b18a]/25" />
+
+  <div className="absolute bottom-[13%] left-[15%] h-px w-5 rotate-[-6deg] bg-[#d5b18a]/25" />
+
+  {/* Warm, worn corners */}
+  <div className="absolute left-0 top-0 h-7 w-7 bg-gradient-to-br from-[#c39a6c]/15 to-transparent" />
+
+  <div className="absolute bottom-0 right-0 h-8 w-8 bg-gradient-to-tl from-black/25 to-transparent" />
+</div>
+
+      {/* PHYSICAL CASE BODY */}
+
+      <div className="relative p-1">
+
+        {/* TOP PLASTIC EDGE */}
+
+        <div className="pointer-events-none absolute inset-x-2 top-0 z-20 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+        {/* POSTER CASE */}
+
+        <div className="relative overflow-hidden rounded-[1px] border border-[#68503a]/50 bg-gradient-to-br from-[#21170f] via-[#100d0a] to-black p-[3px] shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)]">
+
+          {/* INNER POSTER FRAME */}
+
+          <div className="relative aspect-[2/3] w-full overflow-hidden bg-zinc-950">
+
+            {posterUrl ? (
+              <img
+                src={posterUrl}
+                alt={`${title} poster`}
+                className="
+                  h-full
+                  w-full
+                  object-cover
+                  transition-transform
+                  duration-700
+                  group-hover:scale-[1.035]
+                "
+              />
+            ) : (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-zinc-900 via-black to-zinc-950">
+
+                <span className="text-4xl text-zinc-800 transition-colors duration-300 group-hover:text-violet-400/50">
+                  ◈
+                </span>
+
+                <span className="px-2 text-center text-[8px] uppercase tracking-[0.2em] text-zinc-700">
+                  Poster unavailable
+                </span>
+
+              </div>
+            )}
+
+            {/* GLOSSY PLASTIC REFLECTION */}
+
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.12] via-transparent to-transparent opacity-50 transition-opacity duration-300 group-hover:opacity-80" />
+
+            {/* CASE EDGE SHADING */}
+
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-black/40 to-transparent" />
+
+           
+
+            {/* RELEASE YEAR */}
+
+            <div className="absolute bottom-2 right-2">
+
+
+            </div>
+
+          </div>
 
         </div>
 
-        <div className="min-w-0 flex-1">
+        {/* SPINE-LIKE CASE EDGE */}
 
-          <div className="flex items-start justify-between gap-2">
+        <div className="pointer-events-none absolute inset-y-2 left-0 w-[3px] rounded-l-sm bg-gradient-to-b from-[#927456]/70 via-[#302318] to-[#100c09]" />
 
-            <h3 className="truncate text-[12px] font-medium text-zinc-200 group-hover:text-white">
-              {title}
-            </h3>
+        {/* MOVIE INFORMATION — CASE LABEL */}
 
-            <span className="flex-shrink-0 text-[8px] text-yellow-500">
-              {year}
-            </span>
+        <div className="px-2 pb-2 pt-1 sm:px-2.5">
 
-          </div>
+          {/* COLLECTION LABEL */}
 
-          <p className="mt-1 text-[9px] text-violet-400/70">
-            {language}
-          </p>
+          <div className="mb-1 flex items-center justify-between gap-2">
 
-          <p className="mt-1 text-[8px] text-zinc-400">
-            {genre}
-          </p>
+           
 
-          <div className="mt-3 flex items-center gap-2">
-
-            <span
-              className={`h-1 w-1 rounded-full ${
-                status === "Upcoming"
-                  ? "bg-yellow-400/70"
-                  : "bg-violet-400/60"
-              }`}
-            />
-
-            <span className="text-[8px] text-zinc-400">
-              {status}
-            </span>
+            <span className="h-px w-5 bg-violet-400/40" />
 
           </div>
 
+          {/* TITLE */}
+
+          <h3
+            className="
+              line-clamp-2
+              min-h-0
+              text-[9px]
+              font-normal
+              leading-4
+              tracking-[-0.02em]
+              text-zinc-300
+              transition-colors
+              duration-300
+              group-hover:text-white
+              sm:text-xs
+            "
+            title={title}
+          >
+            {title}
+          </h3>
+
+          {/* LANGUAGE AND YEAR */}
+
+          <div className="mt-0 flex items-center justify-between gap-2 border-t border-zinc-800/80 pt-1.5">
+
+           
+           
+
+          </div>
+
+          {/* GENRE */}
+
+         
         </div>
 
       </div>
 
-      <span
-        className="
-          absolute
-          bottom-3
-          right-3
-          text-[10px]
-          text-zinc-800
-          transition-all
-          duration-300
-          group-hover:translate-x-0.5
-          group-hover:text-violet-400
-        "
-      >
-        ↗️
-      </span>
+      {/* BOTTOM CASE EDGE */}
+
+      <div className="pointer-events-none h-[2px] bg-gradient-to-r from-[#3a2417] via-[#98704a] to-[#352116]" />
+
+      {/* SUBTLE HOVER ACCENT */}
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-violet-400/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
     </Link>
   );

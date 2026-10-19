@@ -74,6 +74,11 @@ const teamMembers: {
     designation: "Data Management Assistance",
     image: "https://scontent.ftrv8-2.fna.fbcdn.net/v/t39.30808-1/716170201_2459088451180118_8371955300893870452_n.jpg?stp=dst-jpg_tt6&cstp=mx1440x1440&ctp=s200x200&_nc_cat=106&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=e99d92&_nc_ohc=mVupLa4CtxcQ7kNvwHora9t&_nc_oc=AdrQDKfAiulDzcGgfXtQmRP54xZbpYE0H2QzDALbnscjXSLJBkwbaWcLoVPLL662O3T-K7K5PrTHbEJMHSCKxzxF&_nc_zt=24&_nc_ht=scontent.ftrv8-2.fna&_nc_gid=O63kjHecKP8nKthqOSbXZw&_nc_ss=7b2a8&oh=00_AQPdFZ70PDm1xIS_fedmqCJKYH0mWa1aPHIxIQqVfOfzxw&oe=6AD96CC3", 
   },
+  {
+    name: "Sijin Saji",
+    designation: "Data collection & processing",
+    image: "", 
+  },
 ];
 
 /* ============================================================

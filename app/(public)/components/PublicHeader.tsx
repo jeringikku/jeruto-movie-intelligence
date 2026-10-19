@@ -150,6 +150,10 @@ export default function PublicHeader() {
   label: "Technician Rankings",
   href: "/preview/technicians",
 },
+ {
+  label: "Actor Rankings",
+  href: "/preview/actors-rankings",
+},
     {
       label: "JMI Comparison Tool",
       href: "/preview/compare",
