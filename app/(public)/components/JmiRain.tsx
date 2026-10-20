@@ -73,7 +73,6 @@ export default function JmiRain() {
 if (!rain.active) {
   return null;
 }
-
   return (
     <div
       aria-hidden="true"
@@ -119,7 +118,7 @@ if (!rain.active) {
   background: linear-gradient(
     to bottom,
     transparent,
-    rgba(200, 210, 255, 0.60)
+    rgba(210, 220, 265, 0.70)
   );
   border-radius: 50%;
   box-shadow: 0 0 2px rgba(180, 215, 255, 0.35);
@@ -129,15 +128,7 @@ if (!rain.active) {
   will-change: transform;
 }
 
-        .jmi-rain-lightning {
-          position: absolute;
-          inset: 0;
-          background: rgba(190, 205, 255, 0);
-          animation: jmi-rain-flash 13s infinite;
-        }
-
-        .jmi-rain-evening .jmi-rain-lightning {
-          animation-delay: 3s;
+       tion-delay: 3s;
         }
 
         @keyframes jmi-rain-fall {

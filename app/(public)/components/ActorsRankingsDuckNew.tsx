@@ -13,6 +13,8 @@ type DuckMood =
 
 function getISTMood(): DuckMood {
 
+  
+
   const time = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Asia/Kolkata",
     hour: "2-digit",

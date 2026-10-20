@@ -11,9 +11,10 @@ import JmiFunZoneBanner from "../components/JmiFunZoneBanner";
 import { supabase } from "@/lib/supabase";
 import TechnicianRankingsBanner from "../components/TechnicianRankingsBanner";
 import ActorsRankingsBanner from "../components/ActorsRankingsBanner";
-import JmiNightSky from "../components/JmiNightSky";
+
 import JmiSun from "@/app/(public)/components/JmiSun";
 import JmiRain from "@/app/(public)/components/JmiRain";
+import JmiNightSky from "../components/JmiNightSky";
 
 export const dynamic = "force-dynamic";
 
@@ -289,11 +290,11 @@ export default async function PublicPreview() {
       
         
         <section className="relative overflow-hidden border-b border-zinc-900">
-
+<JmiNightSky />
   
 <JmiRain />
 
-          <JmiNightSky />
+          
 
             {/* New daytime travelling sun */}
   <JmiSun />

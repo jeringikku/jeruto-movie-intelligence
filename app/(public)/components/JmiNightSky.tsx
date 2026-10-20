@@ -14,7 +14,7 @@ function isNightInIST(): boolean {
   return hour >= 19 || hour < 6;
 }
 
-export default function JmiNightSky() {
+export default function MoviePageAtmosphere() {
   const [isNight, setIsNight] = useState(false);
 
   useEffect(() => {
@@ -36,10 +36,18 @@ export default function JmiNightSky() {
   return (
   <div
     aria-hidden="true"
-    className="jmi-night-sky pointer-events-none absolute inset--1 overflow-hidden"
+   
+  className="jmi-night-sky pointer-events-none absolute inset-0 z-0 overflow-hidden"
+
   >
-    {/* Distant galaxy glow */}
-    <div className="jmi-galaxy-glow" />
+    {/* Deep-space Milky Pink galaxy */}
+<div className="jmi-galaxy-glow" />
+
+<div className="jmi-pink-galaxy" aria-hidden="true">
+  <div className="jmi-galaxy-core" />
+  <div className="jmi-galaxy-dust" />
+  <div className="jmi-galaxy-nebula" />
+</div>
 
     {/* Existing starfield */}
     {Array.from({ length: 65 }, (_, index) => {
@@ -104,7 +112,7 @@ export default function JmiNightSky() {
     <style jsx>{`
       .jmi-night-sky {
         z-index: 0;
-        background: #000;
+        background: transparent;
       }
 
       .jmi-galaxy-glow {
@@ -123,6 +131,8 @@ export default function JmiNightSky() {
         );
         filter: blur(30px);
       }
+
+      
 
       /* Stars */
       .jmi-star {
