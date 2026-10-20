@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ActorsRankingsDuck from "./ActorsRankingsDuck";
 import ActorsRankingsDuckNew from "./ActorsRankingsDuckNew";
+import JmiRain from "@/app/(public)/components/JmiRain";
 
 export default function ActorsRankingsBanner() {
   return (
@@ -73,6 +74,7 @@ export default function ActorsRankingsBanner() {
 
               {/* Duck assistant */}
               <div className="flex flex-col items-center justify-center">
+                <JmiRain />
                 <ActorsRankingsDuckNew />
                 <p className="mt-1 text-center text-[8px] font-medium uppercase tracking-[0.18em] text-amber-300/70">
                   Veronica - JMI AI assistant

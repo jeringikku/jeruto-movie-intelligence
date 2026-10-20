@@ -12,6 +12,8 @@ import { supabase } from "@/lib/supabase";
 import TechnicianRankingsBanner from "../components/TechnicianRankingsBanner";
 import ActorsRankingsBanner from "../components/ActorsRankingsBanner";
 import JmiNightSky from "../components/JmiNightSky";
+import JmiSun from "@/app/(public)/components/JmiSun";
+import JmiRain from "@/app/(public)/components/JmiRain";
 
 export const dynamic = "force-dynamic";
 
@@ -243,6 +245,7 @@ export default async function PublicPreview() {
 
       <JmiLiveTicker />
 
+
       {/* =====================================================
     HOMEPAGE VIEW COUNT
 ===================================================== */}
@@ -277,16 +280,23 @@ export default async function PublicPreview() {
 
       <main>
 
-        
+
 
         {/* =====================================================
             HERO
         ===================================================== */}
 
+      
         
         <section className="relative overflow-hidden border-b border-zinc-900">
 
+  
+<JmiRain />
+
           <JmiNightSky />
+
+            {/* New daytime travelling sun */}
+  <JmiSun />
 
           {/* Subtle ambient light */}
           <div className="pointer-events-none absolute inset-0">
@@ -297,10 +307,13 @@ export default async function PublicPreview() {
 
             <div className="mx-auto max-w-3xl text-center">
 
+              
+
               {/* Eyebrow */}
               <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-green-400/20 bg-yellow-400/[0.035] px-3 py-1.5">
 
                 <span className="h-1 w-1 rounded-full bg-green-400" />
+
 
                 <span className="text-[9px] font-medium uppercase tracking-[0.25em] text-green-400/90 sm:text-[10px]">
                   India's Movie Intelligence Platform
@@ -465,7 +478,7 @@ export default async function PublicPreview() {
         </section>
 
 
-
+<JmiRain /> 
 {/* =====================================================
     JMI MOVIE LIBRARY — VINTAGE RECORD BOOK
 ===================================================== */}
@@ -475,6 +488,7 @@ export default async function PublicPreview() {
 ===================================================== */}
 
 <div className="mx-auto mt-8 max-w-2xl px-4 sm:mt-10">
+  
 
   <div
     className="
@@ -611,6 +625,8 @@ export default async function PublicPreview() {
 </div>
 
 <div className="mx-auto mt-7 max-w-md px-4">
+
+
 
   {/* =================================================
       BOOK

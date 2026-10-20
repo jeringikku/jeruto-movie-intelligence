@@ -8,9 +8,11 @@ type DuckMood =
   | "eating"
   | "hot"
   | "resting"
-  | "sleeping";
+  | "sleeping"
+  | "rainy";
 
 function getISTMood(): DuckMood {
+
   const time = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Asia/Kolkata",
     hour: "2-digit",
@@ -20,6 +22,15 @@ function getISTMood(): DuckMood {
 
   const [hour, minute] = time.split(":").map(Number);
   const minutes = hour * 60 + minute;
+
+  // RAINY-DAY MODE — original JMI rain schedule (IST).
+// 11:50 AM–12:00 PM and 4:50 PM–5:00 PM.
+if (
+  (minutes >= 11 * 60 + 50 && minutes < 12 * 60) ||
+  (minutes >= 16 * 60 + 50 && minutes < 17 * 60)
+) {
+  return "rainy";
+}
 
   // 7:00 AM–9:00 AM: Morning activity
   if (minutes >= 7 * 60 && minutes < 9 * 60) {
@@ -118,6 +129,15 @@ export default function ActorsRankingsDuck() {
       } a white placard reading Check out the List Now`}
     >
       <div className="actors-duck">
+
+   {/* RAINY-DAY UMBRELLA */}
+{mood === "rainy" && (
+  <div className="duck-rainy-umbrella" aria-hidden="true">
+    <div className="duck-umbrella-canopy" />
+    <div className="duck-umbrella-handle" />
+  </div>
+)}
+
         {/* SWEAT DROPLETS */}
         {isHot && (
           <div className="sweat-drops" aria-hidden="true">
@@ -149,6 +169,7 @@ export default function ActorsRankingsDuck() {
           </div>
         )}
 
+        
         {/* DUCK BODY — ORIGINAL STRUCTURE PRESERVED */}
         <div className="duck-tail" />
 
@@ -229,6 +250,83 @@ export default function ActorsRankingsDuck() {
           transform-origin: center bottom;
           animation: happy-bob 2.8s ease-in-out infinite;
         }
+
+        /* TEMPORARY RAINY-DAY UMBRELLA */
+
+.duck-rainy-umbrella {
+  position: absolute;
+  z-index: 7;
+  top: -8px;
+  left: 37px;
+  width: 68px;
+  height: 53px;
+  pointer-events: none;
+  transform: rotate(-8deg);
+  transform-origin: center bottom;
+}
+
+.duck-umbrella-canopy {
+  position: absolute;
+  top: -9;
+  left: 4;
+  width: 108px;
+  height: 52px;
+  border: 1px solid #2563eb;
+  border-radius: 34px 34px 8px 8px;
+  background: linear-gradient(
+    150deg,
+    #93c5fd 0%,
+    #3b82f6 55%,
+    #1d4ed8 100%
+  );
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    94% 70%,
+    78% 83%,
+    65% 70%,
+    50% 100%,
+    35% 70%,
+    22% 83%,
+    6% 70%
+  );
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.duck-umbrella-handle {
+  position: absolute;
+  top: 35px;
+  left: 53px;
+  width: 2px;
+  height: 60px;
+  border-radius: 2px;
+  background: #f8fafc;
+}
+
+.duck-umbrella-handle::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: -3px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid #f8fafc;
+  border-bottom: 2px solid #f8fafc;
+  border-radius: 0 0 7px 0;
+}
+
+.duck-umbrella-handle::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: -3px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid #f8fafc;
+  border-bottom: 2px solid #f8fafc;
+  border-radius: 0 0 7px 0;
+}
+
 
         /* BODY */
 
@@ -774,6 +872,27 @@ export default function ActorsRankingsDuck() {
         .mood-hot .duck-wing {
           animation-duration: 3.5s;
         }
+
+        /* TEMPORARY RAINY MOOD */
+
+.mood-rainy .actors-duck {
+  animation-duration: 3.8s;
+}
+
+.mood-rainy .duck-rainy-umbrella {
+  animation: rainy-umbrella-sway 3.5s ease-in-out infinite;
+}
+
+@keyframes rainy-umbrella-sway {
+  0%,
+  100% {
+    transform: rotate(-8deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(-5deg) translateY(-1px);
+  }
+}
 
         /* NEW: EATING GRAINS */
 

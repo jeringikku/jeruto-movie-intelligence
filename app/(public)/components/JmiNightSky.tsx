@@ -36,7 +36,7 @@ export default function JmiNightSky() {
   return (
   <div
     aria-hidden="true"
-    className="jmi-night-sky pointer-events-none absolute inset-0 overflow-hidden"
+    className="jmi-night-sky pointer-events-none absolute inset--1 overflow-hidden"
   >
     {/* Distant galaxy glow */}
     <div className="jmi-galaxy-glow" />

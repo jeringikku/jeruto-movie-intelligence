@@ -5,6 +5,8 @@ import PublicHeader from "../../../components/PublicHeader";
 import MovieRating from "../../../components/MovieRating";
 import WalkingVerdictDuck from "@/app/(public)/components/WalkingVerdictDuck";
 import WalkingVerdictDuck3D from "@/app/(public)/components/WalkingVerdictDuck3D";
+import MovieVerdictAtmosphere from "@/app/(public)/components/MoviePageAtmosphere";
+import MoviePageAtmosphere from "@/app/(public)/components/MoviePageAtmosphere";
 import { supabase } from "@/lib/supabase";
 
 export async function generateMetadata({
@@ -324,19 +326,25 @@ const certification = Array.isArray(certificationItem)
   <div className="min-h-screen w-full max-w-full overflow-x-clip bg-black text-white">
       <PublicHeader />
 
+
       <main className="w-full min-w-0 max-w-full">
+
 
         {/* =====================================================
             MOVIE HERO
         ===================================================== */}
 
+
         <section className="border-b border-zinc-900">
+          
 
           <div className="mx-auto max-w-6xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
+
 
   {/* Top Navigation + Movie Views */}
 
   <div className="flex items-start justify-between gap-4">
+
 
     {/* Back */}
 
@@ -346,6 +354,7 @@ const certification = Array.isArray(certificationItem)
     >
       ← All Movies
     </Link>
+
 
     {/* Movie Page Views */}
 
@@ -367,7 +376,8 @@ const certification = Array.isArray(certificationItem)
 
             <div className="mt-8 flex flex-col gap-7 sm:flex-row sm:items-start sm:gap-8">
 
-              {/* POSTER + WALKING VERDICT DUCK */}
+
+            {/* POSTER + WALKING VERDICT DUCK */}
 <div className="mx-auto w-full min-w-0 max-w-[210px] flex-shrink-0 sm:mx-0 sm:w-[180px] sm:max-w-[180px]">
   <div className="h-[320px] w-full overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 sm:h-[290px]">
     {movie.poster_url ? (
@@ -382,14 +392,13 @@ const certification = Array.isArray(certificationItem)
       </div>
     )}
   </div>
-
-  
 </div>
               {/* =================================================
                   MOVIE INFORMATION
               ================================================= */}
 
               <div className="min-w-0 flex-1">
+
 
                 <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-violet-400">
                   JMI Movie Intelligence
@@ -407,7 +416,6 @@ const certification = Array.isArray(certificationItem)
                   )}
 
                 
- 
 
 {/* =================================================
     PREMIUM MOVIE METADATA
@@ -517,6 +525,7 @@ const certification = Array.isArray(certificationItem)
 
 </div>
 
+
                 {/* Synopsis */}
 
                 {movie.synopsis && (
@@ -524,6 +533,12 @@ const certification = Array.isArray(certificationItem)
                     {movie.synopsis}
                   </p>
                 )}
+
+
+{/* Automatic night sky background */}
+    <MoviePageAtmosphere />
+
+                
 
                 {/* FULL-WIDTH WALKING VERDICT DUCK */}
 <div className="relative w-full min-w-0 overflow-hidden">
@@ -534,6 +549,8 @@ const certification = Array.isArray(certificationItem)
                 {/* =================================================
     JMI MOVIE VERDICTS
 ================================================= */}
+
+
 
 {(theatricalVerdict || overallBusinessVerdict) && (
   <div className="mt-6 max-w-2xl">
@@ -641,6 +658,8 @@ const certification = Array.isArray(certificationItem)
             <MovieRating movieId={movie.id} />
           </div>
         </section>
+
+        
 
         {/* =====================================================
             INTELLIGENCE LAYERS
