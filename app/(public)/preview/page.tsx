@@ -11,6 +11,8 @@ import JmiFunZoneBanner from "../components/JmiFunZoneBanner";
 import { supabase } from "@/lib/supabase";
 import TechnicianRankingsBanner from "../components/TechnicianRankingsBanner";
 import ActorsRankingsBanner from "../components/ActorsRankingsBanner";
+import { useJmiRainState } from "@/app/(public)/components/useJmiRainState";
+import JmiMovieLibraryWeather from "../components/JmiMovieLibraryWeather";
 
 import JmiSun from "@/app/(public)/components/JmiSun";
 import JmiRain from "@/app/(public)/components/JmiRain";
@@ -295,9 +297,9 @@ export default async function PublicPreview() {
 <JmiRain />
 
           
-
             {/* New daytime travelling sun */}
   <JmiSun />
+
 
           {/* Subtle ambient light */}
           <div className="pointer-events-none absolute inset-0">
@@ -480,10 +482,13 @@ export default async function PublicPreview() {
 
 
 <JmiRain /> 
+
+
 {/* =====================================================
     JMI MOVIE LIBRARY — VINTAGE RECORD BOOK
 ===================================================== */}
 
+<JmiMovieLibraryWeather>
 {/* =====================================================
     JMI MOVIE LIBRARY — WEATHERED WOOD BANNER
 ===================================================== */}
@@ -1058,6 +1063,9 @@ export default async function PublicPreview() {
   </div>
 
 </div>
+
+</JmiMovieLibraryWeather>
+
 
        
 

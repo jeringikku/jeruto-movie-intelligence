@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useJmiRainState } from "./useJmiRainState";
 
 type RainState = {
   active: boolean;
@@ -29,12 +30,12 @@ function getISTMinutes(): number {
 function getRainState(): RainState {
   const now = getISTMinutes();
 
- // TEMPORARY TEST: 12:05 PM until, but not including, 12:15 PM IST.
-if (now >= 12 * 60 + 5 && now < 12 * 60 + 15) {
-  return { active: true, period: "midday" };
-}
+  // Midday rain: 11:50 AM–12:00 PM IST.
+  if (now >= 11 * 60 + 50 && now < 12 * 60) {
+    return { active: true, period: "midday" };
+  }
 
-  // 4:50 PM until, but not including, 5:00 PM IST.
+  // Evening rain: 4:50 PM–5:00 PM IST.
   if (now >= 16 * 60 + 50 && now < 17 * 60) {
     return { active: true, period: "evening" };
   }
@@ -48,10 +49,14 @@ const rainDrops = Array.from({ length: 100 }, (_, index) => ({
   delay: `${((index * 17) % 70) / 10}s`,
   duration: `${1.6 + ((index * 13) % 80) / 100}s`,
   height: `${14 + ((index * 7) % 12)}px`,
-  opacity: 0.20 + ((index * 11) % 25) / 100,
+  opacity: 0.2 + ((index * 11) % 25) / 100,
 }));
 
 export default function JmiRain() {
+  // Shared state controls rain visibility across JMI.
+  const isRaining = useJmiRainState();
+
+  // This state determines which rain-period CSS class is applied.
   const [rain, setRain] = useState<RainState>({
     active: false,
     period: null,
@@ -69,10 +74,11 @@ export default function JmiRain() {
     return () => window.clearInterval(interval);
   }, []);
 
+  // Do not render any rain overlay outside the scheduled periods.
+  if (!isRaining) {
+    return null;
+  }
 
-if (!rain.active) {
-  return null;
-}
   return (
     <div
       aria-hidden="true"
@@ -112,23 +118,20 @@ if (!rain.active) {
         }
 
         .jmi-rain-drop {
-  position: absolute;
-  top: -24px;
-  width: 1.5px;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    rgba(210, 220, 265, 0.70)
-  );
-  border-radius: 50%;
-  box-shadow: 0 0 2px rgba(180, 215, 255, 0.35);
-  animation-name: jmi-rain-fall;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  will-change: transform;
-}
-
-       tion-delay: 3s;
+          position: absolute;
+          top: -24px;
+          width: 1.5px;
+          background: linear-gradient(
+            to bottom,
+            transparent,
+            rgba(210, 220, 255, 0.7)
+          );
+          border-radius: 50%;
+          box-shadow: 0 0 2px rgba(180, 215, 255, 0.35);
+          animation-name: jmi-rain-fall;
+          animation-timing-function: linear;
+          animation-iteration-count: infinite;
+          will-change: transform;
         }
 
         @keyframes jmi-rain-fall {

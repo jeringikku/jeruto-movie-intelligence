@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useJmiRainState } from "./useJmiRainState";
 
 type DuckMood =
   | "active"
@@ -11,9 +12,12 @@ type DuckMood =
   | "sleeping"
   | "rainy";
 
-function getISTMood(): DuckMood {
-
-  
+function getISTMood(isRaining: boolean): DuckMood {
+  // Use the shared JMI rain state.
+  // Rain takes priority over Veronica's normal daily moods.
+  if (isRaining) {
+    return "rainy";
+  }
 
   const time = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Asia/Kolkata",
@@ -24,15 +28,6 @@ function getISTMood(): DuckMood {
 
   const [hour, minute] = time.split(":").map(Number);
   const minutes = hour * 60 + minute;
-
-  // RAINY-DAY MODE — original JMI rain schedule (IST).
-// 11:50 AM–12:00 PM and 4:50 PM–5:00 PM.
-if (
-  (minutes >= 11 * 60 + 50 && minutes < 12 * 60) ||
-  (minutes >= 16 * 60 + 50 && minutes < 17 * 60)
-) {
-  return "rainy";
-}
 
   // 7:00 AM–9:00 AM: Morning activity
   if (minutes >= 7 * 60 && minutes < 9 * 60) {
@@ -79,22 +74,31 @@ if (
 }
 
 export default function ActorsRankingsDuck() {
+  // Shared schedule used by the homepage and library.
+  const isRaining = useJmiRainState();
+
   const [mood, setMood] = useState<DuckMood>("active");
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
-    const updateMood = () => setMood(getISTMood());
+    const updateMood = () => {
+      setMood(getISTMood(isRaining));
+    };
 
     const media = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     );
 
-    const updateMotion = () => setReducedMotion(media.matches);
+    const updateMotion = () => {
+      setReducedMotion(media.matches);
+    };
 
+    // Set the correct mood immediately and when rain state changes.
     updateMood();
     updateMotion();
 
-    const clock = window.setInterval(updateMood, 15_000);
+    // Keep Veronica's daily mood synchronized with IST.
+    const clock = window.setInterval(updateMood, 1000);
 
     media.addEventListener("change", updateMotion);
 
@@ -102,7 +106,7 @@ export default function ActorsRankingsDuck() {
       window.clearInterval(clock);
       media.removeEventListener("change", updateMotion);
     };
-  }, []);
+  }, [isRaining]);
 
   const isSleeping = mood === "sleeping";
   const isResting = mood === "resting";
@@ -127,18 +131,19 @@ export default function ActorsRankingsDuck() {
                 ? "sweating in the heat while holding"
                 : isResting
                   ? "resting beside"
-                  : "sleeping beside"
+                  : mood === "rainy"
+                    ? "holding an umbrella beside"
+                    : "sleeping beside"
       } a white placard reading Check out the List Now`}
     >
       <div className="actors-duck">
-
-   {/* RAINY-DAY UMBRELLA */}
-{mood === "rainy" && (
-  <div className="duck-rainy-umbrella" aria-hidden="true">
-    <div className="duck-umbrella-canopy" />
-    <div className="duck-umbrella-handle" />
-  </div>
-)}
+        {/* RAINY-DAY UMBRELLA */}
+        {mood === "rainy" && (
+          <div className="duck-rainy-umbrella" aria-hidden="true">
+            <div className="duck-umbrella-canopy" />
+            <div className="duck-umbrella-handle" />
+          </div>
+        )}
 
         {/* SWEAT DROPLETS */}
         {isHot && (
@@ -171,8 +176,7 @@ export default function ActorsRankingsDuck() {
           </div>
         )}
 
-        
-        {/* DUCK BODY — ORIGINAL STRUCTURE PRESERVED */}
+        {/* DUCK BODY */}
         <div className="duck-tail" />
 
         <div className="duck-body">
@@ -203,7 +207,7 @@ export default function ActorsRankingsDuck() {
           </div>
         </div>
 
-        {/* CUTE CAP — ONLY 9:10 AM TO 11:00 AM */}
+        {/* CUTE CAP — 9:10 AM TO 11:00 AM */}
         {isActiveWithCap && (
           <div className="duck-cap" aria-hidden="true">
             <div className="duck-cap-crown" />
@@ -212,7 +216,7 @@ export default function ActorsRankingsDuck() {
           </div>
         )}
 
-        {/* PLACARD — ORIGINAL TEXT AND STRUCTURE PRESERVED */}
+        {/* PLACARD */}
         <div className="placard-arm" />
 
         <div className="duck-placard">
@@ -253,82 +257,69 @@ export default function ActorsRankingsDuck() {
           animation: happy-bob 2.8s ease-in-out infinite;
         }
 
-        /* TEMPORARY RAINY-DAY UMBRELLA */
+        /* RAINY-DAY UMBRELLA */
 
-.duck-rainy-umbrella {
-  position: absolute;
-  z-index: 7;
-  top: -8px;
-  left: 37px;
-  width: 68px;
-  height: 53px;
-  pointer-events: none;
-  transform: rotate(-8deg);
-  transform-origin: center bottom;
-}
+        .duck-rainy-umbrella {
+          position: absolute;
+          z-index: 7;
+          top: -8px;
+          left: 37px;
+          width: 68px;
+          height: 53px;
+          pointer-events: none;
+          transform: rotate(-8deg);
+          transform-origin: center bottom;
+        }
 
-.duck-umbrella-canopy {
-  position: absolute;
-  top: -9;
-  left: 4;
-  width: 108px;
-  height: 52px;
-  border: 1px solid #2563eb;
-  border-radius: 34px 34px 8px 8px;
-  background: linear-gradient(
-    150deg,
-    #93c5fd 0%,
-    #3b82f6 55%,
-    #1d4ed8 100%
-  );
-  clip-path: polygon(
-    0 0,
-    100% 0,
-    94% 70%,
-    78% 83%,
-    65% 70%,
-    50% 100%,
-    35% 70%,
-    22% 83%,
-    6% 70%
-  );
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
+        .duck-umbrella-canopy {
+          position: absolute;
+          top: -9px;
+          left: 4px;
+          width: 108px;
+          height: 52px;
+          border: 1px solid #2563eb;
+          border-radius: 34px 34px 8px 8px;
+          background: linear-gradient(
+            150deg,
+            #93c5fd 0%,
+            #3b82f6 55%,
+            #1d4ed8 100%
+          );
+          clip-path: polygon(
+            0 0,
+            100% 0,
+            94% 70%,
+            78% 83%,
+            65% 70%,
+            50% 100%,
+            35% 70%,
+            22% 83%,
+            6% 70%
+          );
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
 
-.duck-umbrella-handle {
-  position: absolute;
-  top: 35px;
-  left: 53px;
-  width: 2px;
-  height: 60px;
-  border-radius: 2px;
-  background: #f8fafc;
-}
+        .duck-umbrella-handle {
+          position: absolute;
+          top: 35px;
+          left: 53px;
+          width: 2px;
+          height: 60px;
+          border-radius: 2px;
+          background: #f8fafc;
+        }
 
-.duck-umbrella-handle::after {
-  content: "";
-  position: absolute;
-  bottom: -1px;
-  left: -3px;
-  width: 7px;
-  height: 7px;
-  border-right: 2px solid #f8fafc;
-  border-bottom: 2px solid #f8fafc;
-  border-radius: 0 0 7px 0;
-}
-
-.duck-umbrella-handle::after {
-  content: "";
-  position: absolute;
-  bottom: -1px;
-  left: -3px;
-  width: 7px;
-  height: 7px;
-  border-right: 2px solid #f8fafc;
-  border-bottom: 2px solid #f8fafc;
-  border-radius: 0 0 7px 0;
-}
-
+        .duck-umbrella-handle::after {
+          content: "";
+          position: absolute;
+          bottom: -1px;
+          left: -3px;
+          width: 7px;
+          height: 7px;
+          border-right: 2px solid #f8fafc;
+          border-bottom: 2px solid #f8fafc;
+          border-radius: 0 0 7px 0;
+        }
 
         /* BODY */
 
@@ -363,11 +354,7 @@ export default function ActorsRankingsDuck() {
           height: 27px;
           border: 1px solid rgba(190, 135, 30, 0.4);
           border-radius: 60% 40% 55% 45%;
-          background: linear-gradient(
-            145deg,
-            #fff0a5,
-            #efc64e
-          );
+          background: linear-gradient(145deg, #fff0a5, #efc64e);
           transform-origin: center top;
           animation: wing-wave 2.2s ease-in-out infinite alternate;
           transition:
@@ -403,11 +390,7 @@ export default function ActorsRankingsDuck() {
           width: 15px;
           height: 17px;
           border-radius: 3px 90% 5px 90%;
-          background: linear-gradient(
-            135deg,
-            #ffe995,
-            #edbd43
-          );
+          background: linear-gradient(135deg, #ffe995, #edbd43);
           transform: rotate(-25deg);
           animation: tail-wag 1.8s ease-in-out infinite alternate;
         }
@@ -529,11 +512,7 @@ export default function ActorsRankingsDuck() {
           height: 14px;
           border: 1px solid #d97706;
           border-radius: 30% 30% 55% 55%;
-          background: linear-gradient(
-            180deg,
-            #ffbd59,
-            #f97316
-          );
+          background: linear-gradient(180deg, #ffbd59, #f97316);
           transform: translateX(-50%);
           clip-path: polygon(
             0 0,
@@ -558,7 +537,7 @@ export default function ActorsRankingsDuck() {
           background: rgba(151, 67, 12, 0.45);
         }
 
-        /* PLACARD — ORIGINAL DESIGN */
+        /* PLACARD */
 
         .duck-placard {
           position: absolute;
@@ -599,11 +578,7 @@ export default function ActorsRankingsDuck() {
           width: 31px;
           height: 7px;
           border-radius: 8px;
-          background: linear-gradient(
-            90deg,
-            #f6d56d,
-            #e6b63e
-          );
+          background: linear-gradient(90deg, #f6d56d, #e6b63e);
           transform: rotate(-12deg);
           transform-origin: right center;
           transition:
@@ -654,7 +629,7 @@ export default function ActorsRankingsDuck() {
           background: #f59e0b;
         }
 
-        /* AFTERNOON HEAT — EXISTING MOOD */
+        /* HEAT */
 
         .sweat-drops {
           position: absolute;
@@ -671,11 +646,7 @@ export default function ActorsRankingsDuck() {
           width: 5px;
           height: 9px;
           border-radius: 80% 20% 60% 50%;
-          background: linear-gradient(
-            135deg,
-            #e0f7ff,
-            #38bdf8
-          );
+          background: linear-gradient(135deg, #e0f7ff, #38bdf8);
           box-shadow: 0 0 4px rgba(56, 189, 248, 0.4);
           animation: sweat-drop 1.8s ease-in infinite;
         }
@@ -726,7 +697,7 @@ export default function ActorsRankingsDuck() {
           font-size: 18px;
         }
 
-        /* NEW: GRAINS ON THE GROUND */
+        /* GRAINS */
 
         .duck-grains {
           position: absolute;
@@ -783,14 +754,14 @@ export default function ActorsRankingsDuck() {
           bottom: 0;
         }
 
-        /* NEW: CUTE MORNING CAP */
+        /* MORNING CAP */
 
         .duck-cap {
           position: absolute;
-          z-index: 4;
-          top: 5px;
+          z-index: 6;
+          top: 0px;
           left: 35px;
-          width: 43px;
+          width: 83px;
           height: 17px;
           transform: rotate(-8deg);
           pointer-events: none;
@@ -798,7 +769,7 @@ export default function ActorsRankingsDuck() {
 
         .duck-cap-crown {
           position: absolute;
-          top: 0;
+          top: -2;
           left: 8px;
           width: 27px;
           height: 13px;
@@ -821,11 +792,7 @@ export default function ActorsRankingsDuck() {
           height: 5px;
           border: 1px solid #9f1239;
           border-radius: 50%;
-          background: linear-gradient(
-            180deg,
-            #fb7185,
-            #be123c
-          );
+          background: linear-gradient(180deg, #fb7185, #be123c);
         }
 
         .duck-cap-button {
@@ -833,38 +800,23 @@ export default function ActorsRankingsDuck() {
           top: -1px;
           left: 20px;
           width: 4px;
-          height: 4px;
+          height: 6px;
           border-radius: 50%;
           background: #ffe4e6;
         }
 
-        /* HOT MOOD — EXISTING COLORS PRESERVED */
+        /* HOT MOOD */
 
         .mood-hot .duck-body {
-          background: linear-gradient(
-            145deg,
-            #fff0a6,
-            #ffd166,
-            #e9a83a
-          );
+          background: linear-gradient(145deg, #fff0a6, #ffd166, #e9a83a);
         }
 
         .mood-hot .duck-head {
-          background: linear-gradient(
-            145deg,
-            #fff2c0,
-            #ffe18a,
-            #f4c45c
-          );
+          background: linear-gradient(145deg, #fff2c0, #ffe18a, #f4c45c);
         }
 
         .mood-hot .duck-neck {
-          background: linear-gradient(
-            90deg,
-            #e7bd54,
-            #ffdf80,
-            #e7bd54
-          );
+          background: linear-gradient(90deg, #e7bd54, #ffdf80, #e7bd54);
         }
 
         .mood-hot .actors-duck {
@@ -875,28 +827,28 @@ export default function ActorsRankingsDuck() {
           animation-duration: 3.5s;
         }
 
-        /* TEMPORARY RAINY MOOD */
+        /* RAINY MOOD */
 
-.mood-rainy .actors-duck {
-  animation-duration: 3.8s;
-}
+        .mood-rainy .actors-duck {
+          animation-duration: 3.8s;
+        }
 
-.mood-rainy .duck-rainy-umbrella {
-  animation: rainy-umbrella-sway 3.5s ease-in-out infinite;
-}
+        .mood-rainy .duck-rainy-umbrella {
+          animation: rainy-umbrella-sway 3.5s ease-in-out infinite;
+        }
 
-@keyframes rainy-umbrella-sway {
-  0%,
-  100% {
-    transform: rotate(-8deg) translateY(0);
-  }
+        @keyframes rainy-umbrella-sway {
+          0%,
+          100% {
+            transform: rotate(-8deg) translateY(0);
+          }
 
-  50% {
-    transform: rotate(-5deg) translateY(-1px);
-  }
-}
+          50% {
+            transform: rotate(-5deg) translateY(-1px);
+          }
+        }
 
-        /* NEW: EATING GRAINS */
+        /* EATING */
 
         .mood-eating .actors-duck {
           animation: eating-bob 1.1s ease-in-out infinite;
@@ -957,7 +909,7 @@ export default function ActorsRankingsDuck() {
           animation-delay: -0.5s;
         }
 
-        /* RESTING MOOD — EXISTING DESIGN PRESERVED */
+        /* RESTING */
 
         .mood-resting .actors-duck {
           animation: tired-bob 4s ease-in-out infinite;
@@ -1036,7 +988,7 @@ export default function ActorsRankingsDuck() {
           background: rgba(244, 174, 74, 0.4);
         }
 
-        /* SLEEPING MOOD — EXISTING DESIGN PRESERVED */
+        /* SLEEPING */
 
         .mood-sleeping .actors-duck {
           bottom: 0;
@@ -1145,7 +1097,8 @@ export default function ActorsRankingsDuck() {
         /* ANIMATIONS */
 
         @keyframes happy-bob {
-          0%, 100% {
+          0%,
+          100% {
             transform: translateX(-50%) translateY(0) rotate(-1deg);
           }
 
@@ -1155,7 +1108,8 @@ export default function ActorsRankingsDuck() {
         }
 
         @keyframes head-tilt {
-          0%, 100% {
+          0%,
+          100% {
             transform: rotate(0deg);
           }
 
@@ -1169,7 +1123,8 @@ export default function ActorsRankingsDuck() {
         }
 
         @keyframes placard-sway {
-          0%, 100% {
+          0%,
+          100% {
             transform: rotate(-2deg);
           }
 
@@ -1229,7 +1184,8 @@ export default function ActorsRankingsDuck() {
         }
 
         @keyframes float-z {
-          0%, 100% {
+          0%,
+          100% {
             opacity: 0.5;
             transform: translateY(4px);
           }
@@ -1241,7 +1197,8 @@ export default function ActorsRankingsDuck() {
         }
 
         @keyframes tired-bob {
-          0%, 100% {
+          0%,
+          100% {
             transform: translateX(-50%) translateY(0);
           }
 
@@ -1251,7 +1208,8 @@ export default function ActorsRankingsDuck() {
         }
 
         @keyframes tired-head {
-          0%, 100% {
+          0%,
+          100% {
             transform: rotate(7deg);
           }
 
@@ -1261,7 +1219,8 @@ export default function ActorsRankingsDuck() {
         }
 
         @keyframes placard-rest {
-          0%, 100% {
+          0%,
+          100% {
             transform: rotate(-1deg);
           }
 
@@ -1270,10 +1229,9 @@ export default function ActorsRankingsDuck() {
           }
         }
 
-        /* NEW: EATING ANIMATIONS */
-
         @keyframes eating-bob {
-          0%, 100% {
+          0%,
+          100% {
             transform: translateX(-50%) translateY(0) rotate(0);
           }
 
@@ -1283,7 +1241,8 @@ export default function ActorsRankingsDuck() {
         }
 
         @keyframes eating-peck {
-          0%, 100% {
+          0%,
+          100% {
             transform: rotate(5deg) translateY(0);
           }
 
@@ -1305,7 +1264,8 @@ export default function ActorsRankingsDuck() {
         }
 
         @keyframes sleeping-breath {
-          0%, 100% {
+          0%,
+          100% {
             transform: translateX(-50%) translateY(0) scaleY(1);
           }
 
@@ -1315,7 +1275,8 @@ export default function ActorsRankingsDuck() {
         }
 
         @keyframes sleeping-head {
-          0%, 100% {
+          0%,
+          100% {
             transform: rotate(-10deg);
           }
 
@@ -1324,7 +1285,7 @@ export default function ActorsRankingsDuck() {
           }
         }
 
-        /* REDUCED MOTION ACCESSIBILITY */
+        /* REDUCED MOTION */
 
         .reduced-motion .actors-duck,
         .reduced-motion .duck-head,
@@ -1349,7 +1310,8 @@ export default function ActorsRankingsDuck() {
           }
 
           @keyframes happy-bob {
-            0%, 100% {
+            0%,
+            100% {
               transform: translateX(-50%) scale(0.9) translateY(0)
                 rotate(-1deg);
             }
@@ -1367,7 +1329,8 @@ export default function ActorsRankingsDuck() {
           }
 
           @keyframes eating-bob {
-            0%, 100% {
+            0%,
+            100% {
               transform: translateX(-50%) scale(0.9) translateY(0)
                 rotate(0);
             }

@@ -7,6 +7,8 @@ import WalkingVerdictDuck from "@/app/(public)/components/WalkingVerdictDuck";
 import WalkingVerdictDuck3D from "@/app/(public)/components/WalkingVerdictDuck3D";
 import MovieVerdictAtmosphere from "@/app/(public)/components/MoviePageAtmosphere";
 import MoviePageAtmosphere from "@/app/(public)/components/MoviePageAtmosphere";
+import JmiWetMoviePoster from "@/app/(public)/components/JmiWetMoviePoster";
+import JmiRain from "@/app/(public)/components/JmiRain";
 import { supabase } from "@/lib/supabase";
 
 export async function generateMetadata({
@@ -326,6 +328,9 @@ const certification = Array.isArray(certificationItem)
   <div className="min-h-screen w-full max-w-full overflow-x-clip bg-black text-white">
       <PublicHeader />
 
+        {/* JMI RAIN — SYNCHRONIZED WITH THE SHARED RAIN SCHEDULE */}
+      <JmiRain />
+
 
       <main className="w-full min-w-0 max-w-full">
 
@@ -377,21 +382,13 @@ const certification = Array.isArray(certificationItem)
             <div className="mt-8 flex flex-col gap-7 sm:flex-row sm:items-start sm:gap-8">
 
 
-            {/* POSTER + WALKING VERDICT DUCK */}
+           {/* MAIN MOVIE POSTER — AUTOMATIC RAIN EFFECT */}
+
 <div className="mx-auto w-full min-w-0 max-w-[210px] flex-shrink-0 sm:mx-0 sm:w-[180px] sm:max-w-[180px]">
-  <div className="h-[320px] w-full overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 sm:h-[290px]">
-    {movie.poster_url ? (
-      <img
-        src={movie.poster_url}
-        alt={`${movie.title} poster`}
-        className="h-full w-full object-cover"
-      />
-    ) : (
-      <div className="flex h-full w-full items-center justify-center">
-        <span className="text-2xl text-zinc-800">◈</span>
-      </div>
-    )}
-  </div>
+  <JmiWetMoviePoster
+    posterUrl={movie.poster_url}
+    movieTitle={movie.title || movie.original_title || "Movie"}
+  />
 </div>
               {/* =================================================
                   MOVIE INFORMATION
