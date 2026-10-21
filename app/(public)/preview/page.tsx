@@ -1749,7 +1749,7 @@ function DatabaseMetric({
 
 
 /* ============================================================
-   BOX OFFICE METRIC — PREMIUM STAT CARD
+   BOX OFFICE METRIC — WEATHERED WOOD WALL PLAQUE
 ============================================================ */
 
 function BoxOfficeMetric({
@@ -1764,97 +1764,139 @@ function BoxOfficeMetric({
   return (
     <div
       className={`
-        group relative overflow-hidden
-        rounded-xl
-        border
-        px-3 py-4
-        transition-all duration-300
-        
-        sm:px-5 sm:py-5
-
-        ${highlight
-          ? " text-zinc-400 border-violet-400 bg-violet-400/[0.035] hover:border-violet-400/40 hover:bg-violet-400/[0.055]"
-          : "border-violet-400 bg-zinc-950 hover:border-violet-400/20 hover:bg-zinc-900/60"
-        }
+        group
+        relative
+        isolate
+        overflow-hidden
+        border-r
+        border-[#21140d]/80
+        bg-gradient-to-br
+        from-[#765137]
+        via-[#49301f]
+        to-[#24160e]
+        px-2.5
+        py-4
+        shadow-[inset_0_1px_0_rgba(220,180,130,0.12),inset_0_-3px_5px_rgba(0,0,0,0.35)]
+        transition-all
+        duration-300
+        hover:brightness-110
+        sm:px-5
+        sm:py-6
+        ${highlight ? "ring-1 ring-inset ring-[#d5ae7a]/40" : ""}
       `}
     >
-
-      {/* Subtle top accent */}
-
-      <div
-        className={`
-          absolute left-0 top-0 h-px w-0
-          transition-all duration-300
-          group-hover:w-full
-          ${highlight
-            ? "bg-violet-400"
-            : "bg-violet-400/50"
-          }
-        `}
-      />
-
-
-      {/* Label */}
-
-      <p
-        className={`
-          text-[6px]
-          font-small
-          uppercase
-          tracking-[0.16em]
-          sm:text-[6px]
-          ${highlight
-            ? "text-yellow-300"
-            : "text-yellow-300"
-          }
-        `}
-      >
-        {label}
-      </p>
-
-
-      {/* Value */}
-
-      <p
-        className={`
-          mt-2
-          whitespace-nowrap
-          text-[13px]
-          font-medium
-          tracking-[-0.035em]
-          sm:text-xl
-          ${highlight
-            ? "text-green-400"
-            : "text-green-400"
-          }
-        `}
-      >
-        {value}
-      </p>
-
-
-      {/* Tiny indicator */}
+      {/* WEATHERED WOOD GRAIN */}
 
       <div
-        className={`
-          mt-2
-          h-px
-          w-3
-          transition-all
-          duration-300
-          group-hover:w-6
-          ${highlight
-            ? "bg-violet-400/50"
-            : "bg-zinc-800"
-          }
-        `}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 opacity-90"
+        style={{
+          backgroundImage: `
+            repeating-linear-gradient(
+              2deg,
+              transparent 0px,
+              transparent 8px,
+              rgba(207, 158, 106, 0.13) 9px,
+              rgba(25, 14, 8, 0.20) 10px,
+              transparent 12px,
+              transparent 19px
+            ),
+            repeating-linear-gradient(
+              178deg,
+              transparent 0px,
+              transparent 27px,
+              rgba(20, 11, 6, 0.18) 28px,
+              transparent 30px,
+              transparent 39px
+            ),
+            linear-gradient(
+              90deg,
+              rgba(0, 0, 0, 0.30),
+              transparent 20%,
+              rgba(208, 156, 100, 0.08) 50%,
+              transparent 78%,
+              rgba(0, 0, 0, 0.25)
+            )
+          `,
+        }}
       />
 
+      {/* SMALL CRACKS IN THE WOOD */}
+
+      <div className="pointer-events-none absolute left-[15%] top-0 h-4 w-px rotate-[18deg] bg-[#d1a477]/35" />
+
+      <div className="pointer-events-none absolute right-[20%] top-[35%] h-3 w-px -rotate-[25deg] bg-black/40" />
+
+      <div className="pointer-events-none absolute bottom-[12%] left-[45%] h-px w-6 rotate-[-8deg] bg-[#d1a477]/25" />
+
+      {/* WORN WOOD EDGES */}
+
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-b from-[#a98054]/70 to-transparent" />
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[4px] bg-gradient-to-t from-[#130b06] via-[#2c1a10] to-transparent" />
+
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-gradient-to-r from-[#160d07] to-transparent" />
+
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-[3px] bg-gradient-to-l from-[#160d07] to-transparent" />
+
+      {/* WOODEN NAIL — TOP LEFT */}
+
+      <div className="pointer-events-none absolute left-1.5 top-1.5 z-20 flex h-[9px] w-[9px] items-center justify-center rounded-full border border-[#c1a17a]/50 bg-gradient-to-br from-[#94714c] via-[#493321] to-[#1c120b] shadow-[1px_2px_3px_rgba(0,0,0,0.8)] sm:left-3 sm:top-3">
+        <span className="h-[3px] w-[3px] rounded-full bg-[#160d08] shadow-[0_1px_1px_rgba(255,220,170,0.35)]" />
+      </div>
+
+      {/* WOODEN NAIL — TOP RIGHT */}
+
+      <div className="pointer-events-none absolute right-1.5 top-1.5 z-20 flex h-[9px] w-[9px] items-center justify-center rounded-full border border-[#c1a17a]/50 bg-gradient-to-br from-[#94714c] via-[#493321] to-[#1c120b] shadow-[1px_2px_3px_rgba(0,0,0,0.8)] sm:right-3 sm:top-3">
+        <span className="h-[3px] w-[3px] rounded-full bg-[#160d08] shadow-[0_1px_1px_rgba(255,220,170,0.35)]" />
+      </div>
+
+      {/* STAT CONTENT */}
+
+      <div className="relative z-10 min-w-0">
+        {/* VALUE */}
+
+        <p
+          className={`
+            break-words
+            text-[12px]
+            font-semibold
+            leading-tight
+            tracking-[-0.04em]
+            drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]
+            transition-colors
+            duration-300
+            group-hover:text-[#ffe2ba]
+            sm:text-2xl
+            ${
+              highlight
+                ? "text-[#ffe2ba]"
+                : "text-[#f0d1a7]"
+            }
+          `}
+        >
+          {value}
+        </p>
+
+        {/* LABEL */}
+
+        <p className="mt-2 text-[7px] font-semibold uppercase leading-relaxed tracking-[0.12em] text-[#d1b394] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)] sm:text-[9px] sm:tracking-[0.18em]">
+          {label}
+        </p>
+
+        {/* WEATHERED ENGRAVED ACCENT */}
+
+        <div className="mt-3 h-[2px] w-6 bg-gradient-to-r from-[#c19a6c]/80 via-[#8b6440]/40 to-transparent shadow-[0_1px_1px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:w-10 sm:w-7 sm:group-hover:w-12" />
+      </div>
+
+      {/* WORN CORNERS */}
+
+      <div className="pointer-events-none absolute bottom-0 left-0 h-3 w-3 bg-gradient-to-tr from-[#100904]/80 to-transparent" />
+
+      <div className="pointer-events-none absolute right-0 top-0 h-3 w-3 bg-gradient-to-bl from-[#a47b50]/30 to-transparent" />
     </div>
-
   );
 }
-
 
 /* ============================================================
    RECENT MOVIE
