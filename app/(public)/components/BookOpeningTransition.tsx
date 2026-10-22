@@ -146,6 +146,41 @@ className="relative block w-full appearance-none border-0 bg-transparent p-0 tex
               boxShadow: "inset 0 0 18px rgba(95,63,29,0.12)",
             }}
           >
+
+         {/* Loading message printed on the open book pages */}
+
+<div
+  className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center"
+  style={{
+    transform: "translateZ(1px)",
+  }}
+>
+  <div className="text-center">
+    <p
+      className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#765637] sm:text-xs sm:tracking-[0.22em]"
+      style={{
+        textShadow: "0 1px 0 rgba(255,255,255,0.45)",
+      }}
+    >
+      Please Wait....
+    </p><p
+  className="mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#765637] sm:text-xs sm:tracking-[0.18em]"
+  style={{
+    textShadow: "0 1px 0 rgba(255,255,255,0.45)",
+  }}
+>
+  Your Book Is Loading
+</p>
+
+<div className="mx-auto mt-3 flex items-center justify-center gap-1.5">
+  <span className="h-1 w-1 rounded-full bg-[#9a7953] animate-pulse" />
+  <span className="h-1 w-1 rounded-full bg-[#9a7953] animate-pulse [animation-delay:200ms]" />
+  <span className="h-1 w-1 rounded-full bg-[#9a7953] animate-pulse [animation-delay:400ms]" />
+</div>
+
+  </div>
+</div>
+
             {/* Left page */}
             <div
               className="absolute inset-y-0 left-0 w-1/2 border-r border-[#b7a080]/70"
