@@ -1,6 +1,7 @@
 import Link from "next/link";
 import PublicHeader from "../../../components/PublicHeader";
 import MovieLibraryPageBanner from "../../../components/MovieLibraryPageBanner";
+import BookOpeningTransition from "../../../components/BookOpeningTransition";
 import { supabase } from "@/lib/supabase";
 
 type Language = {
@@ -78,22 +79,24 @@ export default async function MovieLibraryPage() {
     return rows;
   };
 
-  // Preserve the existing wooden-book design and language navigation.
-  const renderBook = (language: LibraryLanguage) => (
-    <Link
-      key={language.id}
-      href={`/preview/movies/library/${language.id}`}
-      className="group relative z-10 flex min-h-[170px] flex-col overflow-visible rounded-lg border border-[#4a301b] bg-gradient-to-br from-[#24160d] via-[#160d08] to-[#0b0704] p-3 shadow-[0_5px_12px_rgba(0,0,0,0.45)] transition duration-300 hover:-translate-y-1 hover:border-yellow-500/40 hover:shadow-[0_14px_35px_rgba(0,0,0,0.65)]"
-    >
+ // Preserve the cinematic book-opening transition.
+const renderBook = (language: LibraryLanguage) => (
+  <BookOpeningTransition
+    key={language.id}
+    languageName={language.name}
+    destination={`/preview/movies/library/${language.id}`}
+  >
+    <div className="group relative z-10 flex min-h-[170px] flex-col overflow-visible rounded-lg border border-[#4a301b] bg-gradient-to-br from-[#24160d] via-[#160d08] to-[#0b0704] p-3 shadow-[0_5px_12px_rgba(0,0,0,0.45)] transition duration-300 hover:-translate-y-1 hover:border-yellow-500/40 hover:shadow-[0_14px_35px_rgba(0,0,0,0.65)]">
+
       {/* BOOK SPINE */}
-      <div className="pointer-events-none absolute left-0 top-0 h-full w-1 rounded-l-lg bg-gradient-to-b from-[#9b7145] via-[#3b2515] to-[#704a26] opacity-80" />
+      <div className="pointer-events-none absolute left-0 top-0 h-full w-1 rounded-l-lg bg-gradient-to-b from-[#9b7145] via-[#3b2515] to-[#704a26] opacity-60" />
 
       {/* VERTICAL BOOK GRAIN */}
       <div
         className="pointer-events-none absolute inset-y-0 left-1 w-[2px] opacity-50"
         style={{
           background:
-            "linear-gradient(180deg, rgba(190,139,81,0.25), rgba(20,10,4,0.5), rgba(190,139,81,0.12))",
+            "linear-gradient(180deg, rgba(190,139,81,0.25), rgba(190,139,81,0.25), rgba(190,139,81,0.25))",
         }}
       />
 
@@ -125,8 +128,9 @@ export default async function MovieLibraryPage() {
           {language.movieCount === 1 ? "Movie" : "Movies"}
         </p>
       </div>
-    </Link>
-  );
+    </div>
+  </BookOpeningTransition>
+);
 
   // Create a separate bookshelf row for each group of books.
   const renderShelfRows = (
@@ -411,14 +415,14 @@ export default async function MovieLibraryPage() {
 
           {/* FOOTER NAVIGATION */}
           <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-zinc-900 pt-6 sm:flex-row">
-            <p className="text-center text-[8px] uppercase tracking-[0.14em] text-zinc-700 sm:text-left">
+            <p className="text-center text-[8px] uppercase tracking-[0.14em] text-pink-400 sm:text-left">
               JMI Movie Library · Explore Indian Cinema
             </p>
 
             <div className="flex items-center gap-4">
               <Link
                 href="/preview/movies"
-                className="text-[8px] font-medium uppercase tracking-[0.14em] text-zinc-500 transition hover:text-white"
+                className="text-[8px] font-medium uppercase tracking-[0.14em] text-zinc-400 transition hover:text-white"
               >
                 Classic Movies Page
               </Link>
