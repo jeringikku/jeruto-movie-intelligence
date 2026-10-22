@@ -9,6 +9,7 @@ import MovieVerdictAtmosphere from "@/app/(public)/components/MoviePageAtmospher
 import MoviePageAtmosphere from "@/app/(public)/components/MoviePageAtmosphere";
 import JmiWetMoviePoster from "@/app/(public)/components/JmiWetMoviePoster";
 import JmiRain from "@/app/(public)/components/JmiRain";
+import MovieBoxOfficeDisclaimer from "@/app/(public)/components/MovieBoxOfficeDisclaimer";
 import { supabase } from "@/lib/supabase";
 
 export async function generateMetadata({
@@ -376,6 +377,14 @@ const certification = Array.isArray(certificationItem)
 </div>
 
   </div>
+
+  {/* =====================================================
+    WOODEN BOX OFFICE DISCLAIMER
+===================================================== */}
+
+<div className="mt-4 sm:mt-5">
+  <MovieBoxOfficeDisclaimer />
+</div>
 
             {/* Movie Hero */}
 

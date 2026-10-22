@@ -36,7 +36,7 @@ setIsOpening(true);
 
 timerRef.current = setTimeout(() => {
   router.push(destination);
-}, 1250);
+}, 1100);
 };
 
 return (
@@ -303,11 +303,11 @@ className="relative block w-full appearance-none border-0 bg-transparent p-0 tex
 
   <style jsx global>{`
     .jmi-transition-background {
-      animation: jmi-transition-fade 500ms ease-out both;
+      animation: jmi-transition-fade 250ms ease-out both;
     }
 
     .jmi-book-lift {
-      animation: jmi-book-lift-v2 2200ms cubic-bezier(0.16, 1, 0.3, 1)
+      animation: jmi-book-lift-v2 1600ms cubic-bezier(0.16, 1, 0.3, 1)
         both;
     }
 
@@ -315,12 +315,12 @@ className="relative block w-full appearance-none border-0 bg-transparent p-0 tex
       transform-origin: left center;
       transform-style: preserve-3d;
       backface-visibility: visible;
-      animation: jmi-book-open-v2 2200ms cubic-bezier(0.45, 0, 0.2, 1)
+      animation: jmi-book-open-v2 1400ms cubic-bezier(0.45, 0, 0.2, 1)
         both;
     }
 
     .jmi-book-shadow {
-      animation: jmi-book-shadow-v2 2200ms ease-in-out both;
+      animation: jmi-book-shadow-v2 1200ms ease-in-out both;
     }
 
     .jmi-book-flash {
