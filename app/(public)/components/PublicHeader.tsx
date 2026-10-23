@@ -131,6 +131,10 @@ export default function PublicHeader() {
     label: "JMI Exclusive News",
     href: "/preview/news",
   },
+  {
+    label: "JMI Social",
+    href: "/preview/social-space",
+  },
   ];
 
   /* =========================================================
