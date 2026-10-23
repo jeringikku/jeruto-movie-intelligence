@@ -121,7 +121,7 @@ export default function PublicHeader() {
     },
     {
   label: "JMI Fun Zone",
-  href: "/preview/fun-zone",
+  href: "/preview/fun-zone/home",
 },
     {
       label: "Book Tickets With JMI",
@@ -270,7 +270,7 @@ export default function PublicHeader() {
           ================================================= */}
 
           <Link
-            href="/preview"
+            href="/"
             className="flex items-center"
             onClick={() => setMenuOpen(false)}
           >

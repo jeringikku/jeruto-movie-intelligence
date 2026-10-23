@@ -85,7 +85,7 @@ export default function JmiFunZoneBanner() {
         ===================================================== */}
 
         <Link
-  href="/preview/fun-zone"
+  href="/preview/fun-zone/home"
   className="group relative block overflow-hidden rounded-2xl border border-yellow-400/20 bg-zinc-950 shadow-2xl transition-all duration-500 hover:-translate-y-0.5 hover:border-yellow-400/40"
 >
   {/* =====================================================
