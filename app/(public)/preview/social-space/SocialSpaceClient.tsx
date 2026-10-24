@@ -42,6 +42,43 @@ function getSupabase() {
   return supabaseBrowser;
 }
 
+type MemberProfile = {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+};
+
+async function loadMemberProfiles(userIds: string[]) {
+  const uniqueIds = [...new Set(userIds.filter(Boolean))];
+
+  if (uniqueIds.length === 0) {
+    return new Map<
+      string,
+      { name: string; avatar: string | null }
+    >();
+  }
+
+  const { data, error } = await supabaseBrowser
+    .from("profiles")
+    .select("user_id, full_name, avatar_url")
+    .in("user_id", uniqueIds);
+
+  if (error) {
+    console.error("Could not load member profiles:", error);
+    throw error;
+  }
+
+  return new Map(
+    ((data ?? []) as MemberProfile[]).map((profile) => [
+      profile.user_id,
+      {
+        name: profile.full_name?.trim() || "JMI Member",
+        avatar: profile.avatar_url || null,
+      },
+    ])
+  );
+}
+
 function initials(name: string) {
   return name
     .trim()
@@ -203,16 +240,19 @@ function SocialSpaceClient({
       if (error) throw error;
       if (!data) throw new Error("Post was not returned by Supabase.");
 
-      const newPost: SocialPost = {
-        ...data,
-        author: currentUserName || "JMI Member",
-        avatarUrl: null,
-        likeCount: 0,
-        dislikeCount: 0,
-        userReaction: null,
-        hasReplied: false,
-        replies: [],
-      };
+      const profiles = await loadMemberProfiles([user.id]);
+const member = profiles.get(user.id);
+
+const newPost: SocialPost = {
+  ...data,
+  author: member?.name || currentUserName || "JMI Member",
+  avatarUrl: member?.avatar || null,
+  likeCount: 0,
+  dislikeCount: 0,
+  userReaction: null,
+  hasReplied: false,
+  replies: [],
+};
 
       setPosts((previous) => [newPost, ...previous]);
       setContent("");

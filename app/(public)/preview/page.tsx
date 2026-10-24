@@ -14,6 +14,8 @@ import ActorsRankingsBanner from "../components/ActorsRankingsBanner";
 import { useJmiRainState } from "@/app/(public)/components/useJmiRainState";
 import JmiMovieLibraryWeather from "../components/JmiMovieLibraryWeather";
 import JmiHomepageLibraryBook from "../components/JmiHomepageLibraryBook";
+import SocialSpaceBanner from "../components/SocialSpaceBanner";
+import JmiFunZoneTransition from "../components/JmiFunZoneTransition";
 
 import JmiSun from "@/app/(public)/components/JmiSun";
 import JmiRain from "@/app/(public)/components/JmiRain";
@@ -775,110 +777,147 @@ export default async function PublicPreview() {
           articles={exclusiveNews ?? []}
         />
 
-        {/* =====================================================
-    WHAT JMI PROVIDES
+       {/* =====================================================
+WHAT JMI PROVIDES — COMPLETE JMI ECOSYSTEM
 ===================================================== */}
 
-        <section className="border-b border-zinc-900">
+<section className="border-b border-zinc-900">
+  <div className="mx-auto max-w-6xl px-5 py-12 sm:px-6 sm:py-16 lg:px-8">{/* Premium feature panel */}
 
-          <div className="mx-auto max-w-6xl px-5 py-12 sm:px-6 sm:py-16 lg:px-8">
+<div className="relative overflow-hidden rounded-2xl border border-violet-400/20 bg-zinc-950">
 
-            {/* Premium banner */}
+  {/* Ambient lighting */}
 
-            <div className="relative overflow-hidden rounded-2xl border border-violet-400/20 bg-zinc-950">
+  <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-violet-500/[0.08] blur-3xl" />
 
-              {/* Ambient violet glow */}
+  <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-amber-500/[0.035] blur-3xl" />
 
-              <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-violet-500/[0.07] blur-3xl" />
+  <div className="relative p-6 sm:p-8 lg:p-10">
 
-              <div className="pointer-events-none absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-violet-500/[0.035] blur-3xl" />
+    {/* Heading */}
 
+    <div className="max-w-3xl">
 
-              <div className="relative p-6 sm:p-8 lg:p-10">
+      <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-violet-400">
+        🎬 Discover the JMI Ecosystem
+      </p>
 
-                {/* Heading */}
+      <h2 className="mt-2 text-2xl font-medium tracking-[-0.035em] text-zinc-100 sm:text-3xl lg:text-4xl">
+        More than movies. A complete world of Indian cinema.
+      </h2>
 
-                <div className="max-w-2xl">
+      <p className="mt-3 max-w-2xl text-xs leading-6 text-zinc-400 sm:text-sm sm:leading-7">
+        Explore extensive movie information, exclusive box-office data,
+        powerful comparison tools, audience intelligence, career analytics
+        and immersive entertainment experiences — all brought together
+        in one connected Indian cinema ecosystem.
+      </p>
 
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-violet-400">
-                    🌞What JMI Provides
-                  </p>
+    </div>
 
-                  <h2 className="mt-2 text-xl font-medium tracking-[-0.025em] text-zinc-100 sm:text-2xl">
-                    Intelligence beyond the numbers.
-                  </h2>
+    {/* FEATURE LIST */}
 
-                  <p className="mt-2 text-[11px] leading-5 text-zinc-400 sm:text-xs">
-                    JMI brings together structured data, market intelligence
-                    and analytical depth to create a complete view of Indian cinema.
-                  </p>
+    <div className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
 
-                </div>
+      <JmiFeature
+        number="01"
+        title="The Complete Movie Library"
+        description="Explore an extensive collection of Indian movies, from the latest releases to older classics, with detailed movie information and a virtual library experience."
+      />
 
+      <JmiFeature
+        number="02"
+        title="Exclusive Box Office Intelligence"
+        description="Discover movie collections, theatrical performance, historical box-office data and detailed market information across Indian cinema."
+      />
 
-                {/* =================================================
-            FEATURE LIST
-        ================================================= */}
+      <JmiFeature
+        number="03"
+        title="Live Advance Booking Tracker"
+        description="Follow the latest movies through advance-booking updates and track their early theatrical momentum as new figures become available."
+      />
 
-                <div className="mt-7 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+      <JmiFeature
+        number="04"
+        title="Advanced Comparison Engine"
+        description="Compare movies, actors, technicians, production companies and industries through structured data, performance insights and analytical reports."
+      />
 
-                  <JmiFeature
-                    number="01"
-                    title="Complete Box Office Intelligence"
-                    description="From real-time advance sales to detailed theatrical performance and deep collection analysis."
-                  />
+      <JmiFeature
+        number="05"
+        title="Audience Behavior Intelligence"
+        description="Explore genre preferences, audience trends and theatrical performance to understand how different audiences respond to Indian cinema."
+      />
 
-                  <JmiFeature
-                    number="02"
-                    title="Movie Business & Recovery Analysis"
-                    description="Understand movie economics, business performance, recovery patterns and theatrical outcomes."
-                  />
+      <JmiFeature
+        number="06"
+        title="Industry Analysis"
+        description="Explore individual Indian film industries through their movie catalogues, box-office performance, market trends and comparative intelligence."
+      />
 
-                  <JmiFeature
-                    number="03"
-                    title="People Intelligence"
-                    description="Dedicated intelligence profiles for actors, directors and technicians with role-based career analytics."
-                  />
+      <JmiFeature
+        number="07"
+        title="Actor & Technician Career Analysis"
+        description="Discover the careers of actors, directors and other film technicians through filmographies, professional rankings and theatrical achievements."
+      />
 
-                  <JmiFeature
-                    number="04"
-                    title="Production Company Intelligence"
-                    description="Track production houses through performance, growth, market presence and business trends."
-                  />
+      <JmiFeature
+        number="08"
+        title="Production Company Intelligence"
+        description="Explore production houses, their movie portfolios, theatrical performance and position within the Indian cinema landscape."
+      />
 
-                  <JmiFeature
-                    number="05"
-                    title="Industry Intelligence"
-                    description="Dedicated intelligence layers for individual Indian film industries covering movies, markets and analytics."
-                  />
+      <JmiFeature
+        number="09"
+        title="State & Market Intelligence"
+        description="Examine regional box-office performance and market differences to understand the geographical dimensions of Indian theatrical business."
+      />
 
-                  <JmiFeature
-                    number="06"
-                    title="State Market Intelligence"
-                    description="Understand audience behaviour across individual state markets and their response to different types of cinema."
-                  />
+      <JmiFeature
+        number="10"
+        title="JMI Social Space"
+        description="Join a dedicated cinema community where movie lovers can publish reviews, share discussions, react to posts, reply to members and build connections."
+      />
 
-                </div>
+      <JmiFeature
+        number="11"
+        title="JMI Fun Zone"
+        description="Take a break from the numbers and explore an entertainment-focused space created to bring more fun and enjoyment to your JMI experience."
+      />
 
+      <JmiFeature
+        number="12"
+        title="Immersive Virtual Environment"
+        description="Experience JMI through a virtual 3D environment featuring atmospheric weather modes, including rain and sunshine, for a more immersive browsing experience."
+      />
 
-                {/* Bottom statement */}
+    </div>
 
-                <div className="mt-7 border-t border-zinc-900 pt-5">
+    {/* COMMUNITY STATEMENT */}
 
-                  <p className="text-[9px] leading-5 text-green-500 ">
-                    One ecosystem. Multiple intelligence layers. Built to understand
-                    the business and behaviour behind Indian cinema.
-                  </p>
+    <div className="mt-8 border-t border-zinc-800 pt-6">
 
-                </div>
+      <p className="text-[10px] font-medium leading-6 text-emerald-400 sm:text-xs">
+        One ecosystem. Endless discoveries. From box-office intelligence
+        and professional analytics to immersive experiences and a community
+        of cinema lovers — JMI brings Indian cinema closer to you.
+      </p>
 
-              </div>
+      <p className="mt-2 text-[9px] leading-5 text-zinc-500">
+        Explore the movies. Understand the business. Discover the people.
+        Experience the community.
+      </p>
 
-            </div>
+    </div>
 
-          </div>
+  </div>
 
-        </section>
+</div>
+
+  </div>
+</section>
+
+        <SocialSpaceBanner />
 
         {/* =====================================================
             EXPLORE JMI
