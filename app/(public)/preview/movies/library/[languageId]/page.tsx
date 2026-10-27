@@ -425,7 +425,8 @@ linear-gradient(
         </div>  
       </div>  
 
-       <NewLibraryTelevision />
+       <NewLibraryTelevision 
+       languageName={language.name} />
 
       {/* =========================================================  
           LIGHT-BROWN WOODEN FILTER PLAQUE  

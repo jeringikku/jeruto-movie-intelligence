@@ -7,8 +7,13 @@ type LibraryTvImage = {
   id: number;
   image_url: string;
   image_alt: string | null;
+  language: string | null;
   display_order: number;
   is_active: boolean;
+};
+
+type LibraryTelevisionProps = {
+  languageName: string;
 };
 
 const NEWS_HEADLINES = [
@@ -252,7 +257,9 @@ function VintageTvTuningEffect() {
   );
 }
 
-export default function LibraryTelevision() {
+export default function LibraryTelevision({
+  languageName,
+}: LibraryTelevisionProps) {
   const [images, setImages] = useState<LibraryTvImage[]>([]);
   const [imageIndex, setImageIndex] = useState(0);
 
@@ -262,29 +269,48 @@ export default function LibraryTelevision() {
   const [imagesLoading, setImagesLoading] = useState(true);
   const [imagesError, setImagesError] = useState(false);
 
-  // Load active images from the existing Library TV admin table.
+  // Load only active images assigned to the current library language.
   useEffect(() => {
     let cancelled = false;
 
     async function loadImages() {
+      const requestedLanguage = languageName.trim();
+
+      setImages([]);
+      setImageIndex(0);
       setImagesLoading(true);
       setImagesError(false);
 
+      console.log("[JMI TV] Requested language:", requestedLanguage);
+
       const { data, error } = await supabase
         .from("jmi_library_tv_images")
-        .select("id, image_url, image_alt, display_order, is_active")
+        .select(
+          "id, image_url, image_alt, language, display_order, is_active"
+        )
         .eq("is_active", true)
+        .eq("language", requestedLanguage)
         .order("display_order", { ascending: true })
         .order("id", { ascending: true });
 
       if (cancelled) return;
 
       if (error) {
-        console.error("Library TV image loading error:", error);
+        console.error("[JMI TV] Supabase error:", error);
         setImages([]);
         setImagesError(true);
       } else {
-        setImages((data ?? []) as LibraryTvImage[]);
+        const languageImages = (data ?? []).filter(
+          (image) =>
+            typeof image.language === "string" &&
+            image.language.trim().toLowerCase() ===
+              requestedLanguage.toLowerCase()
+        );
+
+        console.log("[JMI TV] Rows returned by Supabase:", data);
+        console.log("[JMI TV] Rows after language verification:", languageImages);
+
+        setImages(languageImages as LibraryTvImage[]);
       }
 
       setImagesLoading(false);
@@ -295,9 +321,14 @@ export default function LibraryTelevision() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [languageName]);
 
-  // Automatically rotate through the active images.
+  // Reset the slideshow position when the library language changes.
+  useEffect(() => {
+    setImageIndex(0);
+  }, [languageName]);
+
+  // Automatically rotate through the current language's active images.
   useEffect(() => {
     if (!isOn || channel !== 1 || images.length < 2) {
       return;
@@ -328,7 +359,7 @@ export default function LibraryTelevision() {
 
   return (
     <section
-      aria-label="JMI vintage television"
+      aria-label={`JMI vintage television - ${languageName} library`}
       className="relative mx-auto my-8 w-full max-w-5xl px-3 sm:my-10 sm:px-5"
     >
       {/* Section heading */}
@@ -342,8 +373,9 @@ export default function LibraryTelevision() {
         </h2>
 
         <p className="mx-auto mt-2 max-w-md text-[11px] leading-5 text-zinc-500 sm:mt-3 sm:text-sm sm:leading-6">
-          Vintage television showing Revisit of our Vintage Legendary Actors, and the latest JMI
-          announcements.You can Turn OFF the TV anytime using its Remote.
+          Vintage television showing legendary actors from the{" "}
+          {languageName} cinema collection and the latest JMI
+          announcements. You can turn off the TV anytime using its remote.
         </p>
       </header>
 
@@ -399,7 +431,7 @@ export default function LibraryTelevision() {
                     </p>
                   </div>
                 ) : channel === 1 ? (
-                  /* Channel 1: Library pictures */
+                  /* Channel 1: Language-specific library pictures */
                   <div className="absolute inset-0">
                     {currentImage ? (
                       <img
@@ -407,7 +439,7 @@ export default function LibraryTelevision() {
                         src={currentImage.image_url}
                         alt={
                           currentImage.image_alt ||
-                          "JMI Movie Library television image"
+                          `${languageName} Movie Library television image`
                         }
                         className="jmi-library-image absolute inset-0 h-full w-full object-contain"
                         onError={(event) => {
@@ -419,7 +451,7 @@ export default function LibraryTelevision() {
                         <span className="text-2xl sm:text-3xl">📺</span>
 
                         <p className="mt-3 text-[9px] font-semibold uppercase tracking-[0.2em] text-[#e4c18a] sm:text-xs">
-                          JMI Movie Library
+                          {languageName} Cinema
                         </p>
 
                         <p className="mt-2 max-w-xs text-[8px] leading-4 text-zinc-500 sm:text-[11px] sm:leading-5">
@@ -427,15 +459,15 @@ export default function LibraryTelevision() {
                             ? "Tuning into the library..."
                             : imagesError
                               ? "Unable to load library images."
-                              : "Library pictures will appear here."}
+                              : `No active ${languageName} TV images are available yet.`}
                         </p>
 
                         {!imagesLoading &&
                           !imagesError &&
                           images.length === 0 && (
                             <p className="mt-2 text-[7px] text-zinc-600 sm:text-[8px]">
-                              Add active images through Library Television
-                              in the JMI Admin Panel.
+                              Assign active images to {languageName} in
+                              the JMI Admin Panel.
                             </p>
                           )}
                       </div>
@@ -445,18 +477,15 @@ export default function LibraryTelevision() {
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_7px_rgba(74,222,128,0.8)]" />
 
                       <span className="text-[7px] font-medium uppercase tracking-[0.12em] text-white/85 sm:text-[9px] sm:tracking-[0.17em]">
-                        CH 1 · Library
+                        CH 1 · {languageName}
                       </span>
                     </div>
 
-                    {images.length > 0 && (
-                      <div className="absolute bottom-2 right-2 rounded-md border border-white/10 bg-black/65 px-2 py-1 text-[7px] text-white/80 sm:bottom-4 sm:right-4 sm:text-[9px]">
-                        
-                      </div>
-                    )}
+                   
+                    
                   </div>
                 ) : (
-                  /* Channel 2: Scrolling JMI news */
+                  /* Channel 2: Scrolling JMI news - unchanged */
                   <div className="absolute inset-0 overflow-hidden bg-gradient-to-br from-[#101b16] via-[#07100c] to-[#030504]">
                     <div className="pointer-events-none absolute -left-10 -top-16 h-32 w-32 rounded-full bg-emerald-400/[0.08] blur-3xl sm:h-48 sm:w-48" />
 
@@ -638,7 +667,7 @@ export default function LibraryTelevision() {
                 Television Remote
               </p>
 
-              <h3 className="mt-1  text-[6px] font-semibold text-zinc-100 sm:text-[12px]">
+              <h3 className="mt-1 text-[6px] font-semibold text-zinc-100 sm:text-[12px]">
                 Control Panel
               </h3>
             </div>
@@ -666,22 +695,20 @@ export default function LibraryTelevision() {
             type="button"
             onClick={changeChannel}
             disabled={!isOn}
+            aria-label="Next television channel"
             className="mt-4 flex min-h-4 w-15 items-center justify-center gap-1 rounded-xl border border-zinc-700 bg-zinc-700 px-1 py-.5 text-[10px] text-zinc-300 transition hover:border-amber-500/50 hover:text-amber-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-35 sm:min-h-10 sm:text-xs"
           >
-            
             <span className="text-[16px]">⏭️</span>
-            
-            
           </button>
 
-           <button
+          <button
             type="button"
             onClick={changeChannel}
             disabled={!isOn}
+            aria-label="Previous television channel"
             className="mt-2 flex min-h-4 w-15 items-center justify-center gap-1 rounded-xl border border-zinc-700 bg-zinc-700 px-1 py-.5 text-[10px] text-zinc-300 transition hover:border-amber-500/50 hover:text-amber-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-35 sm:min-h-10 sm:text-xs"
           >
             <span className="text-[16px]">⏮️</span>
-            
           </button>
 
           <div className="mt-3 rounded-lg border border-zinc-800 bg-black/50 p-2.5">
@@ -689,11 +716,7 @@ export default function LibraryTelevision() {
               <span className="text-[8px] uppercase tracking-[0.12em] text-zinc-400">
                 JMI TV
               </span>
-
-             
             </div>
-
-           
           </div>
         </aside>
       </div>
@@ -710,7 +733,7 @@ export default function LibraryTelevision() {
         </span>
 
         <span>2 Channels</span>
-        <span>{images.length} Active Broadcasts</span>
+        <span>{images.length} Active {languageName} Broadcasts</span>
       </footer>
 
       {/* Component-scoped TV animations */}

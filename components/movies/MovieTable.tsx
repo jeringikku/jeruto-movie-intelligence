@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import EmptyState from "./EmptyState";
 import Link from "next/link";
@@ -13,7 +13,26 @@ type Movie = {
   runtime_minutes: number | null;
 };
 
+type SavedMovieFilters = {
+  searchInput: string;
+  search: string;
+  startId: string;
+  endId: string;
+  selectedYear: string;
+  page: number;
+};
+
 const PAGE_SIZE = 100;
+const FILTER_STORAGE_KEY = "jmi-admin-movie-table-filters";
+
+const DEFAULT_FILTERS: SavedMovieFilters = {
+  searchInput: "",
+  search: "",
+  startId: "",
+  endId: "",
+  selectedYear: "",
+  page: 0,
+};
 
 export default function MovieTable() {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -32,17 +51,125 @@ export default function MovieTable() {
   const [hasMore, setHasMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
 
+  // Restore saved filters before fetching movies.
+  const [filtersRestored, setFiltersRestored] = useState(false);
+  const skipNextSearchDebounce = useRef(false);
+
+  // Restore the last-used filters from this browser tab.
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(FILTER_STORAGE_KEY);
+
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<SavedMovieFilters>;
+
+        const restoredPage =
+          typeof parsed.page === "number" &&
+          Number.isInteger(parsed.page) &&
+          parsed.page >= 0
+            ? parsed.page
+            : 0;
+
+        skipNextSearchDebounce.current = true;
+
+        setSearchInput(
+          typeof parsed.searchInput === "string"
+            ? parsed.searchInput
+            : ""
+        );
+
+        setSearch(
+          typeof parsed.search === "string"
+            ? parsed.search
+            : ""
+        );
+
+        setStartId(
+          typeof parsed.startId === "string"
+            ? parsed.startId
+            : ""
+        );
+
+        setEndId(
+          typeof parsed.endId === "string"
+            ? parsed.endId
+            : ""
+        );
+
+        setSelectedYear(
+          typeof parsed.selectedYear === "string"
+            ? parsed.selectedYear
+            : ""
+        );
+
+        setPage(restoredPage);
+      }
+    } catch (err) {
+      console.error("Unable to restore movie filters:", err);
+    } finally {
+      setFiltersRestored(true);
+    }
+  }, []);
+
+  // Save the filters and current page in the browser session.
+  useEffect(() => {
+    if (!filtersRestored) {
+      return;
+    }
+
+    const savedFilters: SavedMovieFilters = {
+      searchInput,
+      search,
+      startId,
+      endId,
+      selectedYear,
+      page,
+    };
+
+    try {
+      sessionStorage.setItem(
+        FILTER_STORAGE_KEY,
+        JSON.stringify(savedFilters)
+      );
+    } catch (err) {
+      console.error("Unable to save movie filters:", err);
+    }
+  }, [
+    filtersRestored,
+    searchInput,
+    search,
+    startId,
+    endId,
+    selectedYear,
+    page,
+  ]);
+
   // Debounce search input to avoid querying on every keystroke.
   useEffect(() => {
+    if (!filtersRestored) {
+      return;
+    }
+
+    // Do not overwrite the restored search or page on initial setup.
+    if (skipNextSearchDebounce.current) {
+      skipNextSearchDebounce.current = false;
+      return;
+    }
+
     const timer = setTimeout(() => {
       setSearch(searchInput.trim());
       setPage(0);
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [searchInput]);
+  }, [searchInput, filtersRestored]);
 
   const fetchMovies = useCallback(async () => {
+    // Never fetch the initial unfiltered list before restoring filters.
+    if (!filtersRestored) {
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -65,7 +192,7 @@ export default function MovieTable() {
         }
       }
 
-      // Filter by movie ID range.
+      // Filter by starting movie ID.
       if (startId.trim()) {
         const minId = Number(startId);
 
@@ -81,6 +208,7 @@ export default function MovieTable() {
         query = query.gte("id", minId);
       }
 
+      // Filter by ending movie ID.
       if (endId.trim()) {
         const maxId = Number(endId);
 
@@ -101,7 +229,7 @@ export default function MovieTable() {
         query = query.eq("release_year", Number(selectedYear));
       }
 
-      // Prevent an invalid range.
+      // Prevent an invalid ID range.
       if (
         startId.trim() &&
         endId.trim() &&
@@ -118,7 +246,11 @@ export default function MovieTable() {
       const from = page * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
 
-      const { data, error: fetchError, count } = await query
+      const {
+        data,
+        error: fetchError,
+        count,
+      } = await query
         .order("id", { ascending: false })
         .range(from, to);
 
@@ -140,19 +272,25 @@ export default function MovieTable() {
     } finally {
       setLoading(false);
     }
-  }, [search, startId, endId, selectedYear, page]);
+  }, [
+    filtersRestored,
+    search,
+    startId,
+    endId,
+    selectedYear,
+    page,
+  ]);
 
-  // Fetch when filters or page change.
+  // Fetch only after saved filters have been restored.
   useEffect(() => {
-    void fetchMovies();
-  }, [fetchMovies]);
-
-  // Reset pagination when filters change.
-  useEffect(() => {
-    setPage(0);
-  }, [startId, endId, selectedYear, search]);
+    if (filtersRestored) {
+      void fetchMovies();
+    }
+  }, [fetchMovies, filtersRestored]);
 
   function resetFilters() {
+    skipNextSearchDebounce.current = false;
+
     setSearchInput("");
     setSearch("");
     setStartId("");
@@ -183,7 +321,9 @@ export default function MovieTable() {
         new Set(
           (data ?? [])
             .map((row) => Number(row.release_year))
-            .filter((year) => Number.isInteger(year) && year > 0)
+            .filter(
+              (year) => Number.isInteger(year) && year > 0
+            )
         )
       ).sort((a, b) => b - a);
 
@@ -193,8 +333,13 @@ export default function MovieTable() {
     void fetchYears();
   }, []);
 
-  const firstResult = totalCount === 0 ? 0 : page * PAGE_SIZE + 1;
-  const lastResult = Math.min((page + 1) * PAGE_SIZE, totalCount);
+  const firstResult =
+    totalCount === 0 ? 0 : page * PAGE_SIZE + 1;
+
+  const lastResult = Math.min(
+    (page + 1) * PAGE_SIZE,
+    totalCount
+  );
 
   return (
     <div className="space-y-4">
@@ -214,7 +359,9 @@ export default function MovieTable() {
               id="movie-search"
               type="search"
               value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
+              onChange={(event) =>
+                setSearchInput(event.target.value)
+              }
               placeholder="Enter movie title..."
               className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-yellow-500"
             />
@@ -287,6 +434,7 @@ export default function MovieTable() {
               className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white outline-none transition focus:border-yellow-500"
             >
               <option value="">All years</option>
+
               {years.map((year) => (
                 <option key={year} value={year}>
                   {year}
@@ -308,9 +456,9 @@ export default function MovieTable() {
         </div>
 
         <p className="mt-3 text-xs text-zinc-500">
-          Tip: Enter ID 140 in “From Movie ID” and 200 in “To Movie ID” to
-          display movies within that range. You can combine the ID, year, and
-          search filters.
+          Tip: Enter ID 140 in “From Movie ID” and 200 in “To
+          Movie ID” to display movies within that range. You can
+          combine the ID, year, and search filters.
         </p>
       </div>
 
@@ -348,7 +496,9 @@ export default function MovieTable() {
       )}
 
       {/* Empty results */}
-      {!loading && !error && movies.length === 0 && <EmptyState />}
+      {!loading && !error && movies.length === 0 && (
+        <EmptyState />
+      )}
 
       {/* Movie table */}
       {!loading && movies.length > 0 && (
@@ -369,14 +519,18 @@ export default function MovieTable() {
                   key={movie.id}
                   className="border-t border-zinc-800 transition hover:bg-zinc-900/70"
                 >
-                  <td className="px-4 py-3 text-zinc-400">{movie.id}</td>
+                  <td className="px-4 py-3 text-zinc-400">
+                    {movie.id}
+                  </td>
 
                   <td className="px-4 py-3">
                     <Link
                       href={`/admin/movies/${movie.id}`}
                       className="font-medium text-yellow-400 hover:text-yellow-300 hover:underline"
                     >
-                      {movie.title || movie.original_title || "Untitled movie"}
+                      {movie.title ||
+                        movie.original_title ||
+                        "Untitled movie"}
                     </Link>
                   </td>
 
@@ -402,14 +556,17 @@ export default function MovieTable() {
           <button
             type="button"
             disabled={page === 0}
-            onClick={() => setPage((current) => Math.max(0, current - 1))}
+            onClick={() =>
+              setPage((current) => Math.max(0, current - 1))
+            }
             className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:border-yellow-500 hover:text-yellow-400 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Previous
           </button>
 
           <span className="text-sm text-zinc-400">
-            Page {page + 1} of {Math.max(1, Math.ceil(totalCount / PAGE_SIZE))}
+            Page {page + 1} of{" "}
+            {Math.max(1, Math.ceil(totalCount / PAGE_SIZE))}
           </span>
 
           <button

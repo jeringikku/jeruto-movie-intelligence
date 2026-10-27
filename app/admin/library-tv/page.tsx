@@ -7,6 +7,7 @@ type LibraryTvImage = {
 id: number;
 image_url: string;
 image_alt: string | null;
+language: string | null;
 display_order: number;
 is_active: boolean;
 created_at: string;
@@ -16,13 +17,34 @@ updated_at: string;
 type ImageForm = {
 image_url: string;
 image_alt: string;
+language: string;
 display_order: string;
 is_active: boolean;
 };
 
+const LIBRARY_TV_LANGUAGES = [
+"Assamese",
+"Bengali",
+"Chinese",
+"English",
+"Gujarati",
+"Hindi",
+"Kannada",
+"Konkani",
+"Korean",
+"Malayalam",
+"Marathi",
+"Odia",
+"Punjabi",
+"Tamil",
+"Telugu",
+"Tulu",
+];
+
 const emptyForm: ImageForm = {
 image_url: "",
 image_alt: "",
+language: "",
 display_order: "1",
 is_active: true,
 };
@@ -45,7 +67,7 @@ setErrorMessage("");
 const { data, error } = await supabase
   .from("jmi_library_tv_images")
   .select(
-    "id, image_url, image_alt, display_order, is_active, created_at, updated_at"
+    "id, image_url, image_alt, language, display_order, is_active, created_at, updated_at"
   )
   .order("display_order", { ascending: true })
   .order("id", { ascending: true });
@@ -97,6 +119,7 @@ setEditingId(image.id);
 setForm({
   image_url: image.image_url,
   image_alt: image.image_alt ?? "",
+  language: image.language ?? "",
   display_order: String(image.display_order),
   is_active: image.is_active,
 });
@@ -123,8 +146,13 @@ if (!cleanUrl) {
 try {
   const parsedUrl = new URL(cleanUrl);
 
-  if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
-    setErrorMessage("Please enter a valid HTTP or HTTPS image URL.");
+  if (
+    parsedUrl.protocol !== "https:" &&
+    parsedUrl.protocol !== "http:"
+  ) {
+    setErrorMessage(
+      "Please enter a valid HTTP or HTTPS image URL."
+    );
     return false;
   }
 } catch {
@@ -132,8 +160,17 @@ try {
   return false;
 }
 
+if (
+  !LIBRARY_TV_LANGUAGES.includes(form.language)
+) {
+  setErrorMessage("Please select a valid image language.");
+  return false;
+}
+
 if (!Number.isInteger(order) || order < 1) {
-  setErrorMessage("Display order must be a positive whole number.");
+  setErrorMessage(
+    "Display order must be a positive whole number."
+  );
   return false;
 }
 
@@ -141,7 +178,9 @@ return true;
 
 }
 
-async function handleSave(event: React.FormEvent<HTMLFormElement>) {
+async function handleSave(
+event: React.FormEvent<HTMLFormElement>
+) {
 event.preventDefault();
 
 setErrorMessage("");
@@ -156,6 +195,7 @@ setSaving(true);
 const payload = {
   image_url: form.image_url.trim(),
   image_alt: form.image_alt.trim() || null,
+  language: form.language,
   display_order: Number(form.display_order),
   is_active: form.is_active,
   updated_at: new Date().toISOString(),
@@ -178,7 +218,9 @@ if (editingId !== null) {
     return;
   }
 
-  setSuccessMessage("Library TV image updated successfully.");
+  setSuccessMessage(
+    "Library TV image updated successfully."
+  );
 } else {
   const { error } = await supabase
     .from("jmi_library_tv_images")
@@ -195,7 +237,9 @@ if (editingId !== null) {
     return;
   }
 
-  setSuccessMessage("Image added to the Library TV successfully.");
+  setSuccessMessage(
+    "Image added to the Library TV successfully."
+  );
 }
 
 setForm(emptyForm);
@@ -268,7 +312,9 @@ if (error) {
     resetForm();
   }
 
-  setSuccessMessage("Library TV image deleted successfully.");
+  setSuccessMessage(
+    "Library TV image deleted successfully."
+  );
 
   await loadImages();
 }
@@ -277,11 +323,13 @@ setActionId(null);
 
 }
 
-const activeCount = images.filter((image) => image.is_active).length;
+const activeCount = images.filter(
+(image) => image.is_active
+).length;
 
 return (
 <main className="min-h-screen w-full bg-black px-4 py-6 text-zinc-100 sm:px-6 lg:px-8">
-  <div className="w-full space-y-8">
+<div className="w-full space-y-8">
 {/* PAGE HEADER */}
 
     <header>
@@ -294,9 +342,11 @@ return (
       </h1>
 
       <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-500">
-        Manage the images displayed on Channel 2 of the vintage
-        wooden television inside the JMI Movie Library. Only active
-        images are eligible to appear on the television.
+        Manage the images displayed on the vintage wooden
+        television inside the JMI Movie Library. Assign a
+        language to each image so the appropriate images can
+        appear on the matching language library page.
+        Only active images are eligible to appear.
       </p>
 
       <div className="mt-4 flex flex-wrap gap-3">
@@ -321,8 +371,12 @@ return (
         role="alert"
         className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300"
       >
-        <p className="font-semibold">Something went wrong</p>
-        <p className="mt-1 break-words">{errorMessage}</p>
+        <p className="font-semibold">
+          Something went wrong
+        </p>
+        <p className="mt-1 break-words">
+          {errorMessage}
+        </p>
       </div>
     )}
 
@@ -341,12 +395,14 @@ return (
       <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
         <div>
           <h2 className="text-lg font-semibold text-white">
-            {editingId !== null ? "Edit TV Image" : "Add New TV Image"}
+            {editingId !== null
+              ? "Edit TV Image"
+              : "Add New TV Image"}
           </h2>
 
           <p className="mt-2 text-xs leading-5 text-zinc-500">
-            Enter a publicly accessible image URL. No manual file
-            upload is required.
+            Enter a publicly accessible image URL and select
+            the language library where it should appear.
           </p>
         </div>
 
@@ -369,7 +425,8 @@ return (
             htmlFor="library-tv-image-url"
             className="mb-2 block text-xs font-medium text-zinc-300"
           >
-            Public Image URL <span className="text-red-400">*</span>
+            Public Image URL{" "}
+            <span className="text-red-400">*</span>
           </label>
 
           <input
@@ -385,9 +442,44 @@ return (
           />
 
           <p className="mt-2 text-[11px] leading-5 text-zinc-600">
-            Use a direct image URL that visitors can access without
-            signing in. The remote server must permit the image to
-            be displayed on JMI.
+            Use a direct image URL that visitors can access
+            without signing in. The remote server must permit
+            the image to be displayed on JMI.
+          </p>
+        </div>
+
+        {/* LANGUAGE */}
+
+        <div>
+          <label
+            htmlFor="library-tv-language"
+            className="mb-2 block text-xs font-medium text-zinc-300"
+          >
+            Movie Language{" "}
+            <span className="text-red-400">*</span>
+          </label>
+
+          <select
+            id="library-tv-language"
+            required
+            value={form.language}
+            onChange={(event) =>
+              updateField("language", event.target.value)
+            }
+            className="h-11 w-full rounded-lg border border-zinc-700 bg-black px-3 text-sm text-white outline-none focus:border-yellow-500"
+          >
+            <option value="">Select a language</option>
+
+            {LIBRARY_TV_LANGUAGES.map((language) => (
+              <option key={language} value={language}>
+                {language}
+              </option>
+            ))}
+          </select>
+
+          <p className="mt-2 text-[11px] leading-5 text-zinc-600">
+            This image will be eligible to appear only on the
+            matching language's Movie Library television.
           </p>
         </div>
 
@@ -430,7 +522,10 @@ return (
               required
               value={form.display_order}
               onChange={(event) =>
-                updateField("display_order", event.target.value)
+                updateField(
+                  "display_order",
+                  event.target.value
+                )
               }
               className="h-11 w-full rounded-lg border border-zinc-700 bg-black px-3 text-sm text-white outline-none focus:border-yellow-500"
             />
@@ -455,7 +550,8 @@ return (
             </span>
 
             <span className="mt-1 block text-xs text-zinc-500">
-              Allow this image to appear on the TV's picture channel.
+              Allow this image to appear on its assigned
+              language's TV picture channel.
             </span>
           </span>
         </label>
@@ -471,13 +567,18 @@ return (
             <div className="flex min-h-36 items-center justify-center overflow-hidden rounded-xl border border-zinc-800 bg-black p-2 sm:min-h-48">
               <img
                 src={form.image_url}
-                alt={form.image_alt || "Library TV image preview"}
+                alt={
+                  form.image_alt ||
+                  "Library TV image preview"
+                }
                 className="max-h-64 w-full rounded-lg object-contain"
                 onError={(event) => {
-                  event.currentTarget.style.visibility = "hidden";
+                  event.currentTarget.style.visibility =
+                    "hidden";
                 }}
                 onLoad={(event) => {
-                  event.currentTarget.style.visibility = "visible";
+                  event.currentTarget.style.visibility =
+                    "visible";
                 }}
               />
             </div>
@@ -559,14 +660,19 @@ return (
                 <div className="relative flex aspect-video items-center justify-center overflow-hidden border-b border-zinc-800 bg-black">
                   <img
                     src={image.image_url}
-                    alt={image.image_alt || "JMI Library TV image"}
+                    alt={
+                      image.image_alt ||
+                      "JMI Library TV image"
+                    }
                     loading="lazy"
                     className="h-full w-full object-contain"
                     onError={(event) => {
-                      event.currentTarget.style.visibility = "hidden";
+                      event.currentTarget.style.visibility =
+                        "hidden";
                     }}
                     onLoad={(event) => {
-                      event.currentTarget.style.visibility = "visible";
+                      event.currentTarget.style.visibility =
+                        "visible";
                     }}
                   />
 
@@ -587,11 +693,17 @@ return (
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h3 className="break-words text-sm font-semibold text-zinc-200">
-                        {image.image_alt || `TV Image #${image.id}`}
+                        {image.image_alt ||
+                          `TV Image #${image.id}`}
                       </h3>
 
                       <p className="mt-1 text-xs text-zinc-500">
                         Image ID: {image.id}
+                      </p>
+
+                      <p className="mt-2 inline-flex rounded-md border border-yellow-500/20 bg-yellow-500/10 px-2 py-1 text-[10px] font-medium text-yellow-300">
+                        Language:{" "}
+                        {image.language || "Not assigned"}
                       </p>
                     </div>
 
@@ -655,22 +767,25 @@ return (
 
       <ul className="mt-3 space-y-2 text-xs leading-5 text-zinc-500">
         <li>
-          • Only active images will be eligible for the public TV's
-          picture channel.
+          • Only active images assigned to the current
+          language will appear on that language's TV picture
+          channel once the TV filter is implemented.
         </li>
 
         <li>
-          • Images will be displayed in ascending display order.
+          • Images will be displayed in ascending display
+          order, then by ID.
         </li>
 
         <li>
-          • Image changes here will not modify homepage banners or
-          general Site Assets.
+          • Images without a language assignment must be
+          assigned a language before they can appear on a
+          language-specific TV.
         </li>
 
         <li>
-          • The public television component will be connected to this
-          table in the next implementation stage.
+          • Image changes here will not modify homepage
+          banners or general Site Assets.
         </li>
       </ul>
     </section>

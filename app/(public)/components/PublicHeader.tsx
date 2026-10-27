@@ -181,6 +181,10 @@ export default function PublicHeader() {
       label: "Terms & Conditions",
       href: "/preview/terms",
     },
+     {
+    label: "Have any Complaint ?",
+      href: "/preview/have-any-complaint",
+    },
     {
       label: "Copyright",
       href: "/preview/copyright",
@@ -188,6 +192,10 @@ export default function PublicHeader() {
     {
       label: "Contact Us",
       href: "/preview/contact",
+    },
+     {
+    label: "About Us",
+      href: "/preview/about",
     },
   ];
 
