@@ -62,13 +62,19 @@ const teamMembers: {
   {
     name: "Anandhu N Ajayan",
     designation: "Platform Coordinator & Manager",
-    image: "https://avatars.githubusercontent.com/u/155710459?v=4", // Paste Anandhu's profile picture URL here
+    image: "https://avatars.githubusercontent.com/u/155710459?s=400&u=11239cad08e2885eea3b4251b7cca119d5b443ce&v=4", // Paste Anandhu's profile picture URL here
   },
   {
     name: "Akash Dominic Sebastian",
     designation: "Platform Overview & Finance",
     image: "https://scontent.ftrv8-1.fna.fbcdn.net/v/t39.30808-6/469412104_2884224358403694_1896873708153499594_n.jpg?stp=dst-jpg_tt6&cstp=mx1080x1080&ctp=s1080x1080&_nc_cat=109&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=EleLGA6RW1oQ7kNvwEbiMUX&_nc_oc=AdoUCMJyBk_15rZrZ1SB4Nagrpmqp-Ru-lxjVu33UwHT2AeERXL-paD2K-MZqRCzVY6zltc9-FHCraIEZxFujzS1&_nc_zt=23&_nc_ht=scontent.ftrv8-1.fna&_nc_gid=wnzVZxRkwwTXDa2im9NDjg&_nc_ss=7b2a8&oh=00_AQOXuRGxtDR0aI-kwZMbw6QF7_F-qQMe8RD897rMrGaZuA&oe=6AD98E3A", // Paste Akash's profile picture URL here
   },
+  {
+    name: "Ashwin Sabu",
+    designation: "Data Integeration & Research",
+    image: "https://ashwinsabu007.weebly.com/uploads/1/3/4/8/134818222/picsart-09-28-07-02-08_orig.jpg", // Paste Akash's profile picture URL here
+  },
+
   {
     name: "Tins Saiban",
     designation: "Data Management Assistance",

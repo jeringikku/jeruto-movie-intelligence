@@ -16,6 +16,7 @@ import JmiMovieLibraryWeather from "../components/JmiMovieLibraryWeather";
 import JmiHomepageLibraryBook from "../components/JmiHomepageLibraryBook";
 import SocialSpaceBanner from "../components/SocialSpaceBanner";
 import JmiFunZoneTransition from "../components/JmiFunZoneTransition";
+import ExclusiveNewsCarousel from "../components/ExclusiveNewsCarousel";
 
 import JmiSun from "@/app/(public)/components/JmiSun";
 import JmiRain from "@/app/(public)/components/JmiRain";
@@ -25,6 +26,8 @@ export const dynamic = "force-dynamic";
 
 export default async function PublicPreview() {
 
+
+ 
   // ============================================================
   // JMI HOMEPAGE VIEW COUNT
   // ============================================================
@@ -65,35 +68,33 @@ export default async function PublicPreview() {
     );
   }
 
-  // ============================================================
-  // JMI EXCLUSIVE NEWS
-  // ============================================================
+   const {
+  data: exclusiveNews,
+  error: exclusiveNewsError,
+} = await supabase
+  .from("jmi_news_articles")
+  .select(`
+    id,
+    slug,
+    article_type,
+    title,
+    excerpt,
+    thumbnail_url,
+    published_at
+  `)
+  .eq("status", "published")
+  .not("published_at", "is", null)
+  .order("published_at", {
+    ascending: false,
+  })
+  .limit(8);
 
-  const { data: exclusiveNews, error: exclusiveNewsError } =
-    await supabase
-      .from("jmi_news_articles")
-      .select(`
-        id,
-        slug,
-        article_type,
-        title,
-        excerpt,
-        thumbnail_url,
-        published_at
-      `)
-      .eq("status", "published")
-      .not("published_at", "is", null)
-      .order("published_at", {
-        ascending: false,
-      })
-      .limit(8);
-
-  if (exclusiveNewsError) {
-    console.error(
-      "JMI Exclusive News error:",
-      exclusiveNewsError
-    );
-  }
+if (exclusiveNewsError) {
+  console.error(
+    "JMI Exclusive News error:",
+    exclusiveNewsError
+  );
+}
 
   // ============================================================
   // JMI LIVE DATABASE STATISTICS

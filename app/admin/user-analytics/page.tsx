@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
@@ -19,170 +19,323 @@ type PopularMovie = {
   release_year: number | null;
 };
 
-export default function UserAnalyticsPage() {
-  const [stats, setStats] = useState<AnalyticsStats>({
-    registeredUsers: 0,
-    totalProfiles: 0,
-    homepageViews: 0,
-    moviePageViews: 0,
-    moviesWithViews: 0,
-  });
+type TrafficPoint = {
+  date: string;
+  views: number;
+};
 
+type AnalyticsResponse = {
+  stats: AnalyticsStats;
+  popularMovies: PopularMovie[];
+  traffic: {
+    homepage: TrafficPoint[];
+    movies: TrafficPoint[];
+    combined: TrafficPoint[];
+    hasDatedRecords: boolean;
+  };
+};
+
+const emptyStats: AnalyticsStats = {
+  registeredUsers: 0,
+  totalProfiles: 0,
+  homepageViews: 0,
+  moviePageViews: 0,
+  moviesWithViews: 0,
+};
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-IN").format(value);
+}
+
+function formatDate(value: string) {
+  const date = new Date(`${value}T00:00:00`);
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
+function TrafficLineChart({
+  title,
+  description,
+  points,
+  accent,
+}: {
+  title: string;
+  description: string;
+  points: TrafficPoint[];
+  accent: string;
+}) {
+  const width = 760;
+  const height = 270;
+  const left = 62;
+  const right = 20;
+  const top = 24;
+  const bottom = 55;
+  const chartWidth = width - left - right;
+  const chartHeight = height - top - bottom;
+
+  const values = points.map((point) => point.views);
+  const maximum = Math.max(1, ...values);
+  const yMaximum = Math.ceil(maximum / 5) * 5 || 5;
+
+  const coordinates = points.map((point, index) => ({
+    ...point,
+    x:
+      points.length <= 1
+        ? left + chartWidth / 2
+        : left + (index / (points.length - 1)) * chartWidth,
+    y: top + chartHeight - (point.views / yMaximum) * chartHeight,
+  }));
+
+  const linePoints = coordinates
+    .map((point) => `${point.x},${point.y}`)
+    .join(" ");
+
+  const yTicks = Array.from({ length: 5 }, (_, index) =>
+    Math.round((yMaximum * (4 - index)) / 4)
+  );
+
+  const dateIndexes = Array.from(
+    new Set(
+      [0, Math.floor((points.length - 1) / 2), points.length - 1]
+        .filter((index) => index >= 0 && index < points.length)
+    )
+  );
+
+  return (
+    <section className="min-w-0 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 sm:p-5">
+      <div className="mb-3">
+        <h3 className="text-base font-semibold text-zinc-100">
+          {title}
+        </h3>
+        <p className="mt-1 text-xs leading-5 text-zinc-500">
+          {description}
+        </p>
+      </div>
+
+      {points.length === 0 ? (
+        <div className="flex min-h-[210px] items-center justify-center rounded-lg border border-dashed border-zinc-800 px-4 text-center text-sm text-zinc-500">
+          No dated traffic records are available yet. Daily
+          history will appear as dated records are collected.
+        </div>
+      ) : (
+        <>
+          <div className="w-full">
+            <svg
+              viewBox={`0 0 ${width} ${height}`}
+              role="img"
+              aria-label={`${title} line graph. Vertical axis: number of views. Horizontal axis: date.`}
+              className="block h-auto w-full"
+            >
+              {yTicks.map((tick, index) => {
+                const y = top + (index / 4) * chartHeight;
+
+                return (
+                  <g key={`${tick}-${index}`}>
+                    <line
+                      x1={left}
+                      y1={y}
+                      x2={width - right}
+                      y2={y}
+                      stroke="#27272a"
+                      strokeDasharray="4 5"
+                    />
+                    <text
+                      x={left - 10}
+                      y={y + 4}
+                      fill="#a1a1aa"
+                      fontSize="11"
+                      textAnchor="end"
+                    >
+                      {formatNumber(tick)}
+                    </text>
+                  </g>
+                );
+              })}
+
+              <line
+                x1={left}
+                y1={top}
+                x2={left}
+                y2={top + chartHeight}
+                stroke="#52525b"
+              />
+
+              <line
+                x1={left}
+                y1={top + chartHeight}
+                x2={width - right}
+                y2={top + chartHeight}
+                stroke="#52525b"
+              />
+
+              {coordinates.length > 1 && (
+                <polygon
+                  points={`${left},${top + chartHeight} ${linePoints} ${coordinates[coordinates.length - 1].x},${top + chartHeight}`}
+                  fill={accent}
+                  fillOpacity="0.10"
+                />
+              )}
+
+              {coordinates.length > 1 && (
+                <polyline
+                  points={linePoints}
+                  fill="none"
+                  stroke={accent}
+                  strokeWidth="2.5"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+              )}
+
+              {coordinates.map((point, index) => (
+                <g key={`${point.date}-${index}`}>
+                  <circle
+                    cx={point.x}
+                    cy={point.y}
+                    r="4"
+                    fill={accent}
+                    stroke="#09090b"
+                    strokeWidth="2"
+                  >
+                    <title>
+                      {formatDate(point.date)}: {formatNumber(point.views)} views
+                    </title>
+                  </circle>
+                </g>
+              ))}
+
+              {dateIndexes.map((index) => {
+                const point = coordinates[index];
+                if (!point) return null;
+
+                return (
+                  <text
+                    key={`${point.date}-${index}`}
+                    x={point.x}
+                    y={top + chartHeight + 23}
+                    fill="#a1a1aa"
+                    fontSize="11"
+                    textAnchor={
+                      index === 0
+                        ? "start"
+                        : index === points.length - 1
+                          ? "end"
+                          : "middle"
+                    }
+                  >
+                    {formatDate(point.date)}
+                  </text>
+                );
+              })}
+
+              <text
+                x={16}
+                y={top + chartHeight / 2}
+                fill="#a1a1aa"
+                fontSize="11"
+                textAnchor="middle"
+                transform={`rotate(-90 16 ${top + chartHeight / 2})`}
+              >
+                No. of views
+              </text>
+
+              <text
+                x={left + chartWidth / 2}
+                y={height - 7}
+                fill="#a1a1aa"
+                fontSize="11"
+                textAnchor="middle"
+              >
+                Date
+              </text>
+            </svg>
+          </div>
+
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-800 pt-3 text-xs">
+            <span className="text-zinc-500">
+              {points.length} dated data point{points.length === 1 ? "" : "s"}
+            </span>
+            <span className="font-medium" style={{ color: accent }}>
+              {formatNumber(points[points.length - 1]?.views ?? 0)} views
+              {points.length > 1 ? " · latest recorded date" : ""}
+            </span>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+export default function UserAnalyticsPage() {
+  const [stats, setStats] = useState<AnalyticsStats>(emptyStats);
   const [popularMovies, setPopularMovies] = useState<PopularMovie[]>([]);
+  const [traffic, setTraffic] = useState<AnalyticsResponse["traffic"]>({
+    homepage: [],
+    movies: [],
+    combined: [],
+    hasDatedRecords: false,
+  });
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
-  useEffect(() => {
-    loadAnalytics();
-  }, []);
-
-  async function loadAnalytics() {
+  const loadAnalytics = useCallback(async () => {
     setLoading(true);
     setErrorMessage("");
 
     try {
-      // ==========================================
-      // PROFILES
-      // ==========================================
-
-      const { count: profileCount, error: profileError } =
-        await supabase
-          .from("profiles")
-          .select("*", { count: "exact", head: true });
-
-      if (profileError) throw profileError;
-
-      // ==========================================
-      // HOMEPAGE VIEWS
-      // ==========================================
-
-      const {
-        data: homepageData,
-        error: homepageError,
-      } = await supabase
-        .from("jmi_homepage_views")
-        .select("view_count");
-
-      if (homepageError) throw homepageError;
-
-      const homepageViews = (homepageData || []).reduce(
-        (total, row) => total + Number(row.view_count || 0),
-        0
-      );
-
-      // ==========================================
-      // MOVIE PAGE VIEWS
-      // ==========================================
-
-      const {
-        data: movieViewsData,
-        error: movieViewsError,
-      } = await supabase
-        .from("jmi_movie_page_views")
-        .select("movie_id, view_count");
-
-      if (movieViewsError) throw movieViewsError;
-
-      const moviePageViews = (movieViewsData || []).reduce(
-        (total, row) => total + Number(row.view_count || 0),
-        0
-      );
-
-      // ==========================================
-      // MOVIES WITH VIEW COUNTERS
-      // ==========================================
-
-      const movieIds = (movieViewsData || []).map(
-        (row) => row.movie_id
-      );
-
-      const {
-        data: moviesData,
-        error: moviesError,
-      } = movieIds.length > 0
-        ? await supabase
-            .from("movies")
-            .select("id, title, release_year")
-            .in("id", movieIds)
-        : { data: [], error: null };
-
-      if (moviesError) throw moviesError;
-
-      const movieMap = new Map(
-        (moviesData || []).map((movie) => [
-          Number(movie.id),
-          movie,
-        ])
-      );
-
-      const rankedMovies: PopularMovie[] = (
-        movieViewsData || []
-      )
-        .map((row) => {
-          const movie = movieMap.get(Number(row.movie_id));
-
-          if (!movie) return null;
-
-          return {
-            movie_id: Number(row.movie_id),
-            view_count: Number(row.view_count || 0),
-            title: movie.title,
-            release_year: movie.release_year,
-          };
-        })
-        .filter((movie): movie is PopularMovie => movie !== null)
-        .sort((a, b) => b.view_count - a.view_count)
-        .slice(0, 10);
-
-      setPopularMovies(rankedMovies);
-
-      // ==========================================
-// REGISTERED USERS — SUPABASE AUTH
-// ==========================================
-
-const {
-  data: { session },
-  error: sessionError,
-} = await supabase.auth.getSession();
+      
+      const { data: { session }, error: sessionError } =
+  await supabase.auth.getSession();
 
 if (sessionError || !session?.access_token) {
-  throw new Error("Admin session not available.");
+  throw new Error("Admin session not available. Please sign in again.");
 }
 
 const response = await fetch("/api/admin/user-analytics", {
+  method: "GET",
   headers: {
     Authorization: `Bearer ${session.access_token}`,
   },
   cache: "no-store",
 });
 
-if (!response.ok) {
-  throw new Error("Unable to retrieve registered users.");
-}
+      const result = await response.json();
 
-const accountData = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          result?.error || `Analytics request failed (${response.status}).`
+        );
+      }
 
-setStats({
-  registeredUsers: accountData.registeredUsers,
-  totalProfiles: profileCount ?? 0,
-  homepageViews,
-  moviePageViews,
-  moviesWithViews: (movieViewsData || []).length,
-});
+      const data = result as AnalyticsResponse;
+
+      setStats(data.stats);
+      setPopularMovies(data.popularMovies ?? []);
+      setTraffic(
+        data.traffic ?? {
+          homepage: [],
+          movies: [],
+          combined: [],
+          hasDatedRecords: false,
+        }
+      );
     } catch (error) {
       console.error("JMI User Analytics Error:", error);
-
       setErrorMessage(
-        "Some analytics data could not be loaded. Please check the console and Supabase permissions."
+        error instanceof Error
+          ? error.message
+          : "Unable to load analytics. Check administrator access and Supabase configuration."
       );
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  function formatNumber(value: number) {
-    return new Intl.NumberFormat("en-IN").format(value);
-  }
+  useEffect(() => {
+    void loadAnalytics();
+  }, [loadAnalytics]);
 
   const statCards = [
     {
@@ -234,8 +387,6 @@ setStats({
 
   return (
     <div className="space-y-8 text-zinc-100">
-      {/* HEADER */}
-
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-violet-400">
@@ -247,37 +398,40 @@ setStats({
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-            Monitor JMI registrations, recorded traffic and
-            movie-page popularity from one place.
+            Monitor JMI registrations, recorded traffic and movie-page
+            popularity from one place.
           </p>
         </div>
 
         <button
-          onClick={loadAnalytics}
-          className="w-fit rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm transition hover:border-violet-500/50 hover:bg-zinc-800"
+          onClick={() => void loadAnalytics()}
+          disabled={loading}
+          className="w-fit rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm transition hover:border-violet-500/50 hover:bg-zinc-800 disabled:opacity-50"
         >
           ↻ Refresh Analytics
         </button>
       </div>
 
-      {/* ERROR */}
-
       {errorMessage && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-300">
+        <div
+          role="alert"
+          className="rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-300"
+        >
           {errorMessage}
+          <p className="mt-1 text-xs text-red-300/70">
+            If this occurs only on the public deployment, check the deployed
+            environment variables and the admin role assigned to your account.
+          </p>
         </div>
       )}
 
-      {/* OVERVIEW */}
-
       <section>
         <div className="mb-4">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-zinc-300">
+          <h2 className="text-xl font-semibold uppercase tracking-[0.16em] text-zinc-300">
             Platform Overview
           </h2>
-
-          <p className="mt-1 text-xs text-zinc-500">
-            Current totals from JMI's available database records.
+          <p className="mt-1 text-sm text-zinc-500">
+            Current totals from JMI database records.
           </p>
         </div>
 
@@ -289,14 +443,10 @@ setStats({
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs text-zinc-400">
-                    {card.label}
-                  </p>
-
+                  <p className="text-sm text-zinc-400">{card.label}</p>
                   <p className="mt-3 text-3xl font-semibold tracking-tight">
                     {formatNumber(card.value)}
                   </p>
-
                   <p className="mt-2 text-xs text-zinc-500">
                     {card.description}
                   </p>
@@ -311,8 +461,6 @@ setStats({
         </div>
       </section>
 
-      {/* TRAFFIC SUMMARY */}
-
       <section className="rounded-xl border border-zinc-800 bg-gradient-to-br from-zinc-950 via-zinc-950 to-violet-950/20 p-5 sm:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">
           JMI Traffic Summary
@@ -320,56 +468,89 @@ setStats({
 
         <div className="mt-5 grid gap-5 sm:grid-cols-3">
           <div>
-            <p className="text-xs text-zinc-500">
-              Homepage
-            </p>
-
+            <p className="text-lg text-zinc-500">Homepage Real-time Views</p>
             <p className="mt-2 text-2xl font-semibold text-yellow-400">
               {formatNumber(stats.homepageViews)}
             </p>
           </div>
 
           <div>
-            <p className="text-xs text-zinc-500">
-              Movie Pages
-            </p>
-
+            <p className="text-lg text-zinc-500">Movie-Page Real-time Views</p>
             <p className="mt-2 text-2xl font-semibold text-violet-400">
               {formatNumber(stats.moviePageViews)}
             </p>
           </div>
 
           <div>
-            <p className="text-xs text-zinc-500">
-              Combined Recorded Views
-            </p>
-
-            <p className="mt-2 text-2xl font-semibold text-pink-400">
-              {formatNumber(
-                stats.homepageViews + stats.moviePageViews
-              )}
+            <p className="text-lg text-zinc-500">Total Real-time Combined Platform Views</p>
+            <p className="mt-2 text-3xl font-semibold text-pink-400">
+              {formatNumber(stats.homepageViews + stats.moviePageViews)}
             </p>
           </div>
         </div>
 
         <p className="mt-5 border-t border-zinc-800 pt-4 text-xs leading-5 text-zinc-500">
-          These are recorded page-view counters, not unique visitors
-          or active-user counts.
+          These are recorded page views, not unique visitors or active-user
+          counts.
         </p>
       </section>
 
-      {/* POPULAR MOVIES */}
+      {/* TRAFFIC GRAPHS: BETWEEN SUMMARY AND MOST-VIEWED MOVIES */}
+
+      <section className="space-y-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">
+            Traffic Trends
+          </p>
+          <h2 className="mt-2 text-xl font-semibold">
+            Daily Platform Traffic
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-zinc-500">
+            Recorded views by date. The combined graph adds homepage and
+            movie-page views for each date.
+          </p>
+        </div>
+
+        {!traffic.hasDatedRecords && (
+          <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-4 py-3 text-xs leading-5 text-yellow-200/80">
+            Daily history is not available in the current records. These
+            graphs will populate when dated traffic records exist. Existing
+            lifetime counters cannot recreate historical daily totals.
+          </div>
+        )}
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          <TrafficLineChart
+            title="Homepage Views"
+            description="Daily recorded homepage views."
+            points={traffic.homepage}
+            accent="#facc15"
+          />
+
+          <TrafficLineChart
+            title="Movie-Page Views"
+            description="Daily recorded views across movie pages."
+            points={traffic.movies}
+            accent="#a78bfa"
+          />
+
+          <div className="xl:col-span-2">
+            <TrafficLineChart
+              title="Combined Platform Views"
+              description="Homepage views plus movie-page views for each date."
+              points={traffic.combined}
+              accent="#f472b6"
+            />
+          </div>
+        </div>
+      </section>
 
       <section className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
         <div className="border-b border-zinc-800 px-5 py-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">
             Content Performance
           </p>
-
-          <h2 className="mt-2 text-lg font-semibold">
-            Most-Viewed Movies
-          </h2>
-
+          <h2 className="mt-2 text-lg font-semibold">Most-Viewed Movies</h2>
           <p className="mt-1 text-xs text-zinc-500">
             Ranked by existing cumulative movie-page counters.
           </p>
@@ -394,7 +575,6 @@ setStats({
                   <p className="truncate text-sm font-medium text-zinc-200">
                     {movie.title}
                   </p>
-
                   <p className="mt-1 text-xs text-zinc-500">
                     {movie.release_year ?? "Year unavailable"}
                   </p>
@@ -404,7 +584,6 @@ setStats({
                   <p className="text-sm font-semibold text-yellow-400">
                     {formatNumber(movie.view_count)}
                   </p>
-
                   <p className="mt-1 text-[10px] uppercase tracking-wider text-zinc-600">
                     Views
                   </p>
@@ -415,22 +594,17 @@ setStats({
         )}
       </section>
 
-      {/* UPCOMING ANALYTICS */}
-
       <section className="rounded-xl border border-dashed border-zinc-800 bg-black/40 p-5 sm:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">
           Next Analytics Layer
         </p>
-
         <h2 className="mt-2 text-lg font-semibold">
-          Registration & User Activity
+          Registration &amp; User Activity
         </h2>
-
         <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-          Daily registrations, monthly growth, active users,
-          returning visitors and user-activity trends will be added
-          after we connect authoritative authentication data and
-          implement the activity tracking needed to calculate them.
+          Daily registrations, monthly growth, active users, returning
+          visitors and user-activity trends require authoritative
+          authentication data and activity tracking.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -450,13 +624,8 @@ setStats({
         </div>
       </section>
 
-      {/* FOOTER */}
-
       <div className="flex flex-col gap-3 border-t border-zinc-900 pt-5 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs text-zinc-600">
-          JMI Administrative Analytics
-        </p>
-
+        <p className="text-xs text-zinc-600">JMI Administrative Analytics</p>
         <Link
           href="/admin/dashboard"
           className="text-xs text-violet-400 transition hover:text-violet-300"
