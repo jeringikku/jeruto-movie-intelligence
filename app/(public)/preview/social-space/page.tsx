@@ -246,26 +246,34 @@ const [membersLoading, setMembersLoading] = useState(false);
       ];
 
       const { data: profiles, error: authorsError } =
-        authorIds.length > 0
-          ? await supabaseBrowser
-              .from("profiles")
-              .select("user_id, full_name, avatar_url")
-              .in("user_id", authorIds)
-          : { data: [], error: null };
+  authorIds.length > 0
+    ? await supabaseBrowser.rpc("jmi_get_public_profiles", {
+        p_user_ids: authorIds,
+      })
+    : { data: [], error: null };
 
       if (authorsError) {
         throw authorsError;
       }
 
-      const profileMap = new Map(
-        (profiles ?? []).map((profile) => [
-          profile.user_id,
-          {
-            name: profile.full_name || "JMI Member",
-            avatar: profile.avatar_url || null,
-          },
-        ])
-      );
+      const profileMap = new Map<
+  string,
+  { name: string; avatar: string | null }
+>(
+  (
+    (profiles ?? []) as Array<{
+      user_id: string;
+      full_name: string | null;
+      avatar_url: string | null;
+    }>
+  ).map((profile) => [
+    profile.user_id,
+    {
+      name: profile.full_name || "JMI Member",
+      avatar: profile.avatar_url || null,
+    },
+  ])
+);
 
       const postIds = rows.map((post) => post.id);
 

@@ -11,6 +11,13 @@ type TrafficPoint = {
 
 type Row = Record<string, unknown>;
 
+type SnapshotRow = {
+  snapshot_date: string;
+  homepage_views: number;
+  movie_page_views: number;
+  combined_views: number;
+};
+
 function getEnvironment(name: string): string {
   const value = process.env[name];
 
@@ -26,79 +33,34 @@ function numberValue(value: unknown): number {
   return Number.isFinite(number) ? number : 0;
 }
 
-function getRowDate(row: Row): string | null {
-  // Only use actual date/time fields; never infer historical dates
-  // from a cumulative counter.
-  const possibleFields = [
-    "view_date",
-    "event_date",
-    "recorded_date",
-    "created_at",
-    "viewed_at",
-    "recorded_at",
-    "timestamp",
-    "date",
-  ];
-
-  for (const field of possibleFields) {
-    const value = row[field];
-
-    if (typeof value !== "string" || !value.trim()) continue;
-
-    const parsed = new Date(value);
-
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed.toISOString().slice(0, 10);
-    }
-  }
-
-  return null;
-}
-
-function buildDailySeries(rows: Row[]): TrafficPoint[] {
-  const totals = new Map<string, number>();
-
-  for (const row of rows) {
-    const date = getRowDate(row);
-
-    // Undated cumulative records are not historical daily events.
-    if (!date) continue;
-
-    const hasViewCount =
-      row.view_count !== null && row.view_count !== undefined;
-
-    // Supports either records carrying a view_count or individual
-    // dated event rows. Verify the actual table structure before
-    // relying on either format for historical reporting.
-    const views = hasViewCount ? numberValue(row.view_count) : 1;
-
-    totals.set(date, (totals.get(date) ?? 0) + views);
-  }
-
-  return Array.from(totals.entries())
-    .map(([date, views]) => ({ date, views }))
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(-90);
-}
-
-function combineSeries(
-  homepage: TrafficPoint[],
-  movies: TrafficPoint[]
+// Calculate daily traffic from consecutive cumulative snapshots.
+// The first snapshot is a baseline, not a daily traffic figure.
+function buildSnapshotSeries(
+  rows: SnapshotRow[],
+  field: "homepage_views" | "movie_page_views" | "combined_views"
 ): TrafficPoint[] {
-  const totals = new Map<string, number>();
+  const sortedRows = [...rows].sort((a, b) =>
+    a.snapshot_date.localeCompare(b.snapshot_date)
+  );
 
-  for (const point of homepage) {
-    totals.set(point.date, (totals.get(point.date) ?? 0) + point.views);
+  const dailySeries: TrafficPoint[] = [];
+
+  for (let i = 1; i < sortedRows.length; i++) {
+    const previous = numberValue(sortedRows[i - 1][field]);
+    const current = numberValue(sortedRows[i][field]);
+
+    // If a counter was reset, use the current total as the
+    // traffic since the previous snapshot.
+    const dailyViews =
+      current >= previous ? current - previous : current;
+
+    dailySeries.push({
+      date: sortedRows[i].snapshot_date,
+      views: dailyViews,
+    });
   }
 
-  for (const point of movies) {
-    totals.set(point.date, (totals.get(point.date) ?? 0) + point.views);
-  }
-
-  return Array.from(totals.entries())
-    .map(([date, views]) => ({ date, views }))
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(-90);
+  return dailySeries.slice(-90);
 }
 
 export async function GET(request: Request) {
@@ -112,8 +74,7 @@ export async function GET(request: Request) {
       ? authHeader.slice(7)
       : null;
 
-    // Keep compatibility with the existing browser implementation,
-    // which sends the current Supabase access token.
+    // Keep compatibility with the existing browser implementation.
     const cookieHeader = request.headers.get("cookie");
     let cookieToken: string | null = null;
 
@@ -148,7 +109,7 @@ export async function GET(request: Request) {
                   : null;
             }
           } catch {
-            // Cookie formats can vary; the bearer token remains supported.
+            // Bearer token remains supported.
           }
 
           if (cookieToken) break;
@@ -161,10 +122,14 @@ export async function GET(request: Request) {
     if (!accessToken) {
       return NextResponse.json(
         { error: "Your admin session is missing. Please sign in again." },
-        { status: 401, headers: { "Cache-Control": "no-store" } }
+        {
+          status: 401,
+          headers: { "Cache-Control": "no-store" },
+        }
       );
     }
 
+    // Verify the authenticated user.
     const supabaseAuth = createClient(supabaseUrl, anonKey, {
       auth: {
         autoRefreshToken: false,
@@ -180,11 +145,14 @@ export async function GET(request: Request) {
     if (userError || !user) {
       return NextResponse.json(
         { error: "Your session is invalid or expired. Please sign in again." },
-        { status: 401, headers: { "Cache-Control": "no-store" } }
+        {
+          status: 401,
+          headers: { "Cache-Control": "no-store" },
+        }
       );
     }
 
-    // Verify admin status with the authenticated user's permissions.
+    // Verify administrator permissions.
     const supabaseUser = createClient(supabaseUrl, anonKey, {
       global: {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -206,18 +174,24 @@ export async function GET(request: Request) {
 
       return NextResponse.json(
         { error: "Unable to verify administrator permissions." },
-        { status: 500, headers: { "Cache-Control": "no-store" } }
+        {
+          status: 500,
+          headers: { "Cache-Control": "no-store" },
+        }
       );
     }
 
     if (roleData?.role !== "admin") {
       return NextResponse.json(
         { error: "Administrator access required." },
-        { status: 403, headers: { "Cache-Control": "no-store" } }
+        {
+          status: 403,
+          headers: { "Cache-Control": "no-store" },
+        }
       );
     }
 
-    // Server-only client: never expose the service-role key to the browser.
+    // Server-only Supabase client.
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
       auth: {
         autoRefreshToken: false,
@@ -230,27 +204,41 @@ export async function GET(request: Request) {
       homepageResult,
       movieViewsResult,
       moviesResult,
+      snapshotsResult,
     ] = await Promise.all([
       supabaseAdmin.from("profiles").select("*", {
         count: "exact",
         head: true,
       }),
+
       supabaseAdmin.from("jmi_homepage_views").select("*"),
-      supabaseAdmin
-        .from("jmi_movie_page_views")
-        .select("*"),
+
+      supabaseAdmin.from("jmi_movie_page_views").select("*"),
+
       supabaseAdmin.from("movies").select("id, title, release_year"),
+
+      // New daily cumulative snapshot table.
+      supabaseAdmin
+        .from("jmi_daily_traffic_snapshots")
+        .select(
+          "snapshot_date, homepage_views, movie_page_views, combined_views"
+        )
+        .order("snapshot_date", { ascending: true }),
     ]);
 
     if (profileResult.error) throw profileResult.error;
     if (homepageResult.error) throw homepageResult.error;
     if (movieViewsResult.error) throw movieViewsResult.error;
     if (moviesResult.error) throw moviesResult.error;
+    if (snapshotsResult.error) throw snapshotsResult.error;
 
     const homepageRows = (homepageResult.data ?? []) as Row[];
     const movieViewRows = (movieViewsResult.data ?? []) as Row[];
     const movies = moviesResult.data ?? [];
 
+    const snapshots = (snapshotsResult.data ?? []) as SnapshotRow[];
+
+    // Preserve existing lifetime cumulative totals.
     const homepageViews = homepageRows.reduce(
       (total, row) => total + numberValue(row.view_count),
       0
@@ -261,6 +249,7 @@ export async function GET(request: Request) {
       0
     );
 
+    // Preserve the existing Most Viewed Movies calculation.
     const movieMap = new Map(
       movies.map((movie) => [Number(movie.id), movie])
     );
@@ -283,8 +272,7 @@ export async function GET(request: Request) {
       .sort((a, b) => b.view_count - a.view_count)
       .slice(0, 10);
 
-    // Supabase Auth count: the API returns the actual total, not
-    // the number of users on the first page only.
+    // Get the actual total registered-user count.
     let registeredUsers = 0;
     let page = 1;
     const perPage = 1000;
@@ -302,8 +290,21 @@ export async function GET(request: Request) {
       page += 1;
     }
 
-    const homepageTraffic = buildDailySeries(homepageRows);
-    const movieTraffic = buildDailySeries(movieViewRows);
+    // Calculate daily traffic using consecutive snapshots.
+    const homepageTraffic = buildSnapshotSeries(
+      snapshots,
+      "homepage_views"
+    );
+
+    const movieTraffic = buildSnapshotSeries(
+      snapshots,
+      "movie_page_views"
+    );
+
+    const combinedTraffic = buildSnapshotSeries(
+      snapshots,
+      "combined_views"
+    );
 
     return NextResponse.json(
       {
@@ -316,13 +317,16 @@ export async function GET(request: Request) {
             movieViewRows.map((row) => Number(row.movie_id))
           ).size,
         },
+
         popularMovies,
+
         traffic: {
           homepage: homepageTraffic,
           movies: movieTraffic,
-          combined: combineSeries(homepageTraffic, movieTraffic),
-          hasDatedRecords:
-            homepageTraffic.length > 0 || movieTraffic.length > 0,
+          combined: combinedTraffic,
+          hasDatedRecords: combinedTraffic.length > 0,
+          hasDailySnapshots: snapshots.length >= 2,
+          snapshotCount: snapshots.length,
         },
       },
       {
@@ -345,4 +349,5 @@ export async function GET(request: Request) {
         headers: { "Cache-Control": "no-store" },
       }
     );
-  }}
+  }
+}

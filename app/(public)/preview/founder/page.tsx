@@ -67,7 +67,7 @@ const teamMembers: {
   {
     name: "Akash Dominic Sebastian",
     designation: "Platform Overview & Finance",
-    image: "https://scontent.ftrv8-1.fna.fbcdn.net/v/t39.30808-6/469412104_2884224358403694_1896873708153499594_n.jpg?stp=dst-jpg_tt6&cstp=mx1080x1080&ctp=s1080x1080&_nc_cat=109&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=EleLGA6RW1oQ7kNvwEbiMUX&_nc_oc=AdoUCMJyBk_15rZrZ1SB4Nagrpmqp-Ru-lxjVu33UwHT2AeERXL-paD2K-MZqRCzVY6zltc9-FHCraIEZxFujzS1&_nc_zt=23&_nc_ht=scontent.ftrv8-1.fna&_nc_gid=wnzVZxRkwwTXDa2im9NDjg&_nc_ss=7b2a8&oh=00_AQOXuRGxtDR0aI-kwZMbw6QF7_F-qQMe8RD897rMrGaZuA&oe=6AD98E3A", // Paste Akash's profile picture URL here
+    image: "https://scontent.ftrv8-1.fna.fbcdn.net/v/t39.30808-1/469412104_2884224358403694_1896873708153499594_n.jpg?stp=dst-jpg_tt6&cstp=mx1080x1080&ctp=s200x200&_nc_cat=109&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=e99d92&_nc_ohc=rirsWeZ0OLYQ7kNvwGSNGhb&_nc_oc=AdpZ4zMjJePCePDFSEYrsz94JpLv48jHfwGolGiVAZ7vE04I25ZxfU7z5XG9cX-dKDcEoR1w-qFJ8qSF37A05ENr&_nc_zt=24&_nc_ht=scontent.ftrv8-1.fna&_nc_gid=-At-A1PhtfRrXeDYib7UEA&_nc_ss=7b2a8&oh=00_AQR3DbYXaygNAQ8QXjwe6B7Mh5pMeIfpPmbOlk2wsT8BDg&oe=6AE9EB7C", // Paste Akash's profile picture URL here
   },
   {
     name: "Ashwin Sabu",
@@ -78,7 +78,7 @@ const teamMembers: {
   {
     name: "Tins Saiban",
     designation: "Data Management Assistance",
-    image: "https://scontent.ftrv8-2.fna.fbcdn.net/v/t39.30808-1/716170201_2459088451180118_8371955300893870452_n.jpg?stp=dst-jpg_tt6&cstp=mx1440x1440&ctp=s200x200&_nc_cat=106&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=e99d92&_nc_ohc=mVupLa4CtxcQ7kNvwHora9t&_nc_oc=AdrQDKfAiulDzcGgfXtQmRP54xZbpYE0H2QzDALbnscjXSLJBkwbaWcLoVPLL662O3T-K7K5PrTHbEJMHSCKxzxF&_nc_zt=24&_nc_ht=scontent.ftrv8-2.fna&_nc_gid=O63kjHecKP8nKthqOSbXZw&_nc_ss=7b2a8&oh=00_AQPdFZ70PDm1xIS_fedmqCJKYH0mWa1aPHIxIQqVfOfzxw&oe=6AD96CC3", 
+    image: "https://scontent.ftrv8-2.fna.fbcdn.net/v/t39.30808-1/716170201_2459088451180118_8371955300893870452_n.jpg?stp=dst-jpg_tt6&cstp=mx1440x1440&ctp=s200x200&_nc_cat=106&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=e99d92&_nc_ohc=kqN2YHr1zSoQ7kNvwFKCLn3&_nc_oc=AdoZfH1R7QQItdtWDcDiGZQa9hdyPNsqxwP1CxdDlRxirJsC0IIv_oLjHLJeLssx3-r7hiw0toDqBvH6KzEiZR57&_nc_zt=24&_nc_ht=scontent.ftrv8-2.fna&_nc_gid=IN9A6F8AabAtfskD52KfAw&_nc_ss=7b2a8&oh=00_AQRA1ektdUpZDYPCo1q1OtQw_jvOr601pM5pQpIDusnGjg&oe=6AE9E783", 
   },
   {
     name: "Sijin Saji",
@@ -232,6 +232,16 @@ export default function FounderPage() {
                     by a simple principle: movie intelligence should be
                     transparent, unbiased and driven by data.
                   </p>
+
+                  <p>
+                    As JMI is primarily an information providing platform, I, the Founder of JMI myself openly admitting that we are also subject to make mistakes. The information provided by JMI may not be 100% accurate for all the time for all movies, especially in matter of Box-office numbers and Budget. Those are exclusive financial information available only to its creators. We are following our own methodology of online ticket sales tracking and trend estimation based on the available data. 
+                    
+                    </p>
+                    
+                   <p> So the real original figures can be different from our data because still many of the theaters in India are classified under B & C centers where online tracking is not possible. So we suggest the audiences to give more priority to original official numbers announced by its creators and use JMI numbers only as a reference which represents trade figures calculated by independent analysts.
+                  </p>
+
+                   <p className="text-yellow-400"> Even there is this much difficulties in finding the data, Me & our entire JMI Team is trying harder to find the maximum accurate figures which are closer to the original numbers.</p>
 
                 </div>
 

@@ -24,15 +24,19 @@ type TrafficPoint = {
   views: number;
 };
 
+type AnalyticsTraffic = {
+  homepage: TrafficPoint[];
+  movies: TrafficPoint[];
+  combined: TrafficPoint[];
+  hasDatedRecords: boolean;
+  hasDailySnapshots: boolean;
+  snapshotCount: number;
+};
+
 type AnalyticsResponse = {
   stats: AnalyticsStats;
   popularMovies: PopularMovie[];
-  traffic: {
-    homepage: TrafficPoint[];
-    movies: TrafficPoint[];
-    combined: TrafficPoint[];
-    hasDatedRecords: boolean;
-  };
+  traffic: AnalyticsTraffic;
 };
 
 const emptyStats: AnalyticsStats = {
@@ -43,12 +47,22 @@ const emptyStats: AnalyticsStats = {
   moviesWithViews: 0,
 };
 
+const emptyTraffic: AnalyticsTraffic = {
+  homepage: [],
+  movies: [],
+  combined: [],
+  hasDatedRecords: false,
+  hasDailySnapshots: false,
+  snapshotCount: 0,
+};
+
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-IN").format(value);
 }
 
 function formatDate(value: string) {
   const date = new Date(`${value}T00:00:00`);
+
   return date.toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
@@ -98,8 +112,9 @@ function TrafficLineChart({
 
   const dateIndexes = Array.from(
     new Set(
-      [0, Math.floor((points.length - 1) / 2), points.length - 1]
-        .filter((index) => index >= 0 && index < points.length)
+      [0, Math.floor((points.length - 1) / 2), points.length - 1].filter(
+        (index) => index >= 0 && index < points.length
+      )
     )
   );
 
@@ -109,6 +124,7 @@ function TrafficLineChart({
         <h3 className="text-base font-semibold text-zinc-100">
           {title}
         </h3>
+
         <p className="mt-1 text-xs leading-5 text-zinc-500">
           {description}
         </p>
@@ -116,8 +132,8 @@ function TrafficLineChart({
 
       {points.length === 0 ? (
         <div className="flex min-h-[210px] items-center justify-center rounded-lg border border-dashed border-zinc-800 px-4 text-center text-sm text-zinc-500">
-          No dated traffic records are available yet. Daily
-          history will appear as dated records are collected.
+          Daily traffic data will appear here after two consecutive daily
+          snapshots have been recorded.
         </div>
       ) : (
         <>
@@ -125,7 +141,7 @@ function TrafficLineChart({
             <svg
               viewBox={`0 0 ${width} ${height}`}
               role="img"
-              aria-label={`${title} line graph. Vertical axis: number of views. Horizontal axis: date.`}
+              aria-label={`${title} line graph. Vertical axis: daily views. Horizontal axis: date.`}
               className="block h-auto w-full"
             >
               {yTicks.map((tick, index) => {
@@ -141,6 +157,7 @@ function TrafficLineChart({
                       stroke="#27272a"
                       strokeDasharray="4 5"
                     />
+
                     <text
                       x={left - 10}
                       y={y + 4}
@@ -200,7 +217,8 @@ function TrafficLineChart({
                     strokeWidth="2"
                   >
                     <title>
-                      {formatDate(point.date)}: {formatNumber(point.views)} views
+                      {formatDate(point.date)}:{" "}
+                      {formatNumber(point.views)} daily views
                     </title>
                   </circle>
                 </g>
@@ -208,6 +226,7 @@ function TrafficLineChart({
 
               {dateIndexes.map((index) => {
                 const point = coordinates[index];
+
                 if (!point) return null;
 
                 return (
@@ -238,7 +257,7 @@ function TrafficLineChart({
                 textAnchor="middle"
                 transform={`rotate(-90 16 ${top + chartHeight / 2})`}
               >
-                No. of views
+                Daily views
               </text>
 
               <text
@@ -255,8 +274,9 @@ function TrafficLineChart({
 
           <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-800 pt-3 text-xs">
             <span className="text-zinc-500">
-              {points.length} dated data point{points.length === 1 ? "" : "s"}
+              {points.length} daily data point{points.length === 1 ? "" : "s"}
             </span>
+
             <span className="font-medium" style={{ color: accent }}>
               {formatNumber(points[points.length - 1]?.views ?? 0)} views
               {points.length > 1 ? " · latest recorded date" : ""}
@@ -270,13 +290,11 @@ function TrafficLineChart({
 
 export default function UserAnalyticsPage() {
   const [stats, setStats] = useState<AnalyticsStats>(emptyStats);
+
   const [popularMovies, setPopularMovies] = useState<PopularMovie[]>([]);
-  const [traffic, setTraffic] = useState<AnalyticsResponse["traffic"]>({
-    homepage: [],
-    movies: [],
-    combined: [],
-    hasDatedRecords: false,
-  });
+
+  const [traffic, setTraffic] = useState<AnalyticsTraffic>(emptyTraffic);
+
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -285,27 +303,31 @@ export default function UserAnalyticsPage() {
     setErrorMessage("");
 
     try {
-      
-      const { data: { session }, error: sessionError } =
-  await supabase.auth.getSession();
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-if (sessionError || !session?.access_token) {
-  throw new Error("Admin session not available. Please sign in again.");
-}
+      if (sessionError || !session?.access_token) {
+        throw new Error(
+          "Admin session not available. Please sign in again."
+        );
+      }
 
-const response = await fetch("/api/admin/user-analytics", {
-  method: "GET",
-  headers: {
-    Authorization: `Bearer ${session.access_token}`,
-  },
-  cache: "no-store",
-});
+      const response = await fetch("/api/admin/user-analytics", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        cache: "no-store",
+      });
 
       const result = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          result?.error || `Analytics request failed (${response.status}).`
+          result?.error ||
+            `Analytics request failed (${response.status}).`
         );
       }
 
@@ -313,16 +335,14 @@ const response = await fetch("/api/admin/user-analytics", {
 
       setStats(data.stats);
       setPopularMovies(data.popularMovies ?? []);
-      setTraffic(
-        data.traffic ?? {
-          homepage: [],
-          movies: [],
-          combined: [],
-          hasDatedRecords: false,
-        }
-      );
+
+      setTraffic({
+        ...emptyTraffic,
+        ...(data.traffic ?? {}),
+      });
     } catch (error) {
       console.error("JMI User Analytics Error:", error);
+
       setErrorMessage(
         error instanceof Error
           ? error.message
@@ -418,6 +438,7 @@ const response = await fetch("/api/admin/user-analytics", {
           className="rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-300"
         >
           {errorMessage}
+
           <p className="mt-1 text-xs text-red-300/70">
             If this occurs only on the public deployment, check the deployed
             environment variables and the admin role assigned to your account.
@@ -430,6 +451,7 @@ const response = await fetch("/api/admin/user-analytics", {
           <h2 className="text-xl font-semibold uppercase tracking-[0.16em] text-zinc-300">
             Platform Overview
           </h2>
+
           <p className="mt-1 text-sm text-zinc-500">
             Current totals from JMI database records.
           </p>
@@ -444,9 +466,11 @@ const response = await fetch("/api/admin/user-analytics", {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm text-zinc-400">{card.label}</p>
+
                   <p className="mt-3 text-3xl font-semibold tracking-tight">
                     {formatNumber(card.value)}
                   </p>
+
                   <p className="mt-2 text-xs text-zinc-500">
                     {card.description}
                   </p>
@@ -468,54 +492,85 @@ const response = await fetch("/api/admin/user-analytics", {
 
         <div className="mt-5 grid gap-5 sm:grid-cols-3">
           <div>
-            <p className="text-lg text-zinc-500">Homepage Real-time Views</p>
+            <p className="text-lg text-zinc-500">
+              Homepage Real-time Views
+            </p>
+
             <p className="mt-2 text-2xl font-semibold text-yellow-400">
               {formatNumber(stats.homepageViews)}
             </p>
           </div>
 
           <div>
-            <p className="text-lg text-zinc-500">Movie-Page Real-time Views</p>
+            <p className="text-lg text-zinc-500">
+              Movie-Page Real-time Views
+            </p>
+
             <p className="mt-2 text-2xl font-semibold text-violet-400">
               {formatNumber(stats.moviePageViews)}
             </p>
           </div>
 
           <div>
-            <p className="text-lg text-zinc-500">Total Real-time Combined Platform Views</p>
+            <p className="text-lg text-zinc-500">
+              Total Real-time Combined Platform Views
+            </p>
+
             <p className="mt-2 text-3xl font-semibold text-pink-400">
-              {formatNumber(stats.homepageViews + stats.moviePageViews)}
+              {formatNumber(
+                stats.homepageViews + stats.moviePageViews
+              )}
             </p>
           </div>
         </div>
 
         <p className="mt-5 border-t border-zinc-800 pt-4 text-xs leading-5 text-zinc-500">
-          These are recorded page views, not unique visitors or active-user
-          counts.
+          These are cumulative recorded page views, not unique visitors
+          or active-user counts.
         </p>
       </section>
 
-      {/* TRAFFIC GRAPHS: BETWEEN SUMMARY AND MOST-VIEWED MOVIES */}
+      {/* DAILY TRAFFIC GRAPHS */}
 
       <section className="space-y-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">
             Traffic Trends
           </p>
+
           <h2 className="mt-2 text-xl font-semibold">
             Daily Platform Traffic
           </h2>
+
           <p className="mt-1 text-sm leading-6 text-zinc-500">
-            Recorded views by date. The combined graph adds homepage and
-            movie-page views for each date.
+            Actual daily views calculated from consecutive cumulative
+            snapshots recorded at 11:59 PM IST.
           </p>
         </div>
 
-        {!traffic.hasDatedRecords && (
+        {traffic.snapshotCount < 2 && (
           <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-4 py-3 text-xs leading-5 text-yellow-200/80">
-            Daily history is not available in the current records. These
-            graphs will populate when dated traffic records exist. Existing
-            lifetime counters cannot recreate historical daily totals.
+            {traffic.snapshotCount === 0 ? (
+              <>
+                No daily snapshots have been recorded yet. The first
+                automatic snapshot will establish the baseline.
+              </>
+            ) : (
+              <>
+                <strong>Baseline snapshot recorded successfully.</strong>
+                {" "}One snapshot is currently available. The first daily
+                traffic figures will appear after the next scheduled
+                snapshot at 11:59 PM IST.
+              </>
+            )}
+          </div>
+        )}
+
+        {traffic.snapshotCount >= 2 && (
+          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-xs leading-5 text-emerald-200/80">
+            Daily traffic snapshots are active. The graphs display
+            differences between consecutive cumulative snapshots.
+            {` ${traffic.snapshotCount} snapshots recorded.`}
           </div>
         )}
 
@@ -537,7 +592,7 @@ const response = await fetch("/api/admin/user-analytics", {
           <div className="xl:col-span-2">
             <TrafficLineChart
               title="Combined Platform Views"
-              description="Homepage views plus movie-page views for each date."
+              description="Daily homepage views plus daily movie-page views."
               points={traffic.combined}
               accent="#f472b6"
             />
@@ -550,7 +605,11 @@ const response = await fetch("/api/admin/user-analytics", {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">
             Content Performance
           </p>
-          <h2 className="mt-2 text-lg font-semibold">Most-Viewed Movies</h2>
+
+          <h2 className="mt-2 text-lg font-semibold">
+            Most-Viewed Movies
+          </h2>
+
           <p className="mt-1 text-xs text-zinc-500">
             Ranked by existing cumulative movie-page counters.
           </p>
@@ -575,6 +634,7 @@ const response = await fetch("/api/admin/user-analytics", {
                   <p className="truncate text-sm font-medium text-zinc-200">
                     {movie.title}
                   </p>
+
                   <p className="mt-1 text-xs text-zinc-500">
                     {movie.release_year ?? "Year unavailable"}
                   </p>
@@ -584,6 +644,7 @@ const response = await fetch("/api/admin/user-analytics", {
                   <p className="text-sm font-semibold text-yellow-400">
                     {formatNumber(movie.view_count)}
                   </p>
+
                   <p className="mt-1 text-[10px] uppercase tracking-wider text-zinc-600">
                     Views
                   </p>
@@ -598,9 +659,11 @@ const response = await fetch("/api/admin/user-analytics", {
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">
           Next Analytics Layer
         </p>
+
         <h2 className="mt-2 text-lg font-semibold">
           Registration &amp; User Activity
         </h2>
+
         <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
           Daily registrations, monthly growth, active users, returning
           visitors and user-activity trends require authoritative
@@ -625,7 +688,10 @@ const response = await fetch("/api/admin/user-analytics", {
       </section>
 
       <div className="flex flex-col gap-3 border-t border-zinc-900 pt-5 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs text-zinc-600">JMI Administrative Analytics</p>
+        <p className="text-xs text-zinc-600">
+          JMI Administrative Analytics
+        </p>
+
         <Link
           href="/admin/dashboard"
           className="text-xs text-violet-400 transition hover:text-violet-300"
