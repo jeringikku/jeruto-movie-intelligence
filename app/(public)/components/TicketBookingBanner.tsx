@@ -53,7 +53,7 @@ export default function TicketBookingBanner() {
     Explore JMI's Ticket Booking Section. Choose your Favorite Movie and lock your Favorite day and Show Time, We will redirect to your booking point on your favorite booking platforms.
   </p>
 
-      <div className="mt=5 mx-auto max-w-6xl px-5 pb-3 sm:px-6 lg:px-8">
+      <div className="mt-5 mx-auto max-w-6xl px-5 pb-3 sm:px-6 lg:px-8">
 
   
 

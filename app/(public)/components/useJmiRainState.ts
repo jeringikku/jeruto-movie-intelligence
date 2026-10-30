@@ -35,7 +35,7 @@ export function useJmiRainState(): boolean {
 
     updateRainState();
 
-    const interval = window.setInterval(updateRainState, 1000);
+    const interval = window.setInterval(updateRainState, 10_000);
 
     return () => window.clearInterval(interval);
   }, []);

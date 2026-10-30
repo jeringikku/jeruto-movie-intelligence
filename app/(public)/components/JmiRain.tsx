@@ -69,7 +69,7 @@ export default function JmiRain() {
 
     updateRain();
 
-    const interval = window.setInterval(updateRain, 1000);
+    const interval = window.setInterval(updateRain, 10_000);
 
     return () => window.clearInterval(interval);
   }, []);

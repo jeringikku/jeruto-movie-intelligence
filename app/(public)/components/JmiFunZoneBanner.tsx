@@ -83,17 +83,12 @@ return (
           JMI Entertainment
         </p>
 
-        <h2 className="mt-2 text-xl font-semibold tracking-[-0.025em] text-pink-400 sm:text-2xl">
-          Share your Guesses. Play. Have Fun.
+        <h2 className="mt-2 text-lg font-semibold tracking-[-0.025em] text-pink-400 sm:text-2xl">
+          Tired of Complex Movie Data? Take a Break at JMI Fun Zone!
         </h2>
 
         <p className="mt-2 max-w-2xl text-[11px] leading-5 text-zinc-400 sm:text-xs">
-          JMI Fun Zone is purely designed for entertainment purposes
-          only and does not include serious games involving real money
-          or money-worth rewards. Test your box-office instincts in
-          the JMI Fun Zone, mark your projected guesses about
-          tomorrow&apos;s numbers, and see how closely your predictions
-          match the actual JMI collection figures.
+          JMI Fun Zone is designed purely for entertainment, offering a collection of movie-related games, including puzzles, quizzes and accuracy challenges. Take a break from box-office analysis, explore your movie knowledge and enjoy some fun!
         </p>
       </div>
 
@@ -149,7 +144,7 @@ return (
               </div>
 
               <p className="mt-2 text-[9px] leading-4 text-zinc-500 sm:text-[10px]">
-                No real money · No betting · No wagering
+                Movie Related Games
               </p>
             </div>
 

@@ -24,7 +24,7 @@ export default function MoviePageAtmosphere() {
 
     updateTime();
 
-    const interval = window.setInterval(updateTime, 30_000);
+    const interval = window.setInterval(updateTime, 60_000);
 
     return () => window.clearInterval(interval);
   }, []);

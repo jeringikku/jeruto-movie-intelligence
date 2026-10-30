@@ -96,7 +96,7 @@ export default function JmiSun() {
 
     updateSun();
 
-    const interval = window.setInterval(updateSun, 15_000);
+    const interval = window.setInterval(updateSun, 60_000);
 
     return () => window.clearInterval(interval);
   }, []);

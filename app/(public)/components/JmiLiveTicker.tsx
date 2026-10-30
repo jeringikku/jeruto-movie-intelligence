@@ -4,749 +4,157 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
+/* ============================================================
+   JMI LIVE TICKER TYPES
+============================================================ */
+
 type TickerItem = {
   id: string;
-  type: "movie" | "booking" | "daily" | "verdict";
+  type: "movie" | "booking" | "verdict";
   title: string;
   value: string;
-  change?: number | null;
   href?: string;
 };
+
+type TickerCache = {
+  movies?: TickerItem[];
+  verdicts?: TickerItem[];
+  bookings?: TickerItem[];
+};
+
+/* ============================================================
+   CACHE REFRESH CHECK INTERVAL
+
+   The database itself refreshes at:
+   12:00 PM IST
+   06:00 PM IST
+
+   This browser check only reads the prepared cache.
+============================================================ */
+
+const CACHE_CHECK_INTERVAL = 30 * 60 * 1000;
+
+/* ============================================================
+   JMI LIVE TICKER
+============================================================ */
 
 export default function JmiLiveTicker() {
   const [updates, setUpdates] = useState<TickerItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadUpdates();
-  }, []);
-
-  async function loadUpdates() {
-    setLoading(true);
-
-    try {
-      /* ============================================================
-         RECENTLY ADDED MOVIES
-      ============================================================ */
-
-      const { data: recentMovies, error: moviesError } =
-        await supabase
-          .from("movies")
-          .select(`
-            id,
-            title,
-            created_at
-          `)
-          .order("created_at", { ascending: false })
-          .limit(8);
-
-      if (moviesError) {
-        console.error(
-          "JMI Live Ticker movies error:",
-          moviesError
-        );
-      }
-
-      const movieUpdates: TickerItem[] =
-        (recentMovies ?? []).map((movie) => ({
-          id: `movie-${movie.id}`,
-          type: "movie" as const,
-          title: movie.title,
-          value: "New movie added to JMI",
-          href: `/preview/movies/${movie.id}`,
-        }));
-
-
-      /* ============================================================
-         DAILY COLLECTION MOVEMENT
-      ============================================================ */
-
-      const { data: dailyRecords, error: dailyError } =
-        await supabase
-          .from("movie_daily_box_office")
-          .select(`
-            movie_id,
-            day_number,
-            gross_jmi,
-            movies (
-              title
-            )
-          `)
-          .order("day_number", { ascending: false })
-          .limit(200);
-
-      if (dailyError) {
-        console.error(
-          "JMI Live Ticker daily collection error:",
-          dailyError
-        );
-      }
-
-
-      /*
-        Keep the latest two available days for each movie.
-      */
-
-      const dailyMovieMap = new Map<
-        number,
-        {
-          title: string;
-          records: {
-            day_number: number;
-            gross_jmi: number;
-          }[];
-        }
-      >();
-
-
-      (dailyRecords ?? []).forEach((record: any) => {
-        const movieId = Number(record.movie_id);
-
-        if (!movieId) return;
-
-        const title =
-          record.movies?.title || "Unknown Movie";
-
-        const dayNumber =
-          Number(record.day_number || 0);
-
-        const gross =
-          Number(record.gross_jmi || 0);
-
-        if (!dailyMovieMap.has(movieId)) {
-          dailyMovieMap.set(movieId, {
-            title,
-            records: [],
-          });
-        }
-
-        const movie = dailyMovieMap.get(movieId)!;
-
-        if (
-          !movie.records.some(
-            (item) =>
-              item.day_number === dayNumber
-          )
-        ) {
-          movie.records.push({
-            day_number: dayNumber,
-            gross_jmi: gross,
-          });
-        }
-      });
-
-
-      function formatCrores(value: number | null) {
-        if (!value || value <= 0) {
-          return "—";
-        }
-
-        return `₹${(
-          value / 10000000
-        ).toFixed(2)} Cr`;
-      }
-
-
-      const dailyUpdates: TickerItem[] = [];
-
-
-      dailyMovieMap.forEach(
-        (movie, movieId) => {
-
-          const sortedRecords =
-            [...movie.records].sort(
-              (a, b) =>
-                b.day_number -
-                a.day_number
-            );
-
-          /*
-            We need at least two days to
-            calculate a movement percentage.
-          */
-
-          if (sortedRecords.length < 2) {
-            return;
-          }
-
-          const latest =
-            sortedRecords[0];
-
-          const previous =
-            sortedRecords[1];
-
-          if (
-            latest.gross_jmi <= 0 ||
-            previous.gross_jmi <= 0
-          ) {
-            return;
-          }
-
-          const percentageChange =
-            ((latest.gross_jmi -
-              previous.gross_jmi) /
-              previous.gross_jmi) *
-            100;
-
-
-          /*
-            Ignore extremely tiny numerical
-            differences.
-          */
-
-          if (
-            Math.abs(percentageChange) <
-            0.1
-          ) {
-            return;
-          }
-
-
-          const direction =
-            percentageChange >= 0
-              ? "up"
-              : "down";
-
-
-          const sign =
-            percentageChange >= 0
-              ? "+"
-              : "";
-
-
-          dailyUpdates.push({
-            id: `daily-${movieId}-${latest.day_number}`,
-            type: "daily",
-            title: movie.title,
-            value: `Day ${latest.day_number} ${formatCrores(
-              latest.gross_jmi
-            )} ${direction === "up" ? "↑" : "↓"} ${sign}${percentageChange.toFixed(
-              1
-            )}%`,
-            change: percentageChange,
-            href: `/preview/movies/${movieId}/box-office/india/day-wise`,
-          });
-        }
-      );
-
-
-      /*
-        Largest movements first.
-      */
-
-      dailyUpdates.sort(
-        (a, b) =>
-          Math.abs(b.change ?? 0) -
-          Math.abs(a.change ?? 0)
-      );
-
-
-      /* ============================================================
-         THEATRICAL VERDICT UPDATES
-      ============================================================ */
-
-      const {
-        data: verdictRecords,
-        error: verdictError,
-      } = await supabase
-        .from("movie_business")
-        .select(`
-          movie_id,
-          business_verdict,
-          updated_at
-        `)
-        .not("business_verdict", "is", null)
-        .order("updated_at", {
-          ascending: false,
-        })
-        .limit(8);
-
-      if (verdictError) {
-        console.error(
-          "JMI Live Ticker verdict error:",
-          verdictError
-        );
-      }
-
-
-      const verdictMovieIds =
-        Array.from(
-          new Set(
-            (verdictRecords ?? [])
-              .map(
-                (record) =>
-                  record.movie_id
-              )
-              .filter(
-                (id) =>
-                  id !== null &&
-                  id !== undefined
-              )
-          )
-        );
-
-
-      const { data: verdictMovies } =
-        verdictMovieIds.length > 0
-          ? await supabase
-              .from("movies")
-              .select(`
-                id,
-                title
-              `)
-              .in(
-                "id",
-                verdictMovieIds
-              )
-          : { data: [] };
-
-
-      const verdictMovieMap =
-        new Map(
-          (verdictMovies ?? []).map(
-            (movie) => [
-              movie.id,
-              movie.title,
-            ]
-          )
-        );
-
-
-      const verdictUpdates: TickerItem[] =
-        (verdictRecords ?? [])
-          .map((record) => {
-
-            const movieTitle =
-              verdictMovieMap.get(
-                record.movie_id
-              );
-
-            if (!movieTitle) {
-              return null;
-            }
-
-            const verdict =
-              String(
-                record.business_verdict || ""
-              ).trim();
-
-            if (!verdict) {
-              return null;
-            }
-
-            return {
-              id: `verdict-${record.movie_id}-${record.updated_at}`,
-              type: "verdict" as const,
-              title: movieTitle,
-              value: `Theatrical verdict updated to ${verdict}`,
-              href: `/preview/movies/${record.movie_id}/business`,
-            };
-          })
-          .filter((item) => item !== null) as TickerItem[];
-
-
-      /* ============================================================
-         LIVE ADVANCE BOOKING INTELLIGENCE
-         
-         NEW SYSTEM:
-         - advance_booking_intelligence
-         - movie_advance_booking_daily
-
-         OLD SYSTEM:
-         - movie_advance_booking
-
-         The old table is no longer used here.
-      ============================================================ */
-
-      /*
-        First get the movies that are currently enabled
-        for the public Advance Booking Intelligence page.
-      */
-
-      const {
-        data: activeBookingMovies,
-        error: activeBookingError,
-      } = await supabase
-        .from("advance_booking_intelligence")
-        .select(`
-          movie_id,
-          tracking_status
-        `)
-        .eq("is_active", true)
-        .in("tracking_status", [
-          "LIVE",
-          "PAUSED",
-          "COMPLETED",
-        ]);
-
-      if (activeBookingError) {
-        console.error(
-          "JMI Live Ticker advance booking intelligence error:",
-          activeBookingError
-        );
-      }
-
-
-      const activeBookingMovieIds =
-        Array.from(
-          new Set(
-            (activeBookingMovies ?? [])
-              .map(
-                (record) =>
-                  Number(record.movie_id)
-              )
-              .filter(
-                (id) => id > 0
-              )
-          )
-        );
-
-
-      let bookingRecords: any[] = [];
-
-
-      /*
-        Only load daily booking data when
-        there are active intelligence movies.
-      */
-
-      if (activeBookingMovieIds.length > 0) {
-
-        const {
-          data,
-          error,
-        } = await supabase
-          .from("movie_advance_booking_daily")
-          .select(`
-            id,
-            movie_id,
-            booking_day,
-            booking_date,
-            coverage_type,
-            state_id,
-            gross,
-            admissions,
-            show_count,
-            updated_at
-          `)
-          .in(
-            "movie_id",
-            activeBookingMovieIds
-          )
-          .order("updated_at", {
-            ascending: false,
-          })
-          .limit(200);
+    let isMounted = true;
+    let isFetching = false;
+
+    /* ========================================================
+       LOAD PREPARED TICKER CACHE
+    ======================================================== */
+
+    async function loadCachedUpdates() {
+      if (isFetching) return;
+
+      isFetching = true;
+
+      try {
+        const { data, error } = await supabase
+          .from("jmi_live_ticker_cache")
+          .select("ticker_data")
+          .eq("id", 1)
+          .maybeSingle();
 
         if (error) {
           console.error(
-            "JMI Live Ticker new advance booking error:",
+            "JMI Live Ticker cache error:",
             error
           );
+
+          return;
         }
 
-        bookingRecords = data ?? [];
+        if (!isMounted) return;
+
+        if (!data?.ticker_data) {
+          setUpdates([]);
+          return;
+        }
+
+        const tickerData =
+          data.ticker_data as TickerCache;
+
+        /* ====================================================
+           COMBINE CACHED TICKER ENTRIES
+
+           1. Recently added movies
+           2. Theatrical verdict updates
+           3. Advance booking updates
+        ==================================================== */
+
+        const movieUpdates =
+          Array.isArray(tickerData.movies)
+            ? tickerData.movies
+            : [];
+
+        const verdictUpdates =
+          Array.isArray(tickerData.verdicts)
+            ? tickerData.verdicts
+            : [];
+
+        const bookingUpdates =
+          Array.isArray(tickerData.bookings)
+            ? tickerData.bookings
+            : [];
+
+        const combinedUpdates: TickerItem[] = [
+          ...movieUpdates,
+          ...verdictUpdates,
+          ...bookingUpdates,
+        ];
+
+        setUpdates(combinedUpdates);
+
+      } catch (error) {
+        console.error(
+          "JMI Live Ticker loading error:",
+          error
+        );
+
+      } finally {
+        isFetching = false;
+
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-
-
-      /* ============================================================
-         MOVIE TITLES FOR ADVANCE BOOKINGS
-      ============================================================ */
-
-      const bookingMovieIds =
-        Array.from(
-          new Set(
-            bookingRecords
-              .map(
-                (record) =>
-                  Number(record.movie_id)
-              )
-              .filter(
-                (id) => id > 0
-              )
-          )
-        );
-
-
-      const { data: bookingMovies } =
-        bookingMovieIds.length > 0
-          ? await supabase
-              .from("movies")
-              .select(`
-                id,
-                title
-              `)
-              .in(
-                "id",
-                bookingMovieIds
-              )
-          : { data: [] };
-
-
-      const bookingMovieMap =
-        new Map(
-          (bookingMovies ?? []).map(
-            (movie) => [
-              Number(movie.id),
-              movie.title,
-            ]
-          )
-        );
-
-
-      /* ============================================================
-         AGGREGATE DAILY ADVANCE BOOKING DATA
-         
-         Multiple territory rows for the same movie/day
-         are combined into ONE live ticker update.
-      ============================================================ */
-
-      const bookingDayMap = new Map<
-        string,
-        {
-          movieId: number;
-          title: string;
-          bookingDay: number;
-          bookingDate: string | null;
-          gross: number;
-          admissions: number;
-          shows: number;
-          updatedAt: string;
-        }
-      >();
-
-
-      bookingRecords.forEach((record) => {
-
-        const movieId =
-          Number(record.movie_id);
-
-        if (!movieId) {
-          return;
-        }
-
-        const title =
-          bookingMovieMap.get(movieId);
-
-        if (!title) {
-          return;
-        }
-
-        const bookingDay =
-          Number(record.booking_day || 0);
-
-        const bookingDate =
-          record.booking_date || null;
-
-        /*
-          Use movie + booking day as the
-          aggregation key.
-        */
-
-        const key =
-          `${movieId}-${bookingDay}`;
-
-
-        if (!bookingDayMap.has(key)) {
-
-          bookingDayMap.set(key, {
-            movieId,
-            title,
-            bookingDay,
-            bookingDate,
-            gross: 0,
-            admissions: 0,
-            shows: 0,
-            updatedAt:
-              record.updated_at ||
-              "",
-          });
-
-        }
-
-
-        const item =
-          bookingDayMap.get(key)!;
-
-
-        item.gross +=
-          Number(record.gross || 0);
-
-        item.admissions +=
-          Number(record.admissions || 0);
-
-        item.shows +=
-          Number(record.show_count || 0);
-
-
-        /*
-          Keep the most recent update time.
-        */
-
-        if (
-          String(record.updated_at || "") >
-          String(item.updatedAt || "")
-        ) {
-          item.updatedAt =
-            record.updated_at || "";
-        }
-
-      });
-
-
-      /* ============================================================
-         CREATE ADVANCE BOOKING TICKER UPDATES
-      ============================================================ */
-
-      const bookingUpdates: TickerItem[] =
-        Array.from(
-          bookingDayMap.values()
-        )
-          .sort(
-            (a, b) =>
-              new Date(
-                b.updatedAt || 0
-              ).getTime() -
-              new Date(
-                a.updatedAt || 0
-              ).getTime()
-          )
-          .map((record) => {
-
-            const parts: string[] = [];
-
-
-            /*
-              Day label
-            */
-
-            if (
-              record.bookingDay === 0
-            ) {
-
-              parts.push(
-                "Premiere Day"
-              );
-
-            } else {
-
-              parts.push(
-                `Day ${record.bookingDay}`
-              );
-
-            }
-
-
-            /*
-              Gross
-            */
-
-            if (record.gross > 0) {
-
-              parts.push(
-                formatCrores(
-                  record.gross
-                )
-              );
-
-            }
-
-
-            /*
-              Admissions
-            */
-
-            if (
-              record.admissions > 0
-            ) {
-
-              parts.push(
-                `${record.admissions.toLocaleString(
-                  "en-IN"
-                )} admissions`
-              );
-
-            }
-
-
-            /*
-              Shows
-            */
-
-            if (record.shows > 0) {
-
-              parts.push(
-                `${record.shows.toLocaleString(
-                  "en-IN"
-                )} shows`
-              );
-
-            }
-
-
-            /*
-              Fallback
-            */
-
-            if (parts.length === 1) {
-
-              parts.push(
-                "Advance booking updated"
-              );
-
-            }
-
-
-            return {
-              id: `booking-${record.movieId}-${record.bookingDay}-${record.updatedAt}`,
-              type: "booking" as const,
-              title: record.title,
-              value: parts.join(" · "),
-              href: `/preview/movies/${record.movieId}/advance-booking`,
-            };
-
-          });
-
-
-      /* ============================================================
-         COMBINE ALL LIVE INTELLIGENCE
-      ============================================================ */
-
-      const combinedUpdates = [
-        ...dailyUpdates.slice(0, 6),
-        ...verdictUpdates.slice(0, 5),
-
-        /*
-          New live advance booking intelligence.
-        */
-
-        ...bookingUpdates.slice(0, 5),
-
-        ...movieUpdates.slice(0, 4),
-      ];
-
-
-      /*
-        Final safety limit.
-      */
-
-      setUpdates(
-        combinedUpdates.slice(0, 20)
-      );
-
-    } catch (error) {
-
-      console.error(
-        "JMI Live Ticker loading error:",
-        error
-      );
-
-    } finally {
-
-      setLoading(false);
-
     }
-  }
+
+    /* ========================================================
+       INITIAL CACHE LOAD
+    ======================================================== */
+
+    loadCachedUpdates();
+
+    /* ========================================================
+       CHECK FOR UPDATED CACHE EVERY 30 MINUTES
+
+       This only reads one prepared database row.
+       No calculations or source-table queries occur here.
+    ======================================================== */
+
+    const interval = window.setInterval(
+      loadCachedUpdates,
+      CACHE_CHECK_INTERVAL
+    );
+
+    /* ========================================================
+       CLEANUP
+    ======================================================== */
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(interval);
+    };
+
+  }, []);
 
 
   /* ============================================================
@@ -824,17 +232,6 @@ export default function JmiLiveTicker() {
           {[...updates, ...updates].map(
             (update, index) => {
 
-              const isDaily =
-                update.type === "daily";
-
-              const isPositive =
-                isDaily &&
-                (update.change ?? 0) > 0;
-
-              const isNegative =
-                isDaily &&
-                (update.change ?? 0) < 0;
-
               return (
                 <div
                   key={`${update.id}-${index}`}
@@ -865,15 +262,7 @@ export default function JmiLiveTicker() {
                         {update.title}
                       </span>
 
-                      <span
-                        className={
-                          isPositive
-                            ? "text-green-400"
-                            : isNegative
-                            ? "text-red-400"
-                            : "text-zinc-400"
-                        }
-                      >
+                      <span className="text-zinc-400">
                         {update.value}
                       </span>
 

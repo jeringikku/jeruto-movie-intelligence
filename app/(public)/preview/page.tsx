@@ -96,80 +96,53 @@ if (exclusiveNewsError) {
   );
 }
 
-  // ============================================================
-  // JMI LIVE DATABASE STATISTICS
-  // ============================================================
-
-  const [
-    moviesResult,
-    peopleResult,
-    companiesResult,
-    languagesResult,
-    industriesResult,
-    citiesResult,
-  ] = await Promise.all([
-    supabase
-      .from("movies")
-      .select("id", { count: "exact", head: true }),
-
-    supabase
-      .from("people")
-      .select("id", { count: "exact", head: true }),
-
-    supabase
-      .from("companies")
-      .select("id", { count: "exact", head: true }),
-
-    supabase
-      .from("languages")
-      .select("id", { count: "exact", head: true }),
-
-    supabase
-      .from("industries")
-      .select("id", { count: "exact", head: true }),
-
-    supabase
-      .from("cities")
-      .select("id", { count: "exact", head: true }),
-  ]);
-
-  const movieCount = moviesResult.count ?? 0;
-  const peopleCount = peopleResult.count ?? 0;
-  const companyCount = companiesResult.count ?? 0;
-  const languageCount = languagesResult.count ?? 0;
-  const industryCount = industriesResult.count ?? 0;
-  const cityCount = citiesResult.count ?? 0;
-
-  // ============================================================
-  // JMI LIVE BOX OFFICE TOTALS
+ // ============================================================
+  // JMI CACHED DATABASE STATISTICS & BOX OFFICE TOTALS
   // ============================================================
 
-  const { data: indiaBoxOffice } = await supabase
-    .from("movie_state_box_office")
-    .select("gross_jmi");
+  const {
+    data: homepageStatsCache,
+    error: homepageStatsError,
+  } = await supabase
+    .from("jmi_homepage_stats_cache")
+    .select(`
+      movie_count,
+      people_count,
+      company_count,
+      india_gross,
+      overseas_gross
+    `)
+    .eq("id", 1)
+    .single();
 
-  const { data: overseasBoxOffice } = await supabase
-    .from("movie_overseas_box_office")
-    .select("gross_inr");
+  if (homepageStatsError) {
+    console.error(
+      "Homepage statistics cache error:",
+      homepageStatsError
+    );
+  }
 
-  const indiaGross =
-    indiaBoxOffice?.reduce(
-      (total, row) => total + Number(row.gross_jmi || 0),
-      0
-    ) ?? 0;
+  // Dynamic counts — refreshed every 30 minutes
+  const movieCount = Number(homepageStatsCache?.movie_count ?? 0);
+  const peopleCount = Number(homepageStatsCache?.people_count ?? 0);
+  const companyCount = Number(homepageStatsCache?.company_count ?? 0);
 
-  const overseasGross =
-    overseasBoxOffice?.reduce(
-      (total, row) => total + Number(row.gross_inr || 0),
-      0
-    ) ?? 0;
+  // Fixed master-data counts
+  const languageCount = 17;
+  const industryCount = 17;
+  const cityCount = 194;
+  const screenCount = 7822;
+
+  // Cached box-office totals — refreshed hourly
+  const indiaGross = Number(homepageStatsCache?.india_gross ?? 0);
+  const overseasGross = Number(homepageStatsCache?.overseas_gross ?? 0);
 
   const worldwideGross = indiaGross + overseasGross;
 
   function formatCrores(value: number) {
     if (!value || value <= 0) return "—";
 
-    return `₹${(value / 10000000).toFixed(2)} Cr;`
+    return `₹${(value / 10000000).toFixed(2)} Cr`;
   }
 
   // ============================================================
