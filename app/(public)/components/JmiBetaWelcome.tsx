@@ -6,34 +6,50 @@ export default function JmiBetaWelcome() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const parts = new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Asia/Kolkata",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).formatToParts(new Date());
-
-    const values = Object.fromEntries(
-      parts.map((part) => [part.type, part.value])
-    );
-
-    // Exclusively for JMI Beta Launch Day in India
-    if (
-      values.year !== "2026" ||
-      values.month !== "11" ||
-      values.day !== "01"
-    ) {
+  // Check whether this browser tab has already shown the welcome
+  try {
+    if (sessionStorage.getItem("jmi_beta_welcome_shown") === "true") {
       return;
     }
+  } catch {
+    // Continue normally if browser storage is unavailable
+  }
 
-    setVisible(true);
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
 
-    const timer = window.setTimeout(() => {
-      setVisible(false);
-    }, 6500);
+  const values = Object.fromEntries(
+    parts.map((part) => [part.type, part.value])
+  );
 
-    return () => window.clearTimeout(timer);
-  }, []);
+  // Exclusively for November 1, 2026 (India time)
+  if (
+    values.year !== "2026" ||
+    values.month !== "11" ||
+    values.day !== "01"
+  ) {
+    return;
+  }
+
+  // Mark this browser tab before showing the animation
+  try {
+    sessionStorage.setItem("jmi_beta_welcome_shown", "true");
+  } catch {
+    // Animation still works if storage is unavailable
+  }
+
+  setVisible(true);
+
+  const timer = window.setTimeout(() => {
+    setVisible(false);
+  }, 6500);
+
+  return () => window.clearTimeout(timer);
+}, []);
 
   if (!visible) return null;
 
