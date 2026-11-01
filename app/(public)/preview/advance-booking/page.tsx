@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import PublicHeader from "../../components/PublicHeader";
 import { supabase } from "@/lib/supabase";
+import LiveTrackingBetaNotice from "../../components/LiveTrackingBetaNotice";
 
 type Movie = {
   id: number;
@@ -136,6 +137,8 @@ export default async function AdvanceBookingIntelligencePage() {
       <div className="min-h-screen bg-black text-zinc-100">
 
         <PublicHeader />
+          <LiveTrackingBetaNotice />
+
 
         <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
 
@@ -323,6 +326,9 @@ export default async function AdvanceBookingIntelligencePage() {
     <div className="min-h-screen bg-black text-zinc-100">
 
       <PublicHeader />
+      
+        <LiveTrackingBetaNotice />
+
 
       <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
 
