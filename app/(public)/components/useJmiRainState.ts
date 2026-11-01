@@ -27,8 +27,13 @@ export function useJmiRainState(): boolean {
       const minutes = getPart("hour") * 60 + getPart("minute");
 
       const active =
+        // Regular JMI Rain sessions
         (minutes >= 11 * 60 + 50 && minutes < 12 * 60) ||
-        (minutes >= 16 * 60 + 50 && minutes < 17 * 60);
+        (minutes >= 16 * 60 + 50 && minutes < 17 * 60) ||
+
+        // TEMPORARY: JMI Beta Launch Special Session
+        // November 1, 2026 — 6:30 PM to 7:00 PM IST
+        (minutes >= 18 * 60 + 30 && minutes < 19 * 60);
 
       setIsRaining(active);
     };

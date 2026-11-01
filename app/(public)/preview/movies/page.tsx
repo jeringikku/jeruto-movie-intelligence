@@ -13,94 +13,13 @@ type Props = {
   }>;
 };
 
-const PAGE_SIZE = 100;
-
-type MovieLanguage = {
-  language_id: number;
-  language_type: string | null;
-  is_primary: boolean | null;
-  languages:
-    | {
-        name: string;
-        native_name: string | null;
-      }
-    | {
-        name: string;
-        native_name: string | null;
-      }[]
-    | null;
-};
-
-type MovieGenre = {
-  genre_id: number;
-  genres:
-    | {
-        name: string;
-      }
-    | {
-        name: string;
-      }[]
-    | null;
-};
+const PAGE_SIZE = 50;
 
 type Movie = {
   id: number;
   title: string;
-  release_year: number | null;
-  release_date: string | null;
   poster_url: string | null;
-  is_active: boolean | null;
-
-  movie_languages: MovieLanguage[];
-  movie_genres: MovieGenre[];
 };
-
-function getPrimaryLanguage(movie: Movie) {
-  const item =
-    movie.movie_languages?.find(
-      (language) => language.is_primary === true
-    ) ?? movie.movie_languages?.[0];
-
-  if (!item?.languages) return "—";
-
-  if (Array.isArray(item.languages)) {
-    return item.languages[0]?.name ?? "—";
-  }
-
-  return item.languages.name ?? "—";
-}
-
-function getGenres(movie: Movie) {
-  return (
-    movie.movie_genres
-      ?.map((item) => {
-        if (!item.genres) return null;
-
-        if (Array.isArray(item.genres)) {
-          return item.genres[0]?.name ?? null;
-        }
-
-        return item.genres.name ?? null;
-      })
-      .filter(Boolean)
-      .join(" · ") || "—"
-  );
-}
-
-function getMovieStatus(
-  releaseDate: string | null
-) {
-  if (!releaseDate) return "Release Date TBA";
-
-  const today = new Date();
-  const release = new Date(`${releaseDate}T00:00:00`);
-
-  if (release > today) {
-    return "Upcoming";
-  }
-
-  return "Released";
-}
 
 function getFilterLabel(filter: string) {
   if (filter === "upcoming") return "Upcoming";
@@ -129,30 +48,20 @@ export default async function MoviesPage({
       ? requestedPage
       : 1;
 
+  /* =========================================================
+     MOVIE QUERY
+  ========================================================= */
+
   let query = supabase
     .from("movies")
     .select(
       `
         id,
         title,
-        release_year,
-        release_date,
         poster_url,
-        is_active,
         movie_languages!inner (
-          language_id,
-          language_type,
           is_primary,
-          languages!inner (
-            name,
-            native_name
-          )
-        ),
-        movie_genres (
-          genre_id,
-          genres (
-            name
-          )
+          languages!inner ()
         )
       `,
       { count: "exact" }
@@ -313,19 +222,17 @@ export default async function MoviesPage({
 
       <PublicHeader />
 
-      
+      <main>
 
- <main>
-<div className="mx-auto max-w-6xl px-5 pt-5 sm:px-6 lg:px-8">
-  <Link
-    href="/"
-    className="inline-flex items-center gap-1 text-[9px] font-medium tracking-[0.16em] text-violet-400 transition hover:text-violet-400"
-  >
-    <span>←</span>
-    <span>Back to Home</span>
-  </Link>
-</div>
-        
+        <div className="mx-auto max-w-6xl px-5 pt-5 sm:px-6 lg:px-8">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1 text-[9px] font-medium tracking-[0.16em] text-violet-400 transition hover:text-violet-400"
+          >
+            <span>←</span>
+            <span>Back to Home</span>
+          </Link>
+        </div>
 
         {/* =====================================================
             MOVIES HERO
@@ -352,20 +259,15 @@ export default async function MoviesPage({
 
             </div>
 
-            {/* =================================================
-    MOVIES PAGE BANNER
-================================================= */}
+            {/* MOVIES PAGE BANNER */}
 
+            <MoviesPageBanner />
 
-<MoviesPageBanner/>
+            {/* SEARCH */}
 
-            {/* =================================================
-                SEARCH
-            ================================================= */}
-
-           <div className="mt-7">
-  <MovieSearch initialQuery={searchQuery} />
-</div>
+            <div className="mt-7">
+              <MovieSearch initialQuery={searchQuery} />
+            </div>
 
             {searchQuery && (
               <div className="mt-3 flex items-center gap-2">
@@ -448,58 +350,54 @@ export default async function MoviesPage({
                 </h2>
 
                 <p className="mt-1 text-[9px] text-zinc-400">
-  {resultMovies.length} movie
-  {resultMovies.length === 1 ? "" : "s"}
-  {searchQuery
-    ? ` · Search: ${searchQuery}`
-    : ` · ${getFilterLabel(activeFilter)}`}
-</p>
+                  {resultMovies.length} movie
+                  {resultMovies.length === 1 ? "" : "s"}
+                  {searchQuery
+                    ? ` · Search: ${searchQuery}`
+                    : ` · ${getFilterLabel(activeFilter)}`}
+                </p>
 
               </div>
 
-              {/* =================================================
-    MOVIE PAGINATION
-================================================= */}
+              {/* MOVIE PAGINATION */}
 
-{totalPages > 1 && (
-  <div className="mt-8 flex flex-col items-center gap-3 border-t border-zinc-800 pt-5 sm:flex-row sm:justify-between">
+              {totalPages > 1 && (
+                <div className="mt-8 flex flex-col items-center gap-3 border-t border-zinc-800 pt-5 sm:flex-row sm:justify-between">
 
-    <p className="text-[9px] text-zinc-500">
-      Page {currentPage} of {totalPages}
-      <span className="mx-2 text-zinc-700">·</span>
-      {totalMovieResults ?? 0} movies
-    </p>
+                  <p className="text-[9px] text-zinc-500">
+                    Page {currentPage} of {totalPages}
+                    <span className="mx-2 text-zinc-700">·</span>
+                    {totalMovieResults ?? 0} movies
+                  </p>
 
-    <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
 
-      {currentPage > 1 && (
-        <Link
-          href={getPageHref(currentPage - 1)}
-          className="rounded-md border border-zinc-700 bg-zinc-950 px-4 py-2 text-[9px] text-zinc-300 transition hover:border-violet-400/40 hover:text-violet-300"
-        >
-          ← Previous
-        </Link>
-      )}
+                    {currentPage > 1 && (
+                      <Link
+                        href={getPageHref(currentPage - 1)}
+                        className="rounded-md border border-zinc-700 bg-zinc-950 px-4 py-2 text-[9px] text-zinc-300 transition hover:border-violet-400/40 hover:text-violet-300"
+                      >
+                        ← Previous
+                      </Link>
+                    )}
 
-      {currentPage < totalPages && (
-        <Link
-          href={getPageHref(currentPage + 1)}
-          className="rounded-md border border-violet-400/30 bg-violet-400/[0.08] px-4 py-2 text-[9px] text-violet-300 transition hover:border-violet-400/60 hover:bg-violet-400/[0.12]"
-        >
-          Next 100 Movies →
-        </Link>
-      )}
+                    {currentPage < totalPages && (
+                      <Link
+                        href={getPageHref(currentPage + 1)}
+                        className="rounded-md border border-violet-400/30 bg-violet-400/[0.08] px-4 py-2 text-[9px] text-violet-300 transition hover:border-violet-400/60 hover:bg-violet-400/[0.12]"
+                      >
+                        Next 50 Movies →
+                      </Link>
+                    )}
 
-    </div>
+                  </div>
 
-  </div>
-)}
+                </div>
+              )}
 
             </div>
 
-            {/* =================================================
-                FILTER CHIPS
-            ================================================= */}
+            {/* FILTER CHIPS */}
 
             <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
 
@@ -561,11 +459,10 @@ export default async function MoviesPage({
 
             </div>
 
-            {/* =================================================
-                MOVIE RESULTS
-            ================================================= */}
+            {/* MOVIE RESULTS */}
 
             {resultMovies.length === 0 ? (
+
               <div className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950 p-10 text-center">
 
                 <p className="text-sm text-zinc-400">
@@ -584,37 +481,22 @@ export default async function MoviesPage({
                 </Link>
 
               </div>
+
             ) : (
+
               <div className="mt-6 grid grid-cols-3 gap-x-2 gap-y-4 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-4 lg:gap-x-7 lg:gap-y-9">
 
-                {resultMovies.map((movie) => {
-
-                  const primaryLanguage =
-                    getPrimaryLanguage(movie);
-
-                  const movieGenres =
-                    getGenres(movie);
-
-                  const status =
-                    getMovieStatus(movie.release_date);
-
-                  return (
-                    <MovieCard
-                      key={movie.id}
-                      movieId={movie.id}
-                      title={movie.title}
-                      year={String(
-                        movie.release_year ?? "—"
-                      )}
-                      language={primaryLanguage}
-                      genre={movieGenres}
-                      status={status}
-                      posterUrl={movie.poster_url}
-                    />
-                  );
-                })}
+                {resultMovies.map((movie) => (
+                  <MovieCard
+                    key={movie.id}
+                    movieId={movie.id}
+                    title={movie.title}
+                    posterUrl={movie.poster_url}
+                  />
+                ))}
 
               </div>
+
             )}
 
           </div>
@@ -681,17 +563,14 @@ export default async function MoviesPage({
 
         </section>
 
-
-
         {/* =====================================================
             HISTORICAL RECORDS
         ===================================================== */}
 
         <section
-  id="historical-records"
-  className="border-b border-zinc-800"
->
-    
+          id="historical-records"
+          className="border-b border-zinc-800"
+        >
 
           <div className="mx-auto max-w-6xl px-5 py-10 sm:px-6 sm:py-14 lg:px-8">
 
@@ -708,19 +587,11 @@ export default async function MoviesPage({
               records that have shaped the history of Indian cinema.
             </p>
 
+            {/* HISTORICAL RECORDS BANNER */}
 
+            <MoviesHistoricalRecordsBanner />
 
-            {/* =================================================
-                HISTORICAL RECORDS BANNER
-            ================================================= */}
-
-            <MoviesHistoricalRecordsBanner/>
-
-
-
-            {/* =================================================
-                HISTORICAL RECORDS
-            ================================================= */}
+            {/* HISTORICAL RECORDS */}
 
             <div className="mt-6 grid gap-2 sm:grid-cols-3">
 
@@ -764,7 +635,8 @@ export default async function MoviesPage({
 
               <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-400">
                 JMI is continuously trying harder in expanding its movie database across various
-                languages, industries, markets and generations of Indian cinema & a new data is added on regular intervals to keep the database live and updated. Still JMI once again giving you the disclaimer that all datas published on this platform are not indepently verified with its official sources, especially for Box-office numbers. JMI has its own methodology and the figures are trade estimations, it may have mistakes or differences from original figures.</p>
+                languages, industries, markets and generations of Indian cinema & a new data is added on regular intervals to keep the database live and updated. Still JMI once again giving you the disclaimer that all datas published on this platform are not indepently verified with its official sources, especially for Box-office numbers. JMI has its own methodology and the figures are trade estimations, it may have mistakes or differences from original figures.
+              </p>
 
               <div className="mt-5 flex items-center gap-3">
 
@@ -815,7 +687,6 @@ export default async function MoviesPage({
   );
 }
 
-
 /* ============================================================
    MOVIE STAT — WEATHERED WOOD WALL PLAQUE
 ============================================================ */
@@ -850,6 +721,7 @@ function MovieStat({
         sm:py-6
       "
     >
+
       {/* WEATHERED WOOD GRAIN */}
 
       <div
@@ -924,8 +796,6 @@ function MovieStat({
 
       <div className="relative z-10">
 
-        {/* VALUE */}
-
         <p
           className="
             text-xl
@@ -942,8 +812,6 @@ function MovieStat({
           {value}
         </p>
 
-        {/* LABEL */}
-
         <p
           className="
             mt-1.5
@@ -958,8 +826,6 @@ function MovieStat({
         >
           {label}
         </p>
-
-        {/* WEATHERED ENGRAVED ACCENT */}
 
         <div className="mt-3 h-[2px] w-7 bg-gradient-to-r from-[#c19a6c]/80 via-[#8b6440]/40 to-transparent shadow-[0_1px_1px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:w-12" />
 
@@ -1028,125 +894,122 @@ function FilterChip({
 function MovieCard({
   movieId,
   title,
-  year,
-  language,
-  genre,
-  status,
   posterUrl,
 }: {
   movieId: number;
   title: string;
-  year: string;
-  language: string;
-  genre: string;
-  status: string;
   posterUrl?: string | null;
 }) {
   return (
     <Link
       href={`/preview/movies/${movieId}`}
       className="
-  group
-  relative
-  block
-  min-w-0
-  max-w-[260px]
-
-  overflow-hidden
-  rounded-md
-  border
-  border-[#765137]
-bg-gradient-to-br
-from-[#68472f]
-via-[#49301f]
-to-[#2b1b12]
-  shadow-[0_5px_14px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(220,180,130,0.15)]
-  transition-all
-  duration-300
-  hover:-translate-y-1
-  hover:border-[#a67c52]
-  hover:shadow-[0_12px_30px_rgba(0,0,0,0.65),0_0_18px_rgba(139,92,246,0.10)]
-  active:scale-[0.99]
-"
+        group
+        relative
+        block
+        min-w-0
+        max-w-[260px]
+        overflow-hidden
+        rounded-md
+        border
+        border-[#765137]
+        bg-gradient-to-br
+        from-[#68472f]
+        via-[#49301f]
+        to-[#2b1b12]
+        shadow-[0_5px_14px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(220,180,130,0.15)]
+        transition-all
+        duration-300
+        hover:-translate-y-1
+        hover:border-[#a67c52]
+        hover:shadow-[0_12px_30px_rgba(0,0,0,0.65),0_0_18px_rgba(139,92,246,0.10)]
+        active:scale-[0.99]
+      "
     >
 
       {/* REALISTIC WALNUT WOOD TEXTURE */}
 
-<div
-  aria-hidden="true"
-  className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-md opacity-80 transition-opacity duration-300 group-hover:opacity-100"
->
-  {/* Natural wood grain */}
-  <div
-    className="absolute inset-0"
-    style={{
-      backgroundImage: `
-        repeating-linear-gradient(
-          3deg,
-          transparent 0px,
-          transparent 8px,
-          rgba(190, 139, 91, 0.16) 9px,
-          rgba(30, 17, 10, 0.12) 10px,
-          transparent 12px,
-          transparent 21px
-        ),
-        repeating-linear-gradient(
-          177deg,
-          transparent 0px,
-          transparent 27px,
-          rgba(215, 169, 118, 0.10) 28px,
-          transparent 30px,
-          transparent 43px
-        ),
-        linear-gradient(
-          90deg,
-          rgba(0, 0, 0, 0.22),
-          transparent 15%,
-          rgba(210, 158, 105, 0.08) 48%,
-          transparent 78%,
-          rgba(0, 0, 0, 0.18)
-        )
-      `,
-    }}
-  />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-md opacity-80 transition-opacity duration-300 group-hover:opacity-100"
+      >
 
-  {/* Fine scratches */}
-  <div
-    className="absolute inset-0"
-    style={{
-      backgroundImage: `
-        linear-gradient(
-          112deg,
-          transparent 0%,
-          transparent 23%,
-          rgba(230, 194, 153, 0.22) 23.08%,
-          transparent 23.18%,
-          transparent 100%
-        ),
-        linear-gradient(
-          167deg,
-          transparent 0%,
-          transparent 57%,
-          rgba(235, 204, 167, 0.16) 57.08%,
-          transparent 57.18%,
-          transparent 100%
-        )
-      `,
-    }}
-  />
+        {/* Natural wood grain */}
 
-  {/* Small edge scuffs */}
-  <div className="absolute left-[4px] top-[17%] h-4 w-px rotate-[8deg] bg-[#d5b18a]/30" />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              repeating-linear-gradient(
+                3deg,
+                transparent 0px,
+                transparent 8px,
+                rgba(190, 139, 91, 0.16) 9px,
+                rgba(30, 17, 10, 0.12) 10px,
+                transparent 12px,
+                transparent 21px
+              ),
+              repeating-linear-gradient(
+                177deg,
+                transparent 0px,
+                transparent 27px,
+                rgba(215, 169, 118, 0.10) 28px,
+                transparent 30px,
+                transparent 43px
+              ),
+              linear-gradient(
+                90deg,
+                rgba(0, 0, 0, 0.22),
+                transparent 15%,
+                rgba(210, 158, 105, 0.08) 48%,
+                transparent 78%,
+                rgba(0, 0, 0, 0.18)
+              )
+            `,
+          }}
+        />
 
-  <div className="absolute right-[5px] top-[38%] h-3 w-px -rotate-[12deg] bg-[#d5b18a]/25" />
+        {/* Fine scratches */}
 
-  <div className="absolute bottom-[13%] left-[15%] h-px w-5 rotate-[-6deg] bg-[#d5b18a]/25" />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(
+                112deg,
+                transparent 0%,
+                transparent 23%,
+                rgba(230, 194, 153, 0.22) 23.08%,
+                transparent 23.18%,
+                transparent 100%
+              ),
+              linear-gradient(
+                167deg,
+                transparent 0%,
+                transparent 57%,
+                rgba(235, 204, 167, 0.16) 57.08%,
+                transparent 57.18%,
+                transparent 100%
+              )
+            `,
+          }}
+        />
 
-  {/* Warm, worn corners */}
-  <div className="absolute left-0 top-0 h-7 w-7 bg-gradient-to-br from-[#c39a6c]/15 to-transparent" />
+        {/* Small edge scuffs */}
 
-  <div className="absolute bottom-0 right-0 h-8 w-8 bg-gradient-to-tl from-black/25 to-transparent" />
-</div>
+        <div className="absolute left-[4px] top-[17%] h-4 w-px rotate-[8deg] bg-[#d5b18a]/30" />
+
+        <div className="absolute right-[5px] top-[38%] h-3 w-px -rotate-[12deg] bg-[#d5b18a]/25" />
+
+        <div className="absolute bottom-[13%] left-[15%] h-px w-5 rotate-[-6deg] bg-[#d5b18a]/25" />
+
+        {/* Warm, worn corners */}
+
+        <div className="absolute left-0 top-0 h-7 w-7 bg-gradient-to-br from-[#c39a6c]/15 to-transparent" />
+
+        <div className="absolute bottom-0 right-0 h-8 w-8 bg-gradient-to-tl from-black/25 to-transparent" />
+
+      </div>
 
       {/* PHYSICAL CASE BODY */}
 
@@ -1165,9 +1028,12 @@ to-[#2b1b12]
           <div className="relative aspect-[2/3] w-full overflow-hidden bg-zinc-950">
 
             {posterUrl ? (
+
               <img
                 src={posterUrl}
                 alt={`${title} poster`}
+                loading="lazy"
+                decoding="async"
                 className="
                   h-full
                   w-full
@@ -1177,7 +1043,9 @@ to-[#2b1b12]
                   group-hover:scale-[1.035]
                 "
               />
+
             ) : (
+
               <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-zinc-900 via-black to-zinc-950">
 
                 <span className="text-4xl text-zinc-800 transition-colors duration-300 group-hover:text-violet-400/50">
@@ -1189,6 +1057,7 @@ to-[#2b1b12]
                 </span>
 
               </div>
+
             )}
 
             {/* GLOSSY PLASTIC REFLECTION */}
@@ -1199,14 +1068,9 @@ to-[#2b1b12]
 
             <div className="pointer-events-none absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-black/40 to-transparent" />
 
-           
+            {/* RELEASE YEAR — RESERVED */}
 
-            {/* RELEASE YEAR */}
-
-            <div className="absolute bottom-2 right-2">
-
-
-            </div>
+            <div className="absolute bottom-2 right-2" />
 
           </div>
 
@@ -1223,11 +1087,7 @@ to-[#2b1b12]
           {/* COLLECTION LABEL */}
 
           <div className="mb-1 flex items-center justify-between gap-2">
-
-           
-
             <span className="h-px w-5 bg-violet-400/40" />
-
           </div>
 
           {/* TITLE */}
@@ -1251,18 +1111,10 @@ to-[#2b1b12]
             {title}
           </h3>
 
-          {/* LANGUAGE AND YEAR */}
+          {/* LANGUAGE AND YEAR — RESERVED */}
 
-          <div className="mt-0 flex items-center justify-between gap-2 border-t border-zinc-800/80 pt-1.5">
+          <div className="mt-0 flex items-center justify-between gap-2 border-t border-zinc-800/80 pt-1.5" />
 
-           
-           
-
-          </div>
-
-          {/* GENRE */}
-
-         
         </div>
 
       </div>
@@ -1278,7 +1130,6 @@ to-[#2b1b12]
     </Link>
   );
 }
-
 
 /* ============================================================
    INTELLIGENCE TILE
@@ -1306,7 +1157,6 @@ function IntelligenceTile({
   );
 }
 
-
 /* ============================================================
    RECORD CARD
 ============================================================ */
@@ -1331,7 +1181,6 @@ function RecordCard({
         {number}
       </div>
 
-
       {/* CONTENT */}
 
       <div className="min-w-0 flex-1">
@@ -1355,7 +1204,6 @@ function RecordCard({
         </p>
 
       </div>
-
 
       {/* ARROW */}
 
