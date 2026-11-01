@@ -9,8 +9,11 @@ type Props = {
   searchParams: Promise<{
     q?: string;
     filter?: string;
+    page?: string;
   }>;
 };
+
+const PAGE_SIZE = 100;
 
 type MovieLanguage = {
   language_id: number;
@@ -119,54 +122,59 @@ export default async function MoviesPage({
   const searchQuery = params.q?.trim() ?? "";
   const activeFilter = params.filter ?? "latest";
 
+  const requestedPage = Number(params.page ?? "1");
+
+  const currentPage =
+    Number.isSafeInteger(requestedPage) && requestedPage > 0
+      ? requestedPage
+      : 1;
+
   let query = supabase
     .from("movies")
-    .select(`
-      id,
-      title,
-      release_year,
-      release_date,
-      poster_url,
-      is_active,
-      movie_languages!inner (
-  language_id,
-  language_type,
-  is_primary,
-  languages!inner (
-    name,
-    native_name
-  )
-),
-      movie_genres (
-        genre_id,
-        genres (
-          name
+    .select(
+      `
+        id,
+        title,
+        release_year,
+        release_date,
+        poster_url,
+        is_active,
+        movie_languages!inner (
+          language_id,
+          language_type,
+          is_primary,
+          languages!inner (
+            name,
+            native_name
+          )
+        ),
+        movie_genres (
+          genre_id,
+          genres (
+            name
+          )
         )
-      )
-    `)
+      `,
+      { count: "exact" }
+    )
     .eq("is_active", true)
-.eq("movie_languages.is_primary", true);
-
-
+    .eq("movie_languages.is_primary", true);
 
   /* =========================================================
      SEARCH
   ========================================================= */
 
-
   if (searchQuery) {
-  const safeSearch = searchQuery
-    .replace(/[%_,]/g, " ")
-    .trim();
+    const safeSearch = searchQuery
+      .replace(/[%_,]/g, " ")
+      .trim();
 
-  if (safeSearch) {
-    query = query.or(
-      `title.ilike.%${safeSearch}%,original_title.ilike.%${safeSearch}%,slug.ilike.%${safeSearch}%`
-    );
+    if (safeSearch) {
+      query = query.or(
+        `title.ilike.%${safeSearch}%,original_title.ilike.%${safeSearch}%,slug.ilike.%${safeSearch}%`
+      );
+    }
   }
-
-  
-}
 
   /* =========================================================
      FILTERS
@@ -191,12 +199,12 @@ export default async function MoviesPage({
     );
   }
 
- if (activeFilter === "malayalam") {
-  query = query.eq(
-    "movie_languages.languages.name",
-    "Malayalam"
-  );
-}
+  if (activeFilter === "malayalam") {
+    query = query.eq(
+      "movie_languages.languages.name",
+      "Malayalam"
+    );
+  }
 
   if (activeFilter === "telugu") {
     query = query.eq(
@@ -219,6 +227,10 @@ export default async function MoviesPage({
     );
   }
 
+  /* =========================================================
+     SORTING
+  ========================================================= */
+
   if (activeFilter === "upcoming") {
     query = query.order(
       "release_date",
@@ -231,39 +243,70 @@ export default async function MoviesPage({
     );
   }
 
-  const { data: movies, error } = await query;
+  /* =========================================================
+     FETCH MOVIES + EXISTING HOMEPAGE CACHE
+  ========================================================= */
+
+  const [
+    {
+      data: movies,
+      error,
+      count: totalMovieResults,
+    },
+    {
+      data: cachedStats,
+      error: statsError,
+    },
+  ] = await Promise.all([
+    query.range(
+      (currentPage - 1) * PAGE_SIZE,
+      currentPage * PAGE_SIZE - 1
+    ),
+
+    supabase
+      .from("jmi_homepage_stats_cache")
+      .select("movie_count")
+      .eq("id", 1)
+      .maybeSingle(),
+  ]);
 
   if (error) {
     console.error("JMI Movies Error:", error);
+  }
+
+  if (statsError) {
+    console.error("JMI Movies Cached Stats Error:", statsError);
   }
 
   /* =========================================================
      DATABASE SNAPSHOT
   ========================================================= */
 
-  const { count: movieCount } = await supabase
-    .from("movies")
-    .select("id", {
-      count: "exact",
-      head: true,
-    })
-    .eq("is_active", true);
-
-  const { count: languageCount } = await supabase
-    .from("languages")
-    .select("id", {
-      count: "exact",
-      head: true,
-    });
-
-  const { count: industryCount } = await supabase
-    .from("industries")
-    .select("id", {
-      count: "exact",
-      head: true,
-    });
+  const movieCount = cachedStats?.movie_count ?? 0;
+  const languageCount = 17;
+  const industryCount = 17;
 
   const resultMovies = (movies ?? []) as Movie[];
+
+  const totalPages = Math.ceil(
+    (totalMovieResults ?? 0) / PAGE_SIZE
+  );
+
+  function getPageHref(targetPage: number) {
+    const pageParams = new URLSearchParams();
+
+    if (searchQuery) {
+      pageParams.set("q", searchQuery);
+    }
+
+    if (activeFilter !== "latest") {
+      pageParams.set("filter", activeFilter);
+    }
+
+    pageParams.set("page", String(targetPage));
+
+    return `/preview/movies?${pageParams.toString()}`;
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -413,6 +456,44 @@ export default async function MoviesPage({
 </p>
 
               </div>
+
+              {/* =================================================
+    MOVIE PAGINATION
+================================================= */}
+
+{totalPages > 1 && (
+  <div className="mt-8 flex flex-col items-center gap-3 border-t border-zinc-800 pt-5 sm:flex-row sm:justify-between">
+
+    <p className="text-[9px] text-zinc-500">
+      Page {currentPage} of {totalPages}
+      <span className="mx-2 text-zinc-700">·</span>
+      {totalMovieResults ?? 0} movies
+    </p>
+
+    <div className="flex items-center gap-2">
+
+      {currentPage > 1 && (
+        <Link
+          href={getPageHref(currentPage - 1)}
+          className="rounded-md border border-zinc-700 bg-zinc-950 px-4 py-2 text-[9px] text-zinc-300 transition hover:border-violet-400/40 hover:text-violet-300"
+        >
+          ← Previous
+        </Link>
+      )}
+
+      {currentPage < totalPages && (
+        <Link
+          href={getPageHref(currentPage + 1)}
+          className="rounded-md border border-violet-400/30 bg-violet-400/[0.08] px-4 py-2 text-[9px] text-violet-300 transition hover:border-violet-400/60 hover:bg-violet-400/[0.12]"
+        >
+          Next 100 Movies →
+        </Link>
+      )}
+
+    </div>
+
+  </div>
+)}
 
             </div>
 
@@ -682,8 +763,8 @@ export default async function MoviesPage({
               </h2>
 
               <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-400">
-                JMI is continuously expanding its movie database across
-                languages, industries, markets and generations of Indian cinema & a new data is added on each single hour.</p>
+                JMI is continuously trying harder in expanding its movie database across various
+                languages, industries, markets and generations of Indian cinema & a new data is added on regular intervals to keep the database live and updated. Still JMI once again giving you the disclaimer that all datas published on this platform are not indepently verified with its official sources, especially for Box-office numbers. JMI has its own methodology and the figures are trade estimations, it may have mistakes or differences from original figures.</p>
 
               <div className="mt-5 flex items-center gap-3">
 

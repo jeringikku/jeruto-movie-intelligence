@@ -9,17 +9,21 @@ type Language = {
   name: string;
 };
 
-type MovieLanguageRow = {
+type CachedLanguageCount = {
   language_id: number;
-  movie_id: number;
+  movie_count: number;
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function MovieLibraryPage() {
+  // ============================================================
+  // FETCH LANGUAGES AND CACHED MOVIE COUNTS
+  // ============================================================
+
   const [
     { data: languages, error: languagesError },
-    { data: movieLanguages, error: movieLanguagesError },
+    { data: cachedLanguageCounts, error: countsError },
   ] = await Promise.all([
     supabase
       .from("languages")
@@ -27,49 +31,57 @@ export default async function MovieLibraryPage() {
       .order("name", { ascending: true }),
 
     supabase
-      .from("movie_languages")
-      .select("language_id, movie_id"),
+      .from("jmi_movie_library_language_counts")
+      .select("language_id, movie_count"),
   ]);
 
   if (languagesError) {
-    console.error("Movie Library languages error:", languagesError);
-  }
-
-  if (movieLanguagesError) {
     console.error(
-      "Movie Library movie languages error:",
-      movieLanguagesError
+      "Movie Library languages error:",
+      languagesError
     );
   }
 
+  if (countsError) {
+    console.error(
+      "Movie Library cached language counts error:",
+      countsError
+    );
+  }
+
+  // ============================================================
+  // BUILD LANGUAGE COUNT MAP
+  // ============================================================
+
   const languageRows = (languages || []) as Language[];
-  const movieLanguageRows = (movieLanguages || []) as MovieLanguageRow[];
 
-  const movieCountMap = new Map<number, Set<number>>();
+  const cachedCountRows =
+    (cachedLanguageCounts || []) as CachedLanguageCount[];
 
-  movieLanguageRows.forEach((row) => {
-    const languageId = Number(row.language_id);
-    const movieId = Number(row.movie_id);
-
-    if (!languageId || !movieId) return;
-
-    if (!movieCountMap.has(languageId)) {
-      movieCountMap.set(languageId, new Set<number>());
-    }
-
-    movieCountMap.get(languageId)!.add(movieId);
-  });
+  const languageCountMap = new Map<number, number>(
+    cachedCountRows.map((row) => [
+      Number(row.language_id),
+      Number(row.movie_count),
+    ])
+  );
 
   const libraryLanguages = languageRows.map((language) => ({
     id: Number(language.id),
     name: language.name,
-    movieCount: movieCountMap.get(Number(language.id))?.size || 0,
+    movieCount:
+      languageCountMap.get(Number(language.id)) ?? 0,
   }));
 
   type LibraryLanguage = (typeof libraryLanguages)[number];
 
-  // Divide languages into rows according to the active screen layout.
-  const chunkLanguages = (items: LibraryLanguage[], size: number) => {
+  // ============================================================
+  // DIVIDE LANGUAGES INTO BOOKSHELF ROWS
+  // ============================================================
+
+  const chunkLanguages = (
+    items: LibraryLanguage[],
+    size: number
+  ) => {
     const rows: LibraryLanguage[][] = [];
 
     for (let i = 0; i < items.length; i += size) {
@@ -79,60 +91,66 @@ export default async function MovieLibraryPage() {
     return rows;
   };
 
- // Preserve the cinematic book-opening transition.
-const renderBook = (language: LibraryLanguage) => (
-  <BookOpeningTransition
-    key={language.id}
-    languageName={language.name}
-    destination={`/preview/movies/library/${language.id}`}
-  >
-    <div className="group relative z-10 flex min-h-[170px] flex-col overflow-visible rounded-lg border border-[#4a301b] bg-gradient-to-br from-[#24160d] via-[#160d08] to-[#0b0704] p-3 shadow-[0_5px_12px_rgba(0,0,0,0.45)] transition duration-300 hover:-translate-y-1 hover:border-yellow-500/40 hover:shadow-[0_14px_35px_rgba(0,0,0,0.65)]">
+  // ============================================================
+  // RENDER CINEMATIC BOOK
+  // ============================================================
 
-      {/* BOOK SPINE */}
-      <div className="pointer-events-none absolute left-0 top-0 h-full w-1 rounded-l-lg bg-gradient-to-b from-[#9b7145] via-[#3b2515] to-[#704a26] opacity-60" />
+  const renderBook = (language: LibraryLanguage) => (
+    <BookOpeningTransition
+      key={language.id}
+      languageName={language.name}
+      destination={`/preview/movies/library/${language.id}`}
+    >
+      <div className="group relative z-10 flex min-h-[170px] flex-col overflow-visible rounded-lg border border-[#4a301b] bg-gradient-to-br from-[#24160d] via-[#160d08] to-[#0b0704] p-3 shadow-[0_5px_12px_rgba(0,0,0,0.45)] transition duration-300 hover:-translate-y-1 hover:border-yellow-500/40 hover:shadow-[0_14px_35px_rgba(0,0,0,0.65)]">
 
-      {/* VERTICAL BOOK GRAIN */}
-      <div
-        className="pointer-events-none absolute inset-y-0 left-1 w-[2px] opacity-50"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(190,139,81,0.25), rgba(190,139,81,0.25), rgba(190,139,81,0.25))",
-        }}
-      />
+        {/* BOOK SPINE */}
+        <div className="pointer-events-none absolute left-0 top-0 h-full w-1 rounded-l-lg bg-gradient-to-b from-[#9b7145] via-[#3b2515] to-[#704a26] opacity-60" />
 
-      {/* DECORATIVE VERTICAL LINES */}
-      <div className="pointer-events-none absolute left-3 top-0 h-full w-px bg-[#6a4525]/40" />
-      <div className="pointer-events-none absolute right-3 top-0 h-full w-px bg-[#6a4525]/20" />
+        {/* VERTICAL BOOK GRAIN */}
+        <div
+          className="pointer-events-none absolute inset-y-0 left-1 w-[2px] opacity-50"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(190,139,81,0.25), rgba(190,139,81,0.25), rgba(190,139,81,0.25))",
+          }}
+        />
 
-      {/* BOOK LABEL */}
-      <div className="relative flex items-center justify-between">
-        <span className="text-[5.5px] uppercase tracking-[0.28em] text-yellow-500/80">
-          JMI Volume
-        </span>
+        {/* DECORATIVE VERTICAL LINES */}
+        <div className="pointer-events-none absolute left-3 top-0 h-full w-px bg-[#6a4525]/40" />
+        <div className="pointer-events-none absolute right-3 top-0 h-full w-px bg-[#6a4525]/20" />
 
-        <span className="text-[8px] text-yellow-500/40 transition group-hover:text-yellow-400">
-          →
-        </span>
+        {/* BOOK LABEL */}
+        <div className="relative flex items-center justify-between">
+          <span className="text-[5.5px] uppercase tracking-[0.28em] text-yellow-500/80">
+            JMI Volume
+          </span>
+
+          <span className="text-[8px] text-yellow-500/40 transition group-hover:text-yellow-400">
+            →
+          </span>
+        </div>
+
+        {/* LANGUAGE TITLE */}
+        <div className="relative mt-10 flex-1 text-center">
+          <p className="text-[10px] font-semibold leading-5 tracking-[-0.02em] text-zinc-350 transition group-hover:text-yellow-300 sm:text-[15px]">
+            {language.name}
+          </p>
+
+          <div className="mt-3 h-px w-12 bg-gradient-to-r from-yellow-500/60 to-transparent" />
+
+          <p className="mt-3 text-[6px] uppercase tracking-[0.44em] text-green-500">
+            {language.movieCount.toLocaleString("en-IN")}{" "}
+            {language.movieCount === 1 ? "Movie" : "Movies"}
+          </p>
+        </div>
       </div>
+    </BookOpeningTransition>
+  );
 
-      {/* LANGUAGE TITLE */}
-      <div className="relative mt-10 flex-1 text-center">
-        <p className="text-[10px] font-semibold leading-5 tracking-[-0.02em] text-zinc-350 transition group-hover:text-yellow-300 sm:text-[15px]">
-          {language.name}
-        </p>
+  // ============================================================
+  // RENDER BOOKSHELF ROWS
+  // ============================================================
 
-        <div className="mt-3 h-px w-12 bg-gradient-to-r from-yellow-500/60 to-transparent" />
-
-        <p className="mt-3 text-[6px] uppercase tracking-[0.44em] text-green-500">
-          {language.movieCount.toLocaleString("en-IN")}{" "}
-          {language.movieCount === 1 ? "Movie" : "Movies"}
-        </p>
-      </div>
-    </div>
-  </BookOpeningTransition>
-);
-
-  // Create a separate bookshelf row for each group of books.
   const renderShelfRows = (
     columns: 3 | 4 | 5,
     gridColumnsClass: string
@@ -143,7 +161,9 @@ const renderBook = (language: LibraryLanguage) => (
         className="relative pb-12"
       >
         {/* BOOKS ON THIS ROW */}
-        <div className={`grid ${gridColumnsClass} items-stretch gap-x-3 sm:gap-x-3 lg:gap-x-4`}>
+        <div
+          className={`grid ${gridColumnsClass} items-stretch gap-x-3 sm:gap-x-3 lg:gap-x-4`}
+        >
           {row.map((language) => renderBook(language))}
         </div>
 
@@ -184,6 +204,10 @@ const renderBook = (language: LibraryLanguage) => (
       </div>
     ));
 
+  // ============================================================
+  // PAGE
+  // ============================================================
+
   return (
     <div className="min-h-screen bg-[#090705] text-white">
       <PublicHeader />
@@ -199,7 +223,7 @@ const renderBook = (language: LibraryLanguage) => (
       </div>
 
       <main className="relative overflow-hidden">
-        {/* Ambient library lighting */}
+        {/* AMBIENT LIBRARY LIGHTING */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute left-1/2 top-[-180px] h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-yellow-500/[0.035] blur-[120px]" />
           <div className="absolute left-[-120px] top-[420px] h-[380px] w-[380px] rounded-full bg-violet-500/[0.035] blur-[110px]" />
@@ -207,7 +231,8 @@ const renderBook = (language: LibraryLanguage) => (
         </div>
 
         <section className="relative mx-auto max-w-7xl px-4 pb-20 pt-7 sm:px-6 lg:px-8">
-          {/* Breadcrumb */}
+
+          {/* BREADCRUMB */}
           <div className="mb-5 flex items-center gap-2 text-[8px] uppercase tracking-[0.16em] text-yellow-500">
             <Link href="/" className="transition hover:text-yellow-300">
               JMI
@@ -223,6 +248,7 @@ const renderBook = (language: LibraryLanguage) => (
           ============================================================ */}
 
           <div className="relative rounded-[19px] border-[5px] border-[#49301f] bg-gradient-to-br from-[#765137] via-[#49301f] to-[#24160e] p-[5px] shadow-[0_12px_30px_rgba(0,0,0,0.75),inset_0_1px_0_rgba(220,180,130,0.25),inset_0_-3px_5px_rgba(0,0,0,0.45)] sm:border-[7px] sm:p-[7px]">
+
             {/* WEATHERED WOOD GRAIN */}
             <div
               aria-hidden="true"
@@ -287,6 +313,7 @@ const renderBook = (language: LibraryLanguage) => (
 
             {/* ORIGINAL MOVIE LIBRARY BANNER */}
             <div className="relative overflow-hidden rounded-[12px] border border-[#21140d]/90 bg-[#120d08] shadow-[inset_0_1px_0_rgba(220,180,130,0.12),inset_0_-3px_5px_rgba(0,0,0,0.35)]">
+
               {/* ORIGINAL WOOD-LIKE HORIZONTAL BANDS */}
               <div className="pointer-events-none absolute inset-0 opacity-40">
                 <div className="absolute inset-x-0 top-[16%] h-px bg-[#5a3b21]" />
@@ -393,6 +420,7 @@ const renderBook = (language: LibraryLanguage) => (
                   "inset 0 0 25px rgba(0,0,0,0.55), 0 15px 30px rgba(0,0,0,0.35)",
               }}
             >
+
               {/* TOP SHELF LIGHTING */}
               <div className="mb-7 h-2 rounded-full border border-[#5c3c21] bg-gradient-to-b from-[#6b4525] to-[#291b11] shadow-[0_4px_14px_rgba(0,0,0,0.7)]" />
 
@@ -410,6 +438,7 @@ const renderBook = (language: LibraryLanguage) => (
               <div className="hidden xl:block">
                 {renderShelfRows(5, "grid-cols-5")}
               </div>
+
             </div>
           </section>
 
@@ -435,6 +464,7 @@ const renderBook = (language: LibraryLanguage) => (
               </Link>
             </div>
           </div>
+
         </section>
       </main>
     </div>

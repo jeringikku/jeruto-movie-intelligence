@@ -43,7 +43,7 @@ return (
 <>
 <button
 type="button"
-aria-label={"Open ${languageName} movie library"}
+aria-label={`Open ${languageName} movie library`}
 aria-busy={isOpening}
 onClick={handleOpen}
 disabled={isOpening}
