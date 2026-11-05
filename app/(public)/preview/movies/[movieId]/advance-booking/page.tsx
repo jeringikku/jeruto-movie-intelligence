@@ -30,13 +30,29 @@ type DailyAdvanceBookingRecord = {
   movie_id: number;
   booking_day: number;
   booking_date: string | null;
-  coverage_type:
-    | "STATE"
-    | "REST_OF_INDIA";
+  coverage_type: "STATE" | "REST_OF_INDIA";
   state_id: number | null;
   gross: number | null;
   admissions: number | null;
   show_count: number | null;
+  atp: number | null;
+  occupancy: number | null;
+  notes: string | null;
+  updated_at: string;
+};
+
+type CategoryAdvanceBookingRecord = {
+  id: number;
+  movie_id: number;
+  booking_day: number;
+  booking_date: string | null;
+  language?: string;
+  format?: string;
+  gross: number | null;
+  admissions: number | null;
+  atp: number | null;
+  show_count: number | null;
+  occupancy: number | null;
   notes: string | null;
   updated_at: string;
 };
@@ -183,7 +199,7 @@ export default async function AdvanceBookingPublicPage({
 
   if (statesError) {
     console.error(
-      "Advance booking states error:",
+      "Live Tracking states error:",
       statesError
     );
   }
@@ -210,18 +226,20 @@ export default async function AdvanceBookingPublicPage({
       "movie_advance_booking_daily"
     )
     .select(`
-      id,
-      movie_id,
-      booking_day,
-      booking_date,
-      coverage_type,
-      state_id,
-      gross,
-      admissions,
-      show_count,
-      notes,
-      updated_at
-    `)
+  id,
+  movie_id,
+  booking_day,
+  booking_date,
+  coverage_type,
+  state_id,
+  gross,
+  admissions,
+  show_count,
+  atp,
+  occupancy,
+  notes,
+  updated_at
+`)
     .eq(
       "movie_id",
       numericMovieId
@@ -245,6 +263,79 @@ export default async function AdvanceBookingPublicPage({
       dailyError
     );
   }
+
+  /* =======================================================
+   LANGUAGE-WISE ADVANCE BOOKING DATA
+======================================================= */
+
+const {
+  data: languageData,
+  error: languageError,
+} = await supabase
+  .from("movie_advance_booking_language_daily")
+  .select(`
+    id,
+    movie_id,
+    booking_day,
+    booking_date,
+    language,
+    gross,
+    admissions,
+    atp,
+    show_count,
+    occupancy,
+    notes,
+    updated_at
+  `)
+  .eq("movie_id", numericMovieId)
+  .order("booking_day", { ascending: true });
+
+if (languageError) {
+  console.error(
+    "Advance booking language public page error:",
+    languageError
+  );
+}
+
+const languageRecords: CategoryAdvanceBookingRecord[] =
+  (languageData || []) as CategoryAdvanceBookingRecord[];
+
+
+/* =======================================================
+   FORMAT-WISE ADVANCE BOOKING DATA
+======================================================= */
+
+const {
+  data: formatData,
+  error: formatError,
+} = await supabase
+  .from("movie_advance_booking_format_daily")
+  .select(`
+    id,
+    movie_id,
+    booking_day,
+    booking_date,
+    format,
+    gross,
+    admissions,
+    atp,
+    show_count,
+    occupancy,
+    notes,
+    updated_at
+  `)
+  .eq("movie_id", numericMovieId)
+  .order("booking_day", { ascending: true });
+
+if (formatError) {
+  console.error(
+    "Advance booking format public page error:",
+    formatError
+  );
+}
+
+const formatRecords: CategoryAdvanceBookingRecord[] =
+  (formatData || []) as CategoryAdvanceBookingRecord[];
 
   const records: DailyAdvanceBookingRecord[] =
     (dailyData ||
@@ -279,31 +370,21 @@ export default async function AdvanceBookingPublicPage({
      LATEST UPDATE
   ======================================================= */
 
-  const latestUpdatedAt =
-    records.length > 0
-      ? records.reduce(
-          (
-            latest,
-            record
-          ) => {
-            if (
-              !latest
-            ) {
-              return record.updated_at;
-            }
+  const allUpdatedAt = [
+  ...records.map((record) => record.updated_at),
+  ...languageRecords.map((record) => record.updated_at),
+  ...formatRecords.map((record) => record.updated_at),
+].filter(Boolean);
 
-            return new Date(
-              record.updated_at
-            ).getTime() >
-              new Date(
-                latest
-              ).getTime()
-              ? record.updated_at
-              : latest;
-          },
-          null as string | null
-        )
-      : null;
+const latestUpdatedAt =
+  allUpdatedAt.length > 0
+    ? allUpdatedAt.reduce((latest, current) =>
+        new Date(current).getTime() >
+        new Date(latest).getTime()
+          ? current
+          : latest
+      )
+    : null;
 
   /* =======================================================
      OVERALL TOTALS
@@ -350,17 +431,13 @@ export default async function AdvanceBookingPublicPage({
       0
     );
 
-  const uniqueDays =
-    Array.from(
-      new Set(
-        records.map(
-          (record) =>
-            record.booking_day
-        )
-      )
-    ).sort(
-      (a, b) => a - b
-    );
+const uniqueDays = Array.from(
+  new Set([
+    ...records.map((record) => record.booking_day),
+    ...languageRecords.map((record) => record.booking_day),
+    ...formatRecords.map((record) => record.booking_day),
+  ])
+).sort((a, b) => a - b);
 
   const daysTracked =
     uniqueDays.length;
@@ -398,6 +475,16 @@ export default async function AdvanceBookingPublicPage({
               record.booking_day ===
               day
           );
+
+          const dayLanguageRecords =
+  languageRecords.filter(
+    (record) => record.booking_day === day
+  );
+
+const dayFormatRecords =
+  formatRecords.filter(
+    (record) => record.booking_day === day
+  );
 
         const dayGross =
           dayRecords.reduce(
@@ -470,58 +557,71 @@ export default async function AdvanceBookingPublicPage({
          * one booking day should have the same
          * booking_date.
          */
-        const bookingDate =
-          dayRecords.find(
-            (record) =>
-              record.booking_date
-          )?.booking_date ||
-          null;
+      const bookingDate =
+  dayRecords.find((record) => record.booking_date)?.booking_date ||
+  dayLanguageRecords.find((record) => record.booking_date)?.booking_date ||
+  dayFormatRecords.find((record) => record.booking_date)?.booking_date ||
+  null;
 
         return {
-          day,
-          date:
-            bookingDate,
-          records:
-            dayRecords.map(
-              (record) => ({
-                id:
-                  record.id,
-                booking_day:
-                  record.booking_day,
-                booking_date:
-                  record.booking_date,
-                coverage_type:
-                  record.coverage_type,
-                territory_name:
-                  record.coverage_type ===
-                  "REST_OF_INDIA"
-                    ? "Rest of India"
-                    : getStateName(
-                        record.state_id
-                      ),
-                gross:
-                  record.gross,
-                admissions:
-                  record.admissions,
-                show_count:
-                  record.show_count,
-                notes:
-                  record.notes,
-                updated_at:
-                  record.updated_at,
-              })
-            ),
-          gross:
-            dayGross,
-          admissions:
-            dayAdmissions,
-          shows:
-            dayShows,
-          latestUpdatedAt:
-            dayLatestUpdatedAt,
-        };
+  day,
+  date: bookingDate,
+
+  // STATE-WISE RECORDS
+  records: dayRecords.map((record) => ({
+    id: record.id,
+    booking_day: record.booking_day,
+    booking_date: record.booking_date,
+    coverage_type: record.coverage_type,
+    territory_name:
+      record.coverage_type === "REST_OF_INDIA"
+        ? "Rest of India"
+        : getStateName(record.state_id),
+    gross: record.gross,
+    admissions: record.admissions,
+    show_count: record.show_count,
+    atp: record.atp,
+    occupancy: record.occupancy,
+    notes: record.notes,
+    updated_at: record.updated_at,
+  })),
+
+  // LANGUAGE-WISE RECORDS
+  languageRecords: dayLanguageRecords.map((record) => ({
+    id: record.id,
+    name: record.language || "Unknown Language",
+    gross: record.gross,
+    admissions: record.admissions,
+    atp: record.atp,
+    show_count: record.show_count,
+    occupancy: record.occupancy,
+    notes: record.notes,
+    updated_at: record.updated_at,
+  })),
+
+  // FORMAT-WISE RECORDS
+  formatRecords: dayFormatRecords.map((record) => ({
+    id: record.id,
+    name: record.format || "Unknown Format",
+    gross: record.gross,
+    admissions: record.admissions,
+    atp: record.atp,
+    show_count: record.show_count,
+    occupancy: record.occupancy,
+    notes: record.notes,
+    updated_at: record.updated_at,
+  })),
+
+  // STATE-WISE DAY TOTALS
+  gross: dayGross,
+  admissions: dayAdmissions,
+  shows: dayShows,
+  latestUpdatedAt: dayLatestUpdatedAt,
       }
+    }
     );
+
+    
 
   return (
     <div className="min-h-screen bg-black text-zinc-100">
@@ -599,7 +699,7 @@ export default async function AdvanceBookingPublicPage({
                 {movie.title}
               </h1>
 
-              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[9px] text-zinc-500">
+              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[9px] text-pink-500">
 
                 {movie.release_year && (
                   <span>
@@ -620,9 +720,7 @@ export default async function AdvanceBookingPublicPage({
               </div>
 
               <p className="mt-3 max-w-xl text-[10px] leading-5 text-zinc-400">
-                Real-time pre-release theatrical
-                advance booking performance tracked
-                through JMI's live territory-level
+                JMI's Real-time live territory-level
                 tracking system.
               </p>
 
@@ -640,12 +738,12 @@ export default async function AdvanceBookingPublicPage({
         <section className="mt-5 rounded-lg border border-violet-900/40 bg-violet-950/10 px-4 py-3">
 
           <p className="text-[8px] uppercase tracking-[0.16em] text-violet-400">
-            Current Real-time Advance Booking Data
+            Current Real-time Live Tracking Data
           </p>
 
           <p className="mt-1 text-[9px] leading-5 text-zinc-500">
             Figures shown on this page are based on
-            the day-wise territory-level advance booking
+            the day-wise territory-level Live Tracking
             records tracked and updated by JMI.
           
           </p>
@@ -677,8 +775,8 @@ export default async function AdvanceBookingPublicPage({
                   Live Tracking
                 </p>
 
-                <p className="mt-1 text-[8px] text-zinc-600">
-                  JMI advance booking intelligence
+                <p className="mt-1 text-[8px] text-zinc-400">
+                  JMI Live Tracking intelligence
                 </p>
 
               </div>
@@ -715,10 +813,10 @@ export default async function AdvanceBookingPublicPage({
           <div className="mb-4">
 
             <p className="text-[8px] uppercase tracking-[0.18em] text-violet-400">
-              Advance Booking Overview
+              Live Tracking Overview
             </p>
 
-            <h2 className="mt-1 text-sm font-medium text-yellow-500">
+            <h2 className="mt-1 text-sm font-small text-yellow-500">
               Current Tracking Performance
             </h2>
 
@@ -734,7 +832,7 @@ export default async function AdvanceBookingPublicPage({
 
             <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-400">
+              <p className="text-[8px] uppercase tracking-[0.14em] text-green-400">
                 Total Tracked Gross
               </p>
 
@@ -753,7 +851,7 @@ export default async function AdvanceBookingPublicPage({
 
             <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-400">
+              <p className="text-[8px] uppercase tracking-[0.14em] text-green-400">
                 Admissions
               </p>
 
@@ -772,7 +870,7 @@ export default async function AdvanceBookingPublicPage({
 
             <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-400">
+              <p className="text-[8px] uppercase tracking-[0.14em] text-green-400">
                 Shows Tracked
               </p>
 
@@ -791,7 +889,7 @@ export default async function AdvanceBookingPublicPage({
 
             <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-400">
+              <p className="text-[8px] uppercase tracking-[0.14em] text-green-400">
                 Days Tracked
               </p>
 
@@ -810,7 +908,7 @@ export default async function AdvanceBookingPublicPage({
 
             <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4">
 
-              <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-400">
+              <p className="text-[8px] uppercase tracking-[0.14em] text-green-400">
                 Territory Records
               </p>
 
@@ -888,7 +986,7 @@ export default async function AdvanceBookingPublicPage({
               </p>
 
               <h2 className="mt-1 text-sm font-medium text-yellow-500">
-                Advance Booking Timeline
+                Live Tracking Timeline
               </h2>
 
             </div>
@@ -902,12 +1000,12 @@ export default async function AdvanceBookingPublicPage({
               </div>
 
               <p className="mt-4 text-[10px] font-medium text-zinc-400">
-                No live advance booking data available.
+                No live tracking data available.
               </p>
 
               <p className="mt-2 text-[9px] leading-5 text-zinc-700">
                 JMI has not yet recorded day-wise
-                advance booking data for this movie.
+                Live Tracking data for this movie.
               </p>
 
             </div>
@@ -916,9 +1014,10 @@ export default async function AdvanceBookingPublicPage({
 
         ) : (
 
+          <div className="mx-auto w-full max-w-none px-0 sm:px-4">
           <AdvanceBookingDayTable
             days={groupedDays}
-          />
+          /> </div>
 
         )}
 
@@ -998,7 +1097,7 @@ export default async function AdvanceBookingPublicPage({
           </p>
 
           <p className="mt-2 text-[9px] leading-5 text-zinc-500">
-            Advance booking figures shown here are
+            Live Tracking figures shown here are
             based on the online ticket-booking data
            tracked by JMI. The tracking system
             may not cover every screen, show or releasing

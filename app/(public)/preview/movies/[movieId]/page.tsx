@@ -203,6 +203,7 @@ const { data: overseasBoxOffice, error: overseasBoxOfficeError } =
     );
   }
 
+
   const { data: dailyBoxOffice, error: dailyBoxOfficeError } =
     await supabase
       .from("movie_daily_box_office")
@@ -219,6 +220,28 @@ const { data: overseasBoxOffice, error: overseasBoxOfficeError } =
       dailyBoxOfficeError
     );
   }
+
+  // =====================================================
+// JMI DAILY BOX-OFFICE PORTAL
+// =====================================================
+
+const {
+  data: dailyPortalMovie,
+  error: dailyPortalMovieError,
+} = await supabase
+  .from("jmi_daily_box_office_portal")
+  .select("id")
+  .eq("row_type", "MOVIE")
+  .eq("movie_id", movie.id)
+  .eq("is_active", true)
+  .maybeSingle();
+
+if (dailyPortalMovieError) {
+  console.error(
+    "JMI Daily Box-Office Portal Error:",
+    dailyPortalMovieError
+  );
+}
 
   // =====================================================
   // OFFICIAL BOX OFFICE
@@ -1089,12 +1112,12 @@ const certification = Array.isArray(certificationItem)
                 <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
 
                   <AdvancedStatsButton
-                    icon="📅"
-                    title="Day-wise Collection"
-                    description="Daily domestic performance"
-                    available={Boolean(dailyBoxOffice?.length)}
-                    href={`/preview/movies/${movie.id}/box-office/india/day-wise`}
-                  />
+  icon="📅"
+  title="Day-wise Collection"
+  description="Daily domestic performance"
+  available={Boolean(dailyPortalMovie && movie.slug)}
+  href={`/preview/daily-box-office/${movie.slug}`}
+/>
 
                   <AdvancedStatsButton
                     icon="🌍"

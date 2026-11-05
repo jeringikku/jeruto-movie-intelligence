@@ -18,6 +18,7 @@ import SocialSpaceBanner from "../components/SocialSpaceBanner";
 import JmiFunZoneTransition from "../components/JmiFunZoneTransition";
 import ExclusiveNewsCarousel from "../components/ExclusiveNewsCarousel";
 import JmiBetaWelcome from "../components/JmiBetaWelcome";
+import DailyBoxofficeBanner from "../components/DailyBoxofficeBanner";
 
 import JmiSun from "@/app/(public)/components/JmiSun";
 import JmiRain from "@/app/(public)/components/JmiRain";
@@ -739,6 +740,8 @@ if (exclusiveNewsError) {
 
         </section>
 
+
+<DailyBoxofficeBanner />
 
 
         <TicketBookingBanner />

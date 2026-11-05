@@ -364,12 +364,12 @@ export default async function AdvanceBookingIntelligencePage() {
               </p>
 
               <h1 className="mt-2 text-xl font-semibold tracking-tight text-zinc-100 sm:text-2xl">
-                Advance Booking Intelligence
+                Live Tracking Intelligence
               </h1>
 
               <p className="mt-2 max-w-2xl text-[9px] leading-5 text-zinc-400">
-                Live day-wise advance booking intelligence
-                across tracked Indian movies and territories.
+                Live day-wise Real-time Tracking intelligence
+                across selected Indian movies and territories.
               </p>
 
             </div>
@@ -434,12 +434,12 @@ export default async function AdvanceBookingIntelligencePage() {
             </p>
 
             <h2 className="mt-1 text-sm font-semibold text-zinc-200">
-              Real-time Advance Booking of Upcoming Movies
+              Real-time Online Ticket Sales
             </h2>
 
 
             <p className=" mt-2 text-[6px] uppercase tracking-[0.18em] text-zinc-400">
-              Currently Tracked Upcoming movies by JMI
+              Currently Tracked Upcoming and currently running movies by JMI
             </p>
 
           </div>

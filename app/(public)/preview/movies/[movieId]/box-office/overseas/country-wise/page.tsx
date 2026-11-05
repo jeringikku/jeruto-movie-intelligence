@@ -307,7 +307,7 @@ export default async function OverseasCountryWisePage({
               Overseas country performance.
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-600">
+            <p className="mt-2 max-w-2xl text-[10px] leading-5 text-zinc-500">
               Current cumulative theatrical performance
               recorded across individual overseas countries.
             </p>
@@ -318,11 +318,11 @@ export default async function OverseasCountryWisePage({
 
             <div className="mt-7 rounded-xl border border-violet-400/15 bg-zinc-950 px-5 py-4">
 
-              <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-violet-400">
+              <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-green-400">
                 Current Cumulative Data
               </p>
 
-              <p className="mt-2 text-[9px] leading-5 text-zinc-600">
+              <p className="mt-2 text-[9px] leading-5 text-zinc-400">
                 Country-wise figures represent the latest
                 cumulative overseas performance recorded
                 for each individual country. USD figures are
@@ -341,11 +341,11 @@ export default async function OverseasCountryWisePage({
 
               <div className="mb-4">
 
-                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-700">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-green-400">
                   Country Performance
                 </p>
 
-                <p className="mt-1 text-[9px] text-zinc-600">
+                <p className="mt-1 text-[9px] text-zinc-400">
                   Latest cumulative figures by country.
                 </p>
 
@@ -355,12 +355,12 @@ export default async function OverseasCountryWisePage({
 
                 <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-950 px-5 py-10 text-center">
 
-                  <p className="text-[9px] text-zinc-600">
+                  <p className="text-[9px] text-red-400">
                     Country-wise overseas box office data
                     is not available yet.
                   </p>
 
-                  <p className="mt-2 text-[8px] text-zinc-800">
+                  <p className="mt-2 text-[8px] text-zinc-500">
                     JMI will display country intelligence
                     when verified data becomes available.
                   </p>
@@ -407,19 +407,19 @@ export default async function OverseasCountryWisePage({
 
                             <div className="flex items-center gap-2">
 
-                              <p className="text-[10px] font-medium text-zinc-200">
+                              <p className="text-[12px] font-medium text-yellow-400">
                                 {countryName}
                               </p>
 
                               {isoCode && (
-                                <span className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+                                <span className="text-[7px] uppercase tracking-[0.14em] text-zinc-400">
                                   {isoCode}
                                 </span>
                               )}
 
                             </div>
 
-                            <p className="mt-1 text-[7px] uppercase tracking-[0.16em] text-zinc-700">
+                            <p className="mt-1 text-[7px] uppercase tracking-[0.16em] text-zinc-400">
                               Current cumulative performance
                             </p>
 
@@ -427,11 +427,11 @@ export default async function OverseasCountryWisePage({
 
                           <div className="text-right">
 
-                            <p className="text-[12px] font-medium text-violet-400">
+                            <p className="text-[13px] font-medium text-violet-400">
                               {formatUSD(usd)}
                             </p>
 
-                            <p className="mt-0.5 text-[7px] uppercase tracking-[0.12em] text-zinc-700">
+                            <p className="mt-0.5 text-[7px] uppercase tracking-[0.12em] text-zinc-400">
                               USD Gross
                             </p>
 
@@ -449,7 +449,7 @@ export default async function OverseasCountryWisePage({
 
   <div>
 
-    <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+    <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-400">
       USD Gross
     </p>
 
@@ -463,7 +463,7 @@ export default async function OverseasCountryWisePage({
 
   <div>
 
-    <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+    <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-400">
       Share
     </p>
 
@@ -477,7 +477,7 @@ export default async function OverseasCountryWisePage({
 
   <div>
 
-    <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+    <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-400">
       Status
     </p>
 
@@ -509,7 +509,7 @@ export default async function OverseasCountryWisePage({
 
   <div>
 
-    <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+    <p className="text-[7px] uppercase tracking-[0.14em] text-green-500">
       Countries Tracked
     </p>
 
@@ -523,7 +523,7 @@ export default async function OverseasCountryWisePage({
 
   <div>
 
-    <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+    <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-400">
       USD Records
     </p>
 
@@ -542,7 +542,7 @@ export default async function OverseasCountryWisePage({
 
   <div>
 
-    <p className="text-[7px] uppercase tracking-[0.14em] text-zinc-700">
+    <p className="text-[7px] uppercase tracking-[0.14em] text-red-400">
       Reported USD Gross
     </p>
 
@@ -563,7 +563,7 @@ export default async function OverseasCountryWisePage({
 
             <div className="mt-8 rounded-xl border border-zinc-900 bg-zinc-950/60 px-5 py-4">
 
-              <p className="text-[8px] leading-5 text-zinc-700">
+              <p className="text-[8px] leading-5 text-zinc-400">
                 Country-wise figures are individual country
                 records and may represent only the countries
                 for which data has been recorded. The reported

@@ -295,11 +295,11 @@ export default async function StateWiseBoxOfficePage({
 
                   <div className="grid grid-cols-[1fr_auto] border-b border-zinc-800 px-4 py-3 sm:px-5">
 
-                    <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-green-500">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-green-500">
                       State / Market
                     </p>
 
-                    <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-green-500">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-green-500">
                       Gross
                     </p>
 
@@ -344,7 +344,7 @@ export default async function StateWiseBoxOfficePage({
                         </p>
 
                         {row.isRestOfIndia && (
-                          <p className="mt-0.5 text-[7px] uppercase tracking-[0.15em] text-zinc-400">
+                          <p className="mt-0.5 text-[8px] uppercase tracking-[0.15em] text-zinc-400">
                             Remaining domestic market
                           </p>
                         )}

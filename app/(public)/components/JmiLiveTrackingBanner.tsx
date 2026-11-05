@@ -51,7 +51,7 @@ export default function AdvanceBookingBanner() {
         <span className="h-px w-8 bg-violet-400/60" />
 
         <p className="text-[9px] font-medium uppercase tracking-[0.28em] text-pink-400">
-          🧠 JMI Advance Booking Intelligence
+          🧠 JMI Live Tracking Intelligence
         </p>
 
         <span className="h-px flex-1 bg-zinc-900" />
@@ -62,7 +62,7 @@ export default function AdvanceBookingBanner() {
 
   <p className="max-w-xl text-[11px] leading-5 text-zinc-500/95">
     JMI's Exclusive Live Tracking intelligence follows upcoming movies through ongoing theatrical
-    advance bookings and pre-sales box office numbers that keep updates real-time.
+    live bookings and pre-sales box office numbers that keep updates real-time.
   </p>
 
 </div>
@@ -123,7 +123,7 @@ export default function AdvanceBookingBanner() {
               </p>
 
               <h2 className="mt-3 text-xl font-semibold tracking-tight text-white sm:text-3xl">
-                Advance Booking Intelligence
+                Live Tracking Intelligence
               </h2>
 
               <p className="mt-2 text-[9px] text-zinc-500 sm:text-[10px]">
@@ -245,8 +245,8 @@ export default function AdvanceBookingBanner() {
           </span>
 
 
-          <span className="relative">
-            Explore Live Advance Bookings
+          <span className="relative text-[9px]">
+            Explore Live Tracking
           </span>
 
 
