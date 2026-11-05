@@ -669,8 +669,8 @@ export default function AdvanceBookingDayTable({
                       <td className="break-words px-0 py-3 sm:px-2 sm:py-4">
                         <div className="flex items-start gap-1 sm:gap-2">
                           
-                          <div className="min-w-0">
-                            <p className="break-words text-[9px]  font-large font-bold leading-4 text-zinc-800 sm:text-[10px]">
+                          <div className="min-w-full ">
+                            <p className="break-words text-[9px] text-center  font-large font-bold leading-8 text-zinc-800 sm:text-[10px]">
                               {record.territory_name}
                             </p>
 

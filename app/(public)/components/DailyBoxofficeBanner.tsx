@@ -21,7 +21,7 @@ export default function DailyBoxOfficeBanner() {
       {/* DESCRIPTION */}
 
       <div className="mx-auto max-w-6xl px-2 pb-4 sm:px-3">
-        <p className="max-w-2xl text-[11px] leading-5 text-zinc-500/95">
+        <p className="max-w-2xl text-[11px] leading-5 text-zinc-500">
           Explore the day-wise theatrical collections of Indian movies
           through JMI's dedicated box office portal. Follow daily earnings,
           territory performance and cumulative theatrical progress with
@@ -31,7 +31,7 @@ export default function DailyBoxOfficeBanner() {
 
       {/* NEWSPAPER BANNER */}
 
-      <div className="group relative overflow-hidden rounded-xl border border-[#C8B58E] bg-[#F4EBD8] shadow-2xl">
+      <div className="group relative overflow-hidden rounded-xl border border-[#C8B58E]/90 bg-[#F4EBD8]/90 shadow-2xl">
 
         {/* Paper texture and subtle editorial lines */}
 
