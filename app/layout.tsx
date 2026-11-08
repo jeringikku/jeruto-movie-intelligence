@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -49,12 +48,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <Script
-          id="google-adsense"
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2453689236609444"
-          crossOrigin="anonymous"
-          strategy="beforeInteractive"
+        <meta
+          name="google-adsense-account"
+          content="ca-pub-2453689236609444"
         />
       </head>
 
