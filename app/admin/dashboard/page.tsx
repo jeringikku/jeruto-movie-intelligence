@@ -723,6 +723,31 @@ setStats({
   </p>
 </button>
 
+{/* JMI Live Automation */}
+
+<button
+  onClick={() => {
+    window.location.href = "/admin/advance-booking-import";
+  }}
+  className="group rounded-xl border border-zinc-800 bg-zinc-900 p-5 text-left transition hover:border-violet-500 hover:bg-zinc-800"
+>
+  <div className="flex items-center justify-between">
+    <span className="text-2xl">💸</span>
+
+    <span className="text-xs text-zinc-500 group-hover:text-violet-400">
+      Manage →
+    </span>
+  </div>
+
+  <h3 className="mt-4 font-semibold">
+    JMI Live Automation
+  </h3>
+
+  <p className="mt-2 text-xs leading-5 text-zinc-500">
+    Manage JMI's Daily Live Tracking
+  </p>
+</button>
+
 
         
 

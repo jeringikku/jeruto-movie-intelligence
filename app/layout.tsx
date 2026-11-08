@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -23,13 +24,10 @@ export const metadata: Metadata = {
   description:
     "India's movie intelligence platform for movies, box office, people, companies, industries and markets.",
 
-  
-
   openGraph: {
     title: "Jeruto Movie Intelligence",
     description:
       "India's movie intelligence platform for movies, box office, people, companies, industries and markets.",
-    
     siteName: "Jeruto Movie Intelligence",
     type: "website",
   },
@@ -50,6 +48,16 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <Script
+          id="google-adsense"
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2453689236609444"
+          crossOrigin="anonymous"
+          strategy="beforeInteractive"
+        />
+      </head>
+
       <body className="min-h-full bg-black text-white">
         {children}
       </body>

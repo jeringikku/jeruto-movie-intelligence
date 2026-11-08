@@ -204,7 +204,7 @@ export default function FounderPage() {
                   {founder.qualifications}
                 </p>
 
-                <div className="mt-5 space-y-4 text-[10px] leading-6 text-zinc-400 sm:text-xs sm:leading-7">
+                <div className="mt-5 space-y-4 text-[12px] leading-6 text-zinc-300 sm:text-xs sm:leading-7">
 
                   <p>
                     I am Jerin Georgekutty, Founder and CEO of Jeruto

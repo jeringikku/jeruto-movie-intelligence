@@ -128,15 +128,56 @@ function parseNumber(value: unknown): number | null {
     return Number.isFinite(value) ? value : null;
   }
 
-  const text = String(value).trim().replace(/,/g, "");
+  let text = String(value)
+    .trim()
+    .replace(/,/g, "")
+    .replace(/[₹\s]/g, "")
+    .replace(/^rs\.?/i, "")
+    .replace(/^inr/i, "");
 
   if (!text || text === "-" || text.toLowerCase() === "na") {
     return null;
   }
 
+  // Reject percentages here; they are handled separately.
+  if (text.includes("%")) return null;
+
   const parsed = Number(text);
 
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseOccupancy(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  // Excel percentage cells generally return their decimal value
+  // when XLSX is read with raw: true.
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  let text = String(value).trim();
+
+  if (!text || text === "-" || text.toLowerCase() === "na") {
+    return null;
+  }
+
+  const isPercentage = text.includes("%");
+
+  text = text
+    .replace(/%/g, "")
+    .replace(/,/g, "")
+    .trim();
+
+  const parsed = Number(text);
+
+  if (!Number.isFinite(parsed)) return null;
+
+  // "35%" becomes 0.35; an Excel numeric value of 0.35
+  // remains 0.35.
+  return isPercentage ? parsed / 100 : parsed;
 }
 
 function getHeaderIndex(
@@ -297,46 +338,75 @@ function parseExcelFile(
           // Ignore aggregate/footer rows.
           if (normalizeName(name) === "total") return;
 
-          const gross = parseGross(row[grossIndex]);
-          const admissions = parseNumber(row[admissionsIndex]);
-          const atp = parseNumber(row[atpIndex]);
-          const showCount = parseNumber(row[showsIndex]);
-          const occupancy = parseNumber(row[occupancyIndex]);
+        const gross = parseGross(row[grossIndex]);
+const admissions = parseNumber(row[admissionsIndex]);
+const atp = parseNumber(row[atpIndex]);
+const showCount = parseNumber(row[showsIndex]);
+const occupancy = parseOccupancy(row[occupancyIndex]);
 
-          if (
-            gross === null ||
-            admissions === null ||
-            atp === null ||
-            showCount === null ||
-            occupancy === null
-          ) {
-            errors.push(
-              `Row ${originalRowNumber} (${name}): one or more required numeric values are missing or invalid.`
-            );
-            return;
-          }
+         const invalidFields: string[] = [];
 
-          if (
-            gross < 0 ||
-            admissions < 0 ||
-            atp < 0 ||
-            showCount < 0 ||
-            occupancy < 0
-          ) {
-            errors.push(
-              `Row ${originalRowNumber} (${name}): negative values are not allowed.`
-            );
-            return;
-          }
+if (gross === null) invalidFields.push("Gross");
+if (admissions === null) invalidFields.push("Tickets/Admissions");
+if (atp === null) invalidFields.push("ATP");
+if (showCount === null) invalidFields.push("Shows");
+if (occupancy === null) invalidFields.push("Occupancy");
 
-          const importedRow: ImportRow = {
-            name,
-            gross,
-            admissions: Math.round(admissions),
-            atp,
-            show_count: Math.round(showCount),
-            occupancy,
-          };
+if (invalidFields.length > 0) {
+  errors.push(
+    `Row ${originalRowNumber} (${name}): invalid or missing ${invalidFields.join(", ")}.`
+  );
+  return;
+}
+
+// Explicit null check for TypeScript
+if (
+  gross === null ||
+  admissions === null ||
+  atp === null ||
+  showCount === null ||
+  occupancy === null
+) {
+  return;
+}
+
+// Reject negative values
+if (
+  gross < 0 ||
+  admissions < 0 ||
+  atp < 0 ||
+  showCount < 0 ||
+  occupancy < 0
+) {
+  errors.push(
+    `Row ${originalRowNumber} (${name}): negative values are not allowed.`
+  );
+  return;
+}
+
+// Occupancy must be between 0 and 1
+if (occupancy > 1) {
+  errors.push(
+    `Row ${originalRowNumber} (${name}): Occupancy must be between 0 and 1, or entered as a percentage such as 35%.`
+  );
+  return;
+}
+
+const importedRow: ImportRow = {
+  name,
+  gross,
+  admissions: Math.round(admissions),
+  atp,
+  show_count: Math.round(showCount),
+  occupancy,
+};
+
+          if (occupancy > 1) {
+  errors.push(
+    `Row ${originalRowNumber} (${name}): Occupancy must be between 0 and 1, or entered as a percentage such as 35%.`
+  );
+  return;
+}
 
           if (type === "STATE") {
             const stateId = stateMap.get(normalizeName(name));

@@ -193,120 +193,116 @@ export default function FormatWisePage() {
   // --------------------------------------------------
 
   async function handleSave() {
-    if (!movieId) {
-      alert("No movie selected.");
-      return;
-    }
-
-    if (!formatName) {
-      alert("Please select a format.");
-      return;
-    }
-
-    if (
-      gross === "" ||
-      Number(gross) < 0
-    ) {
-      alert(
-        "Please enter a valid gross collection."
-      );
-      return;
-    }
-
-    if (
-      net === "" ||
-      Number(net) < 0
-    ) {
-      alert(
-        "Please enter a valid net collection."
-      );
-      return;
-    }
-
-    /*
-     * Admissions are intentionally optional.
-     * NULL is allowed by our database design.
-     */
-
-    if (
-      admissions !== "" &&
-      Number(admissions) < 0
-    ) {
-      alert(
-        "Please enter valid footfalls."
-      );
-      return;
-    }
-
-    setSaving(true);
-
-    const payload = {
-      movie_id: movieId,
-
-      format_name: formatName,
-
-      gross_jmi:
-        gross === ""
-          ? null
-          : Number(gross),
-
-      net_jmi:
-        net === ""
-          ? null
-          : Number(net),
-
-      admissions:
-        admissions === ""
-          ? null
-          : Number(admissions),
-
-      status_id:
-        statusId === ""
-          ? 3
-          : Number(statusId),
-
-      notes:
-        notes.trim() || null,
-
-      updated_at:
-        new Date().toISOString(),
-    };
-
-    const { error } = await supabase
-      .from("movie_format_box_office")
-      .upsert(payload, {
-        onConflict:
-          "movie_id,format_name",
-      });
-
-    if (error) {
-      console.error(
-        "Format-wise save error:",
-        error
-      );
-
-      alert(
-        "Failed to save format-wise collection: " +
-          error.message
-      );
-
-      setSaving(false);
-      return;
-    }
-
-    alert(
-      editingId
-        ? "Format-wise collection updated successfully! 🔥"
-        : "Format-wise collection saved successfully! 🔥"
-    );
-
-    resetForm();
-
-    await fetchFormatData(movieId);
-
-    setSaving(false);
+  if (!movieId) {
+    alert("No movie selected.");
+    return;
   }
 
+  if (!formatName.trim()) {
+    alert("Please select a format.");
+    return;
+  }
+
+  // Gross is compulsory.
+  if (
+    gross.trim() === "" ||
+    !Number.isFinite(Number(gross)) ||
+    Number(gross) < 0
+  ) {
+    alert("Please enter a valid gross collection.");
+    return;
+  }
+
+  // Net is optional, but must be valid if entered.
+  if (
+    net.trim() !== "" &&
+    (
+      !Number.isFinite(Number(net)) ||
+      Number(net) < 0
+    )
+  ) {
+    alert("Please enter a valid net collection.");
+    return;
+  }
+
+  // Admissions is optional, but must be valid if entered.
+  if (
+    admissions.trim() !== "" &&
+    (
+      !Number.isFinite(Number(admissions)) ||
+      Number(admissions) < 0
+    )
+  ) {
+    alert("Please enter valid footfalls.");
+    return;
+  }
+
+  if (
+    !statusId ||
+    !Number.isFinite(Number(statusId))
+  ) {
+    alert("Please select a valid collection status.");
+    return;
+  }
+
+  setSaving(true);
+
+  const payload = {
+    movie_id: movieId,
+    format_name: formatName.trim(),
+
+    // Mandatory
+    gross_jmi: Number(gross),
+
+    // Optional: blank values are stored as NULL.
+    net_jmi:
+      net.trim() === ""
+        ? null
+        : Number(net),
+
+    admissions:
+      admissions.trim() === ""
+        ? null
+        : Math.round(Number(admissions)),
+
+    status_id: Number(statusId),
+    notes: notes.trim() || null,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { error } = await supabase
+    .from("movie_format_box_office")
+    .upsert(payload, {
+      onConflict: "movie_id,format_name",
+    });
+
+  if (error) {
+    console.error(
+      "Format-wise save error:",
+      error
+    );
+
+    alert(
+      "Failed to save format-wise collection: " +
+        error.message
+    );
+
+    setSaving(false);
+    return;
+  }
+
+  alert(
+    editingId
+      ? "Format-wise collection updated successfully!"
+      : "Format-wise collection saved successfully!"
+  );
+
+  resetForm();
+
+  await fetchFormatData(movieId);
+
+  setSaving(false);
+}
   // --------------------------------------------------
   // Edit
   // --------------------------------------------------
@@ -599,9 +595,12 @@ export default function FormatWisePage() {
 
           <div>
 
-            <label className="mb-2 block text-sm text-gray-400">
-              Cumulative Gross
-            </label>
+           <label className="mb-2 block text-sm text-gray-400">
+  Cumulative Gross
+  <span className="ml-2 text-xs text-yellow-400">
+    (Required)
+  </span>
+</label>
 
             <input
               type="number"
@@ -624,8 +623,11 @@ export default function FormatWisePage() {
           <div>
 
             <label className="mb-2 block text-sm text-gray-400">
-              Cumulative Net
-            </label>
+  Cumulative Net
+  <span className="ml-2 text-xs text-emerald-400">
+    (Optional)
+  </span>
+</label>
 
             <input
               type="number"
@@ -647,9 +649,12 @@ export default function FormatWisePage() {
 
           <div>
 
-            <label className="mb-2 block text-sm text-gray-400">
-              Cumulative Footfalls
-            </label>
+           <label className="mb-2 block text-sm text-gray-400">
+  Cumulative Footfalls
+  <span className="ml-2 text-xs text-emerald-400">
+    (Optional)
+  </span>
+</label>
 
             <input
               type="number"
@@ -988,34 +993,36 @@ export default function FormatWisePage() {
         )}
 
       </div>
+{/* Information */}
 
-      {/* Information */}
+<div className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950 p-5">
 
-      <div className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950 p-5">
+  <p className="text-sm text-zinc-400">
+    <span className="font-semibold text-yellow-400">
+      How this works:
+    </span>{" "}
+    Format-wise collection stores only the latest
+    cumulative theatrical gross for each format.
+    Gross is mandatory, while Net and Footfalls
+    can be entered whenever reliable figures
+    are available.
+  </p>
 
-        <p className="text-sm text-zinc-400">
+  <p className="mt-2 text-sm text-zinc-500">
+    Empty Net and Footfalls fields are stored as
+    unavailable values (NULL), not zero.
+    Updating an existing format replaces its
+    previous cumulative value. Historical
+    format-wise records are not maintained.
+  </p>
 
-          <span className="font-semibold text-yellow-400">
-            How this works:
-          </span>{" "}
-          Format-wise collection stores only the latest
-          cumulative theatrical figure for each format.
+  <p className="mt-2 text-sm text-zinc-500">
+    Format-wise collection is completely independent
+    and does not calculate or modify figures from
+    any other box-office collection page.
+  </p>
 
-        </p>
-
-        <p className="mt-2 text-sm text-zinc-500">
-          Updating an existing format replaces its previous
-          cumulative value. Historical format-wise records
-          are not maintained.
-        </p>
-
-        <p className="mt-2 text-sm text-zinc-500">
-          Format-wise collection is completely independent
-          and does not calculate or modify figures from any
-          other box-office collection page.
-        </p>
-
-      </div>
+</div>
 
     </div>
   );

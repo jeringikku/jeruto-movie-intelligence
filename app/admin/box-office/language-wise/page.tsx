@@ -160,76 +160,106 @@ function resetForm() {
 }
 
   async function handleSave() {
-    if (!movieId) {
-      alert("No movie selected.");
-      return;
-    }
+  if (!movieId) {
+    alert("No movie selected.");
+    return;
+  }
 
-    if (!languageName.trim()) {
-      alert("Please enter a language.");
-      return;
-    }
+  if (!languageName.trim()) {
+    alert("Please select a language.");
+    return;
+  }
 
-    if (!gross || Number(gross) < 0) {
-      alert("Please enter a valid gross collection.");
-      return;
-    }
+  // Gross is compulsory.
+  if (
+    gross.trim() === "" ||
+    !Number.isFinite(Number(gross)) ||
+    Number(gross) < 0
+  ) {
+    alert("Please enter a valid cumulative gross collection.");
+    return;
+  }
 
-    if (!net || Number(net) < 0) {
-      alert("Please enter a valid net collection.");
-      return;
-    }
+  // Net is optional, but must be valid if entered.
+  if (
+    net.trim() !== "" &&
+    (!Number.isFinite(Number(net)) || Number(net) < 0)
+  ) {
+    alert("Please enter a valid cumulative net collection.");
+    return;
+  }
 
-    if (!admissions || Number(admissions) < 0) {
-      alert("Please enter valid footfalls.");
-      return;
-    }
+  // Admissions is optional, but must be valid if entered.
+  if (
+    admissions.trim() !== "" &&
+    (
+      !Number.isFinite(Number(admissions)) ||
+      Number(admissions) < 0
+    )
+  ) {
+    alert("Please enter valid cumulative footfalls.");
+    return;
+  }
 
-    setSaving(true);
+  if (!statusId || !Number.isFinite(Number(statusId))) {
+    alert("Please select a valid collection status.");
+    return;
+  }
 
-    const cleanLanguage = languageName.trim();
+  setSaving(true);
 
-    const payload = {
-      movie_id: movieId,
-      language_name: cleanLanguage,
-      gross_jmi: Number(gross),
-      net_jmi: Number(net),
-      admissions: Number(admissions),
-      status_id: Number(statusId),
-      notes: notes.trim() || null,
-      updated_at: new Date().toISOString(),
-    };
+  const cleanLanguage = languageName.trim();
 
-    const { error } = await supabase
-      .from("movie_language_box_office")
-      .upsert(payload, {
-        onConflict: "movie_id,language_name",
-      });
+  const payload = {
+    movie_id: movieId,
+    language_name: cleanLanguage,
 
-    if (error) {
-      console.error(error);
+    // Required
+    gross_jmi: Number(gross),
 
-      alert(
-        "Failed to save language-wise collection: " +
-          error.message
-      );
+    // Optional: blank fields are saved as NULL.
+    net_jmi: net.trim() === "" ? null : Number(net),
 
-      setSaving(false);
-      return;
-    }
+    admissions:
+      admissions.trim() === ""
+        ? null
+        : Math.round(Number(admissions)),
+
+    status_id: Number(statusId),
+    notes: notes.trim() || null,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { error } = await supabase
+    .from("movie_language_box_office")
+    .upsert(payload, {
+      onConflict: "movie_id,language_name",
+    });
+
+  if (error) {
+    console.error(error);
 
     alert(
-      editingId
-        ? "Language-wise collection updated successfully."
-        : "Language-wise collection saved successfully."
+      "Failed to save language-wise collection: " +
+        error.message
     );
 
-    resetForm();
-
-    await fetchLanguageData(movieId);
-
     setSaving(false);
+    return;
   }
+
+  alert(
+    editingId
+      ? "Language-wise collection updated successfully."
+      : "Language-wise collection saved successfully."
+  );
+
+  resetForm();
+
+  await fetchLanguageData(movieId);
+
+  setSaving(false);
+}
 
   function handleEdit(record: LanguageRecord) {
     setEditingId(record.id);
@@ -445,9 +475,11 @@ function resetForm() {
 
           <div>
             <label className="block text-sm text-gray-400 mb-2">
-              Cumulative Net
-            </label>
-
+  Cumulative Net
+  <span className="ml-2 text-xs text-emerald-400">
+    (Optional)
+  </span>
+</label>
             <input
               type="number"
               min="0"
@@ -464,8 +496,11 @@ function resetForm() {
 
           <div>
             <label className="block text-sm text-gray-400 mb-2">
-              Cumulative Footfalls
-            </label>
+  Cumulative Footfalls
+  <span className="ml-2 text-xs text-emerald-400">
+    (Optional)
+  </span>
+</label>
 
             <input
               type="number"
