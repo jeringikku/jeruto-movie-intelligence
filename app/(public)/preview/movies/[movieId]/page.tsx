@@ -121,6 +121,73 @@ export default async function MovieIntelligencePage({
   }
 
   // =====================================================
+// MOVIE CAST & CREW PROFILE IMAGES
+// =====================================================
+
+type MoviePersonImage = {
+  person_id: number;
+  billing_order: number | null;
+  people:
+    | {
+        full_name: string;
+        profile_image_url: string | null;
+      }
+    | {
+        full_name: string;
+        profile_image_url: string | null;
+      }[]
+    | null;
+};
+
+const {
+  data: moviePeopleImagesData,
+  error: moviePeopleImagesError,
+} = await supabase
+  .from("movie_people")
+  .select(`
+    person_id,
+    billing_order,
+    people (
+      full_name,
+      profile_image_url
+    )
+  `)
+  .eq("movie_id", movie.id)
+  .order("billing_order", {
+    ascending: true,
+    nullsFirst: false,
+  });
+
+if (moviePeopleImagesError) {
+  console.error(
+    "JMI Movie People Images Error:",
+    moviePeopleImagesError
+  );
+}
+
+const moviePeopleImageRecords =
+  (moviePeopleImagesData || []) as unknown as MoviePersonImage[];
+
+const seenPersonIds = new Set<number>();
+
+const availablePeopleImages = moviePeopleImageRecords.filter((row) => {
+  const person = Array.isArray(row.people)
+    ? row.people[0]
+    : row.people;
+
+  if (
+    !person?.profile_image_url?.trim() ||
+    seenPersonIds.has(row.person_id)
+  ) {
+    return false;
+  }
+
+  seenPersonIds.add(row.person_id);
+
+  return true;
+});
+
+  // =====================================================
 // MOVIE BUSINESS VERDICTS
 // =====================================================
 
@@ -553,6 +620,57 @@ const certification = Array.isArray(certificationItem)
   </div>
 
 </div>
+
+{/* =================================================
+    CAST & CREW PROFILE IMAGES
+================================================= */}
+
+{availablePeopleImages.length > 0 && (
+  <div className="mt-5">
+
+    <p className="mb-3 text-[8px] font-semibold uppercase tracking-[0.22em] text-violet-400">
+      Cast & Crew
+    </p>
+
+    <div className="flex flex-wrap items-start gap-x-3 gap-y-3">
+
+      {availablePeopleImages.map((row) => {
+
+        const person = Array.isArray(row.people)
+          ? row.people[0]
+          : row.people;
+
+        if (!person?.profile_image_url) {
+          return null;
+        }
+
+        return (
+          <Link
+            key={row.person_id}
+            href={`/preview/people/${row.person_id}?movieId=${movie.id}`}
+            title={person.full_name}
+            className="group flex w-12 flex-col items-center gap-1.5"
+          >
+
+            <img
+              src={person.profile_image_url}
+              alt={person.full_name}
+              loading="lazy"
+              className="h-10 w-10 rounded-full border border-zinc-700 object-cover transition-all duration-300 group-hover:border-violet-400 group-hover:scale-105"
+            />
+
+            <span className="w-full truncate text-center text-[7px] text-zinc-500 transition-colors group-hover:text-violet-300">
+              {person.full_name}
+            </span>
+
+          </Link>
+        );
+      })}
+
+    </div>
+
+  </div>
+)}
 
 
                 {/* Synopsis */}

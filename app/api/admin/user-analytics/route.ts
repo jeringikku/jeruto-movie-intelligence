@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import {
+  createClient,
+  type SupabaseClient,
+} from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -9,13 +12,29 @@ type TrafficPoint = {
   views: number;
 };
 
-type Row = Record<string, unknown>;
-
 type SnapshotRow = {
   snapshot_date: string;
   homepage_views: number;
   movie_page_views: number;
   combined_views: number;
+};
+
+type MovieViewRow = {
+  movie_id: number;
+  view_count: number;
+};
+
+type MovieRow = {
+  id: number;
+  title: string;
+  release_year: number | null;
+};
+
+type PopularMovie = {
+  movie_id: number;
+  view_count: number;
+  title: string;
+  release_year: number | null;
 };
 
 function getEnvironment(name: string): string {
@@ -31,6 +50,62 @@ function getEnvironment(name: string): string {
 function numberValue(value: unknown): number {
   const number = Number(value ?? 0);
   return Number.isFinite(number) ? number : 0;
+}
+
+// Fetch every row in batches to avoid Supabase's response-row limit.
+async function fetchAllMovieCacheRows(
+  supabaseAdmin: SupabaseClient
+): Promise<MovieViewRow[]> {
+  const allRows: MovieViewRow[] = [];
+  const batchSize = 1000;
+  let offset = 0;
+
+  while (true) {
+    const { data, error } = await supabaseAdmin
+      .from("jmi_movie_page_views_cache")
+      .select("movie_id, view_count")
+      .order("movie_id", { ascending: true })
+      .range(offset, offset + batchSize - 1);
+
+    if (error) throw error;
+
+    const rows = (data ?? []) as MovieViewRow[];
+    allRows.push(...rows);
+
+    if (rows.length < batchSize) break;
+
+    offset += batchSize;
+  }
+
+  return allRows;
+}
+
+// Fetch all movie records for the ranking.
+async function fetchAllMovies(
+  supabaseAdmin: SupabaseClient
+): Promise<MovieRow[]> {
+  const allRows: MovieRow[] = [];
+  const batchSize = 1000;
+  let offset = 0;
+
+  while (true) {
+    const { data, error } = await supabaseAdmin
+      .from("movies")
+      .select("id, title, release_year")
+      .order("id", { ascending: true })
+      .range(offset, offset + batchSize - 1);
+
+    if (error) throw error;
+
+    const rows = (data ?? []) as MovieRow[];
+    allRows.push(...rows);
+
+    if (rows.length < batchSize) break;
+
+    offset += batchSize;
+  }
+
+  return allRows;
 }
 
 // Calculate daily traffic from consecutive cumulative snapshots.
@@ -49,8 +124,6 @@ function buildSnapshotSeries(
     const previous = numberValue(sortedRows[i - 1][field]);
     const current = numberValue(sortedRows[i][field]);
 
-    // If a counter was reset, use the current total as the
-    // traffic since the previous snapshot.
     const dailyViews =
       current >= previous ? current - previous : current;
 
@@ -129,7 +202,7 @@ export async function GET(request: Request) {
       );
     }
 
-    // Verify the authenticated user.
+    // Verify authenticated user.
     const supabaseAuth = createClient(supabaseUrl, anonKey, {
       auth: {
         autoRefreshToken: false,
@@ -202,22 +275,26 @@ export async function GET(request: Request) {
     const [
       profileResult,
       homepageResult,
-      movieViewsResult,
-      moviesResult,
+      movieCacheRows,
+      movies,
       snapshotsResult,
     ] = await Promise.all([
+      // Existing profile count remains unchanged.
       supabaseAdmin.from("profiles").select("*", {
         count: "exact",
         head: true,
       }),
 
+      // IMPORTANT: Homepage tracking remains completely unchanged.
       supabaseAdmin.from("jmi_homepage_views").select("*"),
 
-      supabaseAdmin.from("jmi_movie_page_views").select("*"),
+      // Movie-page statistics now read from the 10-minute cache.
+      fetchAllMovieCacheRows(supabaseAdmin),
 
-      supabaseAdmin.from("movies").select("id, title, release_year"),
+      // Fetch every movie for accurate ranking joins.
+      fetchAllMovies(supabaseAdmin),
 
-      // New daily cumulative snapshot table.
+      // Existing daily snapshots remain unchanged.
       supabaseAdmin
         .from("jmi_daily_traffic_snapshots")
         .select(
@@ -228,33 +305,29 @@ export async function GET(request: Request) {
 
     if (profileResult.error) throw profileResult.error;
     if (homepageResult.error) throw homepageResult.error;
-    if (movieViewsResult.error) throw movieViewsResult.error;
-    if (moviesResult.error) throw moviesResult.error;
     if (snapshotsResult.error) throw snapshotsResult.error;
 
-    const homepageRows = (homepageResult.data ?? []) as Row[];
-    const movieViewRows = (movieViewsResult.data ?? []) as Row[];
-    const movies = moviesResult.data ?? [];
-
+    const homepageRows = homepageResult.data ?? [];
     const snapshots = (snapshotsResult.data ?? []) as SnapshotRow[];
 
-    // Preserve existing lifetime cumulative totals.
+    // Preserve original homepage cumulative total calculation.
     const homepageViews = homepageRows.reduce(
       (total, row) => total + numberValue(row.view_count),
       0
     );
 
-    const moviePageViews = movieViewRows.reduce(
+    // Calculate movie-page views from the cache.
+    const moviePageViews = movieCacheRows.reduce(
       (total, row) => total + numberValue(row.view_count),
       0
     );
 
-    // Preserve the existing Most Viewed Movies calculation.
+    // Preserve Most Viewed Movies using cached counters.
     const movieMap = new Map(
       movies.map((movie) => [Number(movie.id), movie])
     );
 
-    const popularMovies = movieViewRows
+    const popularMovies: PopularMovie[] = movieCacheRows
       .map((row) => {
         const movieId = Number(row.movie_id);
         const movie = movieMap.get(movieId);
@@ -268,11 +341,11 @@ export async function GET(request: Request) {
           release_year: movie.release_year,
         };
       })
-      .filter((movie) => movie !== null)
+      .filter((movie): movie is PopularMovie => movie !== null)
       .sort((a, b) => b.view_count - a.view_count)
       .slice(0, 10);
 
-    // Get the actual total registered-user count.
+    // Get actual registered-user count.
     let registeredUsers = 0;
     let page = 1;
     const perPage = 1000;
@@ -290,7 +363,7 @@ export async function GET(request: Request) {
       page += 1;
     }
 
-    // Calculate daily traffic using consecutive snapshots.
+    // Existing daily traffic calculations remain unchanged.
     const homepageTraffic = buildSnapshotSeries(
       snapshots,
       "homepage_views"
@@ -314,7 +387,7 @@ export async function GET(request: Request) {
           homepageViews,
           moviePageViews,
           moviesWithViews: new Set(
-            movieViewRows.map((row) => Number(row.movie_id))
+            movieCacheRows.map((row) => Number(row.movie_id))
           ).size,
         },
 
