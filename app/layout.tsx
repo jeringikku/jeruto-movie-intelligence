@@ -48,11 +48,15 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <meta
-          name="google-adsense-account"
-          content="ca-pub-2453689236609444"
-        />
-      </head>
+  <meta
+    name="google-adsense-account"
+    content="ca-pub-2453689236609444"
+  />
+  <link
+    rel="manifest"
+    href="/manifest.webmanifest"
+  />
+</head>
 
       <body className="min-h-full bg-black text-white">
         {children}

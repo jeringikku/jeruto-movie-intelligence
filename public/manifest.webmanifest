@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "Jeruto Movie Intelligence",
+  "short_name": "JMI",
+  "description": "India's movie intelligence platform for movies, box office, people, companies, industries and markets.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
