@@ -301,7 +301,7 @@ export default async function FunZonePage() {
     <p className="mt-4 text-[8px] uppercase tracking-[0.14em] text-zinc-600">
       Registered JMI members only
     </p>
-  </div>
+  </div> 
 ) : (
           <>
             {/* LOCKED WINDOW */}

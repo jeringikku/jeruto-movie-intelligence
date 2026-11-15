@@ -14,7 +14,7 @@ export default function ContactPage() {
     event.preventDefault();
 
     if (submitting) return;
-
+ 
     setSubmitting(true);
     setError("");
 

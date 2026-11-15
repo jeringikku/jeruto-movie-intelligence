@@ -362,7 +362,7 @@ function RankingSection({
                       : "text-pink-400"
                   }`}
                 >
-                  {String(index + 1).padStart(2, "0")}
+                  {String(index + 1).padStart(2, "0")} 
                 </div>
 
                 <div className="min-w-0 flex-1">
