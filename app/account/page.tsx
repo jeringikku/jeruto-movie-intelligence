@@ -253,6 +253,10 @@ export default function AccountPage() {
   const [errorMessage, setErrorMessage] =
     useState("");
 
+    const [deleting, setDeleting] = useState(false);
+const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
+
   /* ==========================================================
      LOAD ACCOUNT
      ========================================================== */
@@ -843,6 +847,48 @@ export default function AccountPage() {
     router.replace("/");
     router.refresh();
   }
+
+  async function handleDeleteAccount() {
+  if (deleteConfirmationText !== "DELETE") {
+    setErrorMessage('Please type DELETE to confirm account deletion.');
+    return;
+  }
+
+  setDeleting(true);
+  setErrorMessage("");
+
+  try {
+    const response = await fetch("/api/account/delete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error || "Unable to delete your account."
+      );
+    }
+
+    await supabaseBrowser.auth.signOut();
+
+    router.replace("/?accountDeleted=1");
+    router.refresh();
+  } catch (error) {
+    console.error("Account deletion request failed:", error);
+
+    setErrorMessage(
+      error instanceof Error
+        ? error.message
+        : "Account deletion failed. Please contact JMI support."
+    );
+
+    setDeleting(false);
+  }
+}
 
   /* ==========================================================
      DATE
@@ -1903,32 +1949,95 @@ export default function AccountPage() {
               </button>
 
               <button
-                type="button"
-                disabled
-                className="flex w-full items-center justify-between rounded-2xl border border-white/[0.06] bg-black/20 px-4 py-3.5 text-left opacity-60"
-              >
+  type="button"
+  onClick={() => {
+    setErrorMessage("");
+    setDeleteConfirmationText("");
+    setShowDeleteConfirm(true);
+  }}
+  className="flex w-full items-center justify-between rounded-2xl border border-red-400/15 bg-red-500/[0.025] px-4 py-3.5 text-left transition hover:border-red-400/30 hover:bg-red-500/[0.06]"
+>
+  <div>
+    <p className="text-xs font-medium text-red-400">
+      Delete Account
+    </p>
+    <p className="mt-0.5 text-[9px] text-zinc-600">
+      Permanently delete your JMI account and associated data.
+    </p>
+  </div>
 
-                <div>
-
-                  <p className="text-xs font-medium text-red-500">
-                    Delete Account
-                  </p>
-
-                  <p className="mt-0.5 text-[9px] text-zinc-700">
-                    Account deletion will be designed later
-                  </p>
-
-                </div>
-
-                <span className="text-[9px] text-zinc-700">
-                  Disabled
-                </span>
-
-              </button>
+  <span className="text-[9px] font-semibold text-red-400">
+    Delete →
+  </span>
+</button>
 
             </div>
 
           </section>
+
+          {showDeleteConfirm && (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4 py-6 backdrop-blur-sm">
+    <div className="w-full max-w-md rounded-3xl border border-red-400/20 bg-[#101014] p-6 shadow-2xl">
+
+      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl border border-red-400/20 bg-red-500/[0.08] text-xl text-red-400">
+        !
+      </div>
+
+      <h2 className="text-lg font-semibold text-white">
+        Delete your JMI account?
+      </h2>
+
+      <p className="mt-2 text-xs leading-6 text-zinc-400">
+        This action is permanent. Your profile, social posts,
+        replies, reactions, ratings, activity records and
+        account-related points and subscription records will
+        be deleted. This cannot be undone.
+      </p>
+
+      <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.12em] text-red-400">
+        Type DELETE to confirm
+      </p>
+
+      <input
+        type="text"
+        value={deleteConfirmationText}
+        onChange={(event) =>
+          setDeleteConfirmationText(event.target.value)
+        }
+        placeholder="Type DELETE"
+        disabled={deleting}
+        className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-700 focus:border-red-400/40"
+      />
+
+      <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+
+        <button
+          type="button"
+          disabled={deleting}
+          onClick={() => {
+            setShowDeleteConfirm(false);
+            setDeleteConfirmationText("");
+          }}
+          className="rounded-xl border border-white/10 px-5 py-3 text-xs text-zinc-400 transition hover:bg-white/[0.05] disabled:opacity-40"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          disabled={
+            deleting || deleteConfirmationText !== "DELETE"
+          }
+          onClick={handleDeleteAccount}
+          className="rounded-xl border border-red-400/30 bg-red-500/10 px-5 py-3 text-xs font-semibold text-red-300 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {deleting ? "Deleting Account..." : "Permanently Delete"}
+        </button>
+
+      </div>
+    </div>
+  </div>
+)}
 
           {/* ==================================================
               LOGOUT
