@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState } from "react";
@@ -44,6 +45,20 @@ type DayData = {
 type Props = {
   days: DayData[];
 };
+
+type CumulativeRecord = {
+  id: string;
+  name: string;
+  gross: number;
+  admissions: number;
+  shows: number;
+  atp: number | null;
+  occupancy: number | null;
+};
+
+/* =========================================================
+   FORMATTERS
+========================================================= */
 
 function formatCollection(value: number | null) {
   if (value === null || value === undefined) return "—";
@@ -153,6 +168,97 @@ function getFirstWeekday(monthKey: string) {
 }
 
 /* =========================================================
+   SORTING
+========================================================= */
+
+function sortByGross<T extends { gross: number | null }>(
+  records: T[]
+) {
+  return [...records].sort(
+    (a, b) => Number(b.gross || 0) - Number(a.gross || 0)
+  );
+}
+
+/* =========================================================
+   TABLE STYLING
+========================================================= */
+
+const tableHeaderClass =
+  "border-r border-[#C5C5B9] px-3 py-4 text-center text-[10px] font-extrabold uppercase tracking-[0.03em] text-[#363636] last:border-r-0 sm:px-4 sm:py-4 sm:text-xs";
+
+const tableNameCellClass =
+  "border-r border-[#D0D0C5] px-3 py-4 text-center text-[11px] font-bold text-zinc-800 last:border-r-0 sm:px-4 sm:py-4 sm:text-xs";
+
+const tableGrossCellClass =
+  "border-r border-[#D0D0C5] px-3 py-4 text-center text-[11px] font-extrabold text-green-700 last:border-r-0 sm:px-4 sm:py-4 sm:text-xs";
+
+const tableNumberCellClass =
+  "border-r border-[#D0D0C5] px-3 py-4 text-center text-[11px] font-semibold text-zinc-800 last:border-r-0 sm:px-4 sm:py-4 sm:text-xs";
+
+const tableOccupancyCellClass =
+  "px-3 py-4 text-center text-[11px] font-bold text-red-600 sm:px-4 sm:py-4 sm:text-xs";
+
+const tableRowClass =
+  "border-b border-[#D0D0C5] last:border-b-0 transition-colors hover:bg-[#ECECE4]";
+
+/* =========================================================
+   JMI WATERMARK
+========================================================= */
+
+function TableWatermark() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
+    >
+      <div className="select-none -rotate-[24deg] text-center opacity-[0.075]">
+        <p className="whitespace-nowrap font-serif text-5xl font-black tracking-[0.2em] text-[#292929] sm:text-7xl">
+          JMI
+        </p>
+        <p className="mt-1 whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.35em] text-[#292929] sm:text-xs">
+          Jeruto Movie Intelligence
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   LEADER TROPHY
+========================================================= */
+
+function LeaderTrophy() {
+  return (
+    <span
+      title="Highest grossing entry"
+      aria-label="Highest grossing entry"
+      className="ml-1 inline-block animate-pulse text-sm"
+    >
+      🏆
+    </span>
+  );
+}
+
+/* =========================================================
+   SHARED TABLE WRAPPER
+========================================================= */
+
+function TableWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative isolate w-full overflow-hidden rounded-lg border border-[#C5C5B9] bg-[#F5F5EF]">
+      <TableWatermark />
+      <div className="relative z-10 w-full overflow-x-auto">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
    CATEGORY BREAKDOWN TABLE
 ========================================================= */
 
@@ -165,131 +271,340 @@ function CategoryBreakdown({
   subtitle: string;
   records: CategoryRecord[];
 }) {
-  const totalGross = records.reduce(
-    (sum, record) => sum + Number(record.gross || 0),
-    0
-  );
-
-  const totalAdmissions = records.reduce(
-    (sum, record) => sum + Number(record.admissions || 0),
-    0
-  );
-
-  const totalShows = records.reduce(
-    (sum, record) => sum + Number(record.show_count || 0),
-    0
+  const sortedRecords = useMemo(
+    () => sortByGross(records),
+    [records]
   );
 
   return (
-    <section className="mt-5 overflow-hidden rounded-xl border border-green-700 bg-zinc-950">
-      <div className="border-b border-zinc-900 px-3 py-4 sm:px-5">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <p className="text-[8px] uppercase tracking-[0.16em] text-violet-400">
-              {title}
-            </p>
+    <section className="mt-7 w-full">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <p className="text-[8px] uppercase tracking-[0.16em] text-violet-400">
+            {title}
+          </p>
 
-            <h3 className="mt-1 text-sm font-medium text-zinc-100">
-              {title} Collection
-            </h3>
+          <h3 className="mt-1 text-base font-semibold text-zinc-100">
+            {title} Collection
+          </h3>
 
-            <p className="mt-1 text-[9px] text-zinc-500">
-              {subtitle}
-            </p>
-          </div>
-
-          <span className="rounded-full border border-zinc-800 px-3 py-1 text-[8px] text-zinc-400">
-            {records.length} Records
-          </span>
+          <p className="mt-1 text-[10px] text-zinc-500">
+            {subtitle}
+          </p>
         </div>
+
+        <span className="text-[9px] text-zinc-500">
+          {records.length} Records
+        </span>
       </div>
 
-      {records.length === 0 ? (
-        <div className="px-4 py-8 text-center">
-          <p className="text-[10px] text-zinc-400">
+      {sortedRecords.length === 0 ? (
+        <div className="border-y border-zinc-800 px-4 py-8 text-center">
+          <p className="text-[11px] text-zinc-400">
             No {title.toLowerCase()} data available for this day.
           </p>
 
-          <p className="mt-2 text-[8px] text-zinc-600">
+          <p className="mt-2 text-[9px] text-zinc-600">
             JMI has not yet recorded this category.
           </p>
         </div>
       ) : (
-        <>
-          <div className="w-full">
-            <table className="w-full table-fixed border-collapse bg-[#F5F5EF]">
-              <colgroup>
-                <col className="w-[22%]" />
-                <col className="w-[19%]" />
-                <col className="w-[15%]" />
-                <col className="w-[13%]" />
-                <col className="w-[13%]" />
-                <col className="w-[18%]" />
-              </colgroup>
+        <TableWrapper>
+          <table className="w-full min-w-[760px] table-fixed border-collapse">
+            <colgroup>
+              <col className="w-[22%]" />
+              <col className="w-[19%]" />
+              <col className="w-[15%]" />
+              <col className="w-[13%]" />
+              <col className="w-[13%]" />
+              <col className="w-[18%]" />
+            </colgroup>
 
-              <thead>
-                <tr className="border-b border-[#D5D5CA] bg-[#E8E8DE]">
-                  {[
-                    title === "Language-wise" ? "Language" : "Format",
-                    "Gross",
-                    "Tickets",
-                    "ATP",
-                    "Shows",
-                    "Occupancy",
-                  ].map((heading, index) => (
-                    <th
-                      key={heading}
-                      className={`px-1 py-3 text-[6px] font-bold uppercase tracking-[0.04em] text-[#454545] sm:px-2 sm:text-[8px] ${
-  index === 0 ? "text-left" : "text-right"
-}`}
-                    >
-                      {heading}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              <tbody>
-                {records.map((record) => (
-                  <tr
-                    key={record.id}
-                    className="border-b border-[#E2E2D9] last:border-b-0 hover:bg-[#ECECE4]"
-                  >
-                    <td className="break-words px-1 py-3 text-[8px] font-bold text-zinc-800 sm:px-2 sm:text-[10px]">
-                      {record.name}
-                    </td>
-
-                    <td className="break-all px-1 py-3 text-right text-[7px] font-semibold font-bold text-green-600 sm:px-2 sm:text-[9px]">
-                      {formatCollection(record.gross)}
-                    </td>
-
-                    <td className="break-all px-1 py-3 text-right text-[7px] font-bold text-zinc-800 sm:px-2 sm:text-[9px]">
-                      {formatNumber(record.admissions)}
-                    </td>
-
-                    <td className="break-all px-1 py-3 text-right text-[7px] font-bold text-zinc-800 sm:px-2 sm:text-[9px]">
-                      {formatMetric(record.atp)}
-                    </td>
-
-                    <td className="break-all px-1 py-3 text-right text-[7px] font-bold text-zinc-800 sm:px-2 sm:text-[9px]">
-                      {formatNumber(record.show_count)}
-                    </td>
-
-                    <td className="break-all px-1 py-3 text-right text-[7px] font-bold text-red-500 sm:px-2 sm:text-[9px]">
-                      {formatOccupancy(record.occupancy)}
-                    </td>
-                  </tr>
+            <thead>
+              <tr className="border-b-2 border-[#BEBEB2] bg-[#E8E8DE]">
+                {[
+                  title === "Language-wise" ? "Language" : "Format",
+                  "Gross",
+                  "Tickets",
+                  "ATP",
+                  "Shows",
+                  "Occupancy",
+                ].map((heading) => (
+                  <th key={heading} className={tableHeaderClass}>
+                    {heading}
+                  </th>
                 ))}
-              </tbody>
+              </tr>
+            </thead>
 
-             
-            </table>
-          </div>
+            <tbody>
+              {sortedRecords.map((record, index) => (
+                <tr key={record.id} className={tableRowClass}>
+                  <td className={tableNameCellClass}>
+                    <span className="inline-flex items-center justify-center">
+                      {record.name}
+                      {index === 0 && <LeaderTrophy />}
+                    </span>
+                  </td>
 
-          <div className="border-t border-zinc-900 bg-black/30 px-3 py-3 sm:px-5">
-           
-          </div>
-        </>
+                  <td className={tableGrossCellClass}>
+                    {formatCollection(record.gross)}
+                  </td>
+
+                  <td className={tableNumberCellClass}>
+                    {formatNumber(record.admissions)}
+                  </td>
+
+                  <td className={tableNumberCellClass}>
+                    {formatMetric(record.atp)}
+                  </td>
+
+                  <td className={tableNumberCellClass}>
+                    {formatNumber(record.show_count)}
+                  </td>
+
+                  <td className={tableOccupancyCellClass}>
+                    {formatOccupancy(record.occupancy)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </TableWrapper>
+      )}
+    </section>
+  );
+}
+
+/* =========================================================
+   CUMULATIVE AGGREGATION
+========================================================= */
+
+function buildCumulativeRecords(days: DayData[]) {
+  const stateMap = new Map<string, CumulativeRecord>();
+  const languageMap = new Map<string, CumulativeRecord>();
+  const formatMap = new Map<string, CumulativeRecord>();
+
+  const occupancyWeights = new Map<
+    string,
+    { weightedTotal: number; totalShows: number }
+  >();
+
+  function addRecord(
+    map: Map<string, CumulativeRecord>,
+    key: string,
+    name: string,
+    gross: number | null,
+    admissions: number | null,
+    shows: number | null,
+    occupancy: number | null
+  ) {
+    const existing = map.get(key) || {
+      id: key,
+      name,
+      gross: 0,
+      admissions: 0,
+      shows: 0,
+      atp: null,
+      occupancy: null,
+    };
+
+    existing.gross += Number(gross || 0);
+    existing.admissions += Number(admissions || 0);
+    existing.shows += Number(shows || 0);
+
+    map.set(key, existing);
+
+    if (occupancy !== null && occupancy !== undefined && shows && shows > 0) {
+      const weight = occupancyWeights.get(key) || {
+        weightedTotal: 0,
+        totalShows: 0,
+      };
+
+      weight.weightedTotal += occupancy * shows;
+      weight.totalShows += shows;
+
+      occupancyWeights.set(key, weight);
+    }
+  }
+
+  for (const day of days) {
+    for (const record of day.records) {
+      const key = record.territory_name.trim().toLowerCase();
+
+      addRecord(
+        stateMap,
+        key,
+        record.territory_name,
+        record.gross,
+        record.admissions,
+        record.show_count,
+        record.occupancy
+      );
+    }
+
+    for (const record of day.languageRecords) {
+      const key = record.name.trim().toLowerCase();
+
+      addRecord(
+        languageMap,
+        key,
+        record.name,
+        record.gross,
+        record.admissions,
+        record.show_count,
+        record.occupancy
+      );
+    }
+
+    for (const record of day.formatRecords) {
+      const key = record.name.trim().toLowerCase();
+
+      addRecord(
+        formatMap,
+        key,
+        record.name,
+        record.gross,
+        record.admissions,
+        record.show_count,
+        record.occupancy
+      );
+    }
+  }
+
+  function finalize(map: Map<string, CumulativeRecord>) {
+    return Array.from(map.values())
+      .map((record) => {
+        const weight = occupancyWeights.get(record.id);
+
+        return {
+          ...record,
+          atp:
+            record.admissions > 0
+              ? record.gross / record.admissions
+              : null,
+          occupancy:
+            weight && weight.totalShows > 0
+              ? weight.weightedTotal / weight.totalShows
+              : null,
+        };
+      })
+      .sort((a, b) => b.gross - a.gross);
+  }
+
+  return {
+    states: finalize(stateMap),
+    languages: finalize(languageMap),
+    formats: finalize(formatMap),
+  };
+}
+
+/* =========================================================
+   CUMULATIVE TABLE
+========================================================= */
+
+function CumulativeTable({
+  title,
+  subtitle,
+  firstColumn,
+  records,
+}: {
+  title: string;
+  subtitle: string;
+  firstColumn: string;
+  records: CumulativeRecord[];
+}) {
+  return (
+    <section className="mt-7 w-full">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <p className="text-[8px] uppercase tracking-[0.16em] text-violet-400">
+            {title}
+          </p>
+
+          <h3 className="mt-1 text-base font-semibold text-zinc-100">
+            Cumulative {firstColumn} Collection
+          </h3>
+
+          <p className="mt-1 text-[10px] text-zinc-500">
+            {subtitle}
+          </p>
+        </div>
+
+        <span className="text-[9px] text-zinc-500">
+          {records.length} Records
+        </span>
+      </div>
+
+      {records.length === 0 ? (
+        <div className="border-y border-zinc-800 px-4 py-8 text-center">
+          <p className="text-[11px] text-zinc-400">
+            No cumulative data available.
+          </p>
+        </div>
+      ) : (
+        <TableWrapper>
+          <table className="w-full min-w-[760px] table-fixed border-collapse">
+            <colgroup>
+              <col className="w-[22%]" />
+              <col className="w-[19%]" />
+              <col className="w-[15%]" />
+              <col className="w-[13%]" />
+              <col className="w-[13%]" />
+              <col className="w-[18%]" />
+            </colgroup>
+
+            <thead>
+              <tr className="border-b-2 border-[#BEBEB2] bg-[#E8E8DE]">
+                {[
+                  firstColumn,
+                  "Gross",
+                  "Tickets",
+                  "ATP",
+                  "Shows",
+                  "Occupancy",
+                ].map((heading) => (
+                  <th key={heading} className={tableHeaderClass}>
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody>
+              {records.map((record, index) => (
+                <tr key={record.id} className={tableRowClass}>
+                  <td className={tableNameCellClass}>
+                    <span className="inline-flex items-center justify-center">
+                      {record.name}
+                      {index === 0 && <LeaderTrophy />}
+                    </span>
+                  </td>
+
+                  <td className={tableGrossCellClass}>
+                    {formatCollection(record.gross)}
+                  </td>
+
+                  <td className={tableNumberCellClass}>
+                    {formatNumber(record.admissions)}
+                  </td>
+
+                  <td className={tableNumberCellClass}>
+                    {formatMetric(record.atp)}
+                  </td>
+
+                  <td className={tableNumberCellClass}>
+                    {formatNumber(record.shows)}
+                  </td>
+
+                  <td className={tableOccupancyCellClass}>
+                    {formatOccupancy(record.occupancy)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </TableWrapper>
       )}
     </section>
   );
@@ -344,6 +659,16 @@ export default function AdvanceBookingDayTable({
     return map;
   }, [days]);
 
+  const sortedStateRecords = useMemo(
+    () => sortByGross(selectedData?.records || []),
+    [selectedData]
+  );
+
+  const cumulativeData = useMemo(
+    () => buildCumulativeRecords(days),
+    [days]
+  );
+
   function selectDay(day: DayData) {
     setSelectedDay(day.day);
 
@@ -378,7 +703,7 @@ export default function AdvanceBookingDayTable({
     : 0;
 
   return (
-    <div className="mt-7">
+    <div className="mt-7 w-full">
       {/* SECTION HEADER */}
 
       <div className="mb-4">
@@ -386,11 +711,11 @@ export default function AdvanceBookingDayTable({
           Day-wise Intelligence
         </p>
 
-        <h2 className="mt-1 text-sm font-medium text-yellow-500">
+        <h2 className="mt-1 text-base font-semibold text-yellow-500">
           Advance Booking Timeline
         </h2>
 
-        <p className="mt-1 text-[9px] leading-5 text-zinc-500">
+        <p className="mt-1 text-[10px] leading-5 text-zinc-500">
           Select a tracked date to view the territory, language and
           exhibition-format advance booking performance for that day.
         </p>
@@ -550,12 +875,12 @@ export default function AdvanceBookingDayTable({
       {/* SELECTED DAY */}
 
       {selectedData && (
-        <section className="mt-5 overflow-hidden rounded-2xl border border-pink-700 bg-zinc-950 px-0 py-4 sm:px-5">
-          <div className="border-b border-zinc-900 bg-zinc-950 px-2 py-4 sm:px-5">
+        <section className="mt-6 w-full">
+          <div className="border-b border-zinc-800 pb-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-base font-medium text-zinc-100">
+                  <h3 className="text-base font-semibold text-zinc-100">
                     Day {selectedData.day}
                   </h3>
 
@@ -566,17 +891,17 @@ export default function AdvanceBookingDayTable({
                   )}
                 </div>
 
-                <p className="mt-1 text-[10px] font-medium text-yellow-400">
+                <p className="mt-1 text-[11px] font-medium text-yellow-400">
                   {formatDate(selectedData.date)}
                 </p>
 
-                <p className="mt-1 text-[8px] text-zinc-600">
+                <p className="mt-1 text-[9px] text-zinc-500">
                   {selectedData.records.length} state / territory records
                 </p>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
-                <div className="rounded-lg border border-zinc-900 bg-black px-2 py-2 sm:px-3">
+                <div className="rounded-lg border border-zinc-900 bg-black px-3 py-2">
                   <p className="text-[7px] uppercase tracking-[0.1em] text-green-400">
                     Gross
                   </p>
@@ -586,7 +911,7 @@ export default function AdvanceBookingDayTable({
                   </p>
                 </div>
 
-                <div className="rounded-lg border border-zinc-900 bg-black px-2 py-2 sm:px-3">
+                <div className="rounded-lg border border-zinc-900 bg-black px-3 py-2">
                   <p className="text-[7px] uppercase tracking-[0.1em] text-green-400">
                     Admissions
                   </p>
@@ -596,7 +921,7 @@ export default function AdvanceBookingDayTable({
                   </p>
                 </div>
 
-                <div className="rounded-lg border border-zinc-900 bg-black px-2 py-2 sm:px-3">
+                <div className="rounded-lg border border-zinc-900 bg-black px-3 py-2">
                   <p className="text-[7px] uppercase tracking-[0.1em] text-green-400">
                     Shows
                   </p>
@@ -611,127 +936,108 @@ export default function AdvanceBookingDayTable({
 
           {/* STATE-WISE TABLE */}
 
-          <div className="border-b border-zinc-900 px-2 py-4 sm:px-5">
-            <div className="mb-3 px-1">
+          <div className="mt-5 w-full">
+            <div className="mb-3">
               <p className="text-[8px] uppercase tracking-[0.16em] text-violet-400">
                 Territory Breakdown
               </p>
 
-              <h3 className="mt-1 text-sm font-medium text-zinc-100">
+              <h3 className="mt-1 text-base font-semibold text-zinc-100">
                 State-wise Collection
               </h3>
             </div>
 
-            <div className="w-full">
-              <table className="w-full table-fixed border-collapse bg-[#F5F5EF]">
-                <colgroup>
-                  <col className="hidden sm:table-column sm:w-[13%]" />
-                  <col className="w-[25%] sm:w-[21%]" />
-                  <col className="w-[20%] sm:w-[19%]" />
-                  <col className="w-[16%] sm:w-[15%]" />
-                  <col className="w-[11%] sm:w-[11%]" />
-                  <col className="w-[12%] sm:w-[10%]" />
-                  <col className="w-[16%] sm:w-[11%]" />
-                </colgroup>
+            {sortedStateRecords.length === 0 ? (
+              <div className="border-y border-zinc-800 px-4 py-8 text-center text-[11px] text-zinc-500">
+                No state-wise data available for this day.
+              </div>
+            ) : (
+              <TableWrapper>
+                <table className="w-full min-w-[760px] table-fixed border-collapse">
+                  <colgroup>
+                    <col className="w-[22%]" />
+                    <col className="w-[19%]" />
+                    <col className="w-[18%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[17%]" />
+                  </colgroup>
 
-                <thead>
-                  <tr className="border-b border-[#D5D5CA] bg-[#E8E8DE]">
-                    
-
-                    {[
-                      "Territory",
-                      "Gross",
-                      "Admissions",
-                      "ATP",
-                      "Shows",
-                      "Occupancy",
-                    ].map((heading, index) => (
-                      <th
-                        key={heading}
-                        className={`px-2 py-4 text-[7px] font-large font-bold uppercase tracking-[0.02em] text-zinc-800 sm:px-2 sm:text-[8px] ${
-                          index === 0 ? "text-left" : "text-right"
-                        }`}
-                      >
-                        {heading}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {selectedData.records.map((record) => (
-                    <tr
-                      key={record.id}
-                      className="border-b border-[#E2E2D9] last:border-b-0 hover:bg-[#ECECE4]"
-                    >
-                      
-
-                      <td className="break-words px-0 py-3 sm:px-2 sm:py-4">
-                        <div className="flex items-start gap-1 sm:gap-2">
-                          
-                          <div className="min-w-full ">
-                            <p className="break-words text-[9px] text-center  font-large font-bold leading-8 text-zinc-800 sm:text-[10px]">
-                              {record.territory_name}
-                            </p>
-
-                            
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="break-all px-1 py-3 text-right text-[8px] font-bold text-green-600 sm:px-2 sm:py-4 sm:text-[9px]">
-                        {formatCollection(record.gross)}
-                      </td>
-
-                      {/* CORRECTED: ADMISSIONS */}
-
-                      <td className="break-all px-1 py-3 text-right font-bold text-[8px] text-zinc-800 sm:px-2 sm:py-4 sm:text-[9px]">
-                        {formatNumber(record.admissions)}
-                      </td>
-
-                      {/* CORRECTED: ATP */}
-
-                      <td className="break-all px-1 py-3 text-right font-bold text-[8px] text-zinc-800 sm:px-2 sm:py-4 sm:text-[9px]">
-                        {formatMetric(record.atp)}
-                      </td>
-
-                      <td className="break-all px-1 py-3 text-right font-bold text-[8px] text-zinc-800 sm:px-2 sm:py-4 sm:text-[9px]">
-                        {formatNumber(record.show_count)}
-                      </td>
-
-                      <td className="break-all px-1 py-3 text-right font-bold text-[8px] text-red-500 sm:px-2 sm:py-4 sm:text-[9px]">
-                        {formatOccupancy(record.occupancy)}
-                      </td>
+                  <thead>
+                    <tr className="border-b-2 border-[#BEBEB2] bg-[#E8E8DE]">
+                      {[
+                        "Territory",
+                        "Gross",
+                        "Admissions",
+                        "ATP",
+                        "Shows",
+                        "Occupancy",
+                      ].map((heading) => (
+                        <th key={heading} className={tableHeaderClass}>
+                          {heading}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
+                  </thead>
 
-                
-              </table>
-            </div>
+                  <tbody>
+                    {sortedStateRecords.map((record, index) => (
+                      <tr key={record.id} className={tableRowClass}>
+                        <td className={tableNameCellClass}>
+                          <span className="inline-flex items-center justify-center">
+                            {record.territory_name}
+                            {index === 0 && <LeaderTrophy />}
+                          </span>
+                        </td>
+
+                        <td className={tableGrossCellClass}>
+                          {formatCollection(record.gross)}
+                        </td>
+
+                        <td className={tableNumberCellClass}>
+                          {formatNumber(record.admissions)}
+                        </td>
+
+                        <td className={tableNumberCellClass}>
+                          {formatMetric(record.atp)}
+                        </td>
+
+                        <td className={tableNumberCellClass}>
+                          {formatNumber(record.show_count)}
+                        </td>
+
+                        <td className={tableOccupancyCellClass}>
+                          {formatOccupancy(record.occupancy)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </TableWrapper>
+            )}
           </div>
 
           {/* STATE NOTES */}
 
           {selectedData.records.some((record) => record.notes) && (
-            <div className="border-t border-zinc-900 bg-black/30 px-4 py-4 sm:px-5">
-              <p className="text-[7px] uppercase tracking-[0.12em] text-zinc-700">
+            <div className="mt-4 border-t border-zinc-900 bg-black/30 px-2 py-4 sm:px-3">
+              <p className="text-[8px] uppercase tracking-[0.12em] text-zinc-500">
                 State Tracking Notes
               </p>
 
-              <div className="mt-2 space-y-2">
+              <div className="mt-3 space-y-3">
                 {selectedData.records
                   .filter((record) => record.notes)
                   .map((record) => (
                     <div
                       key={`state-note-${record.id}`}
-                      className="border-l border-zinc-800 pl-3"
+                      className="border-l border-zinc-700 pl-3"
                     >
-                      <p className="text-[8px] font-medium text-zinc-500">
+                      <p className="text-[9px] font-medium text-zinc-400">
                         {record.territory_name}
                       </p>
 
-                      <p className="mt-1 text-[9px] leading-5 text-zinc-600">
+                      <p className="mt-1 text-[10px] leading-5 text-zinc-500">
                         {record.notes}
                       </p>
                     </div>
@@ -740,13 +1046,15 @@ export default function AdvanceBookingDayTable({
             </div>
           )}
 
-          <div className="border-t border-zinc-900 bg-black/40 px-4 py-3 sm:px-5">
+          {/* LATEST UPDATE */}
+
+          <div className="mt-3 border-t border-zinc-900 bg-black/30 px-2 py-3 sm:px-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-[8px] text-zinc-500">
+              <p className="text-[9px] text-zinc-500">
                 Latest State-wise update for Day {selectedData.day}
               </p>
 
-              <p className="text-[8px] text-zinc-500">
+              <p className="text-[9px] text-zinc-500">
                 {formatUpdatedAt(selectedData.latestUpdatedAt)}
               </p>
             </div>
@@ -777,12 +1085,12 @@ export default function AdvanceBookingDayTable({
       {/* CATEGORY DATA EXPLANATION */}
 
       {selectedData && (
-        <div className="mt-4 rounded-lg border border-pink-900 bg-zinc-950 px-4 py-3">
+        <div className="mt-5 border-y border-pink-900/60 bg-zinc-950 px-3 py-4">
           <p className="text-[8px] uppercase tracking-[0.14em] text-violet-400">
             Understanding the Breakdowns
           </p>
 
-          <p className="mt-2 text-[9px] leading-5 text-zinc-500">
+          <p className="mt-2 text-[10px] leading-5 text-zinc-500">
             State-wise, Language-wise and Format-wise figures represent
             different classifications of advance booking activity.
             Their gross collections should not be added together.
@@ -791,6 +1099,70 @@ export default function AdvanceBookingDayTable({
           </p>
         </div>
       )}
+
+      {/* =====================================================
+          CUMULATIVE TRACKING
+      ===================================================== */}
+
+      <section className="mt-10 border-t border-violet-800/50 pt-6">
+        <div className="mb-5">
+          <p className="text-[8px] uppercase tracking-[0.18em] text-violet-400">
+            All-Day Tracking Intelligence
+          </p>
+
+          <h2 className="mt-1 text-lg font-semibold text-yellow-500">
+            Overall Cumulative Tracking
+          </h2>
+
+          <p className="mt-2 text-[10px] leading-5 text-zinc-500">
+            Combined advance booking performance across all available
+            tracking days. These figures are independent of the selected
+            calendar date and are ranked by cumulative gross collection.
+          </p>
+        </div>
+
+        {/* CUMULATIVE STATE-WISE */}
+
+        <CumulativeTable
+          title="Territory Intelligence"
+          subtitle="Combined state and territory performance across all tracked days."
+          firstColumn="Territory"
+          records={cumulativeData.states}
+        />
+
+        {/* CUMULATIVE LANGUAGE-WISE */}
+
+        <CumulativeTable
+          title="Language Intelligence"
+          subtitle="Combined language-wise advance booking performance across all tracked days."
+          firstColumn="Language"
+          records={cumulativeData.languages}
+        />
+
+        {/* CUMULATIVE FORMAT-WISE */}
+
+        <CumulativeTable
+          title="Exhibition Format Intelligence"
+          subtitle="Combined exhibition-format performance across all tracked days."
+          firstColumn="Format"
+          records={cumulativeData.formats}
+        />
+
+        <div className="mt-5 border-y border-zinc-800 bg-zinc-950 px-3 py-4">
+          <p className="text-[8px] uppercase tracking-[0.14em] text-violet-400">
+            Cumulative Calculation Method
+          </p>
+
+          <p className="mt-2 text-[10px] leading-5 text-zinc-500">
+            Gross, admissions and shows are summed across available
+            tracking days. ATP is calculated as cumulative gross divided
+            by cumulative admissions. Occupancy is calculated as a
+            show-weighted average of the recorded daily occupancy
+            percentages. This is an estimate of cumulative occupancy,
+            not a seat-capacity-weighted industry occupancy figure.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

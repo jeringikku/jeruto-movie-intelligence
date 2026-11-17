@@ -67,7 +67,7 @@ const teamMembers: {
   {
     name: "Akash Dominic Sebastian",
     designation: "Platform Overview & Finance",
-    image: "https://scontent.ftrv8-1.fna.fbcdn.net/v/t39.30808-1/469412104_2884224358403694_1896873708153499594_n.jpg?stp=dst-jpg_tt6&cstp=mx1080x1080&ctp=s200x200&_nc_cat=109&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=e99d92&_nc_ohc=rirsWeZ0OLYQ7kNvwGSNGhb&_nc_oc=AdpZ4zMjJePCePDFSEYrsz94JpLv48jHfwGolGiVAZ7vE04I25ZxfU7z5XG9cX-dKDcEoR1w-qFJ8qSF37A05ENr&_nc_zt=24&_nc_ht=scontent.ftrv8-1.fna&_nc_gid=-At-A1PhtfRrXeDYib7UEA&_nc_ss=7b2a8&oh=00_AQR3DbYXaygNAQ8QXjwe6B7Mh5pMeIfpPmbOlk2wsT8BDg&oe=6AE9EB7C", // Paste Akash's profile picture URL here
+    image: "https://scontent.fcok2-1.fna.fbcdn.net/v/t39.30808-6/900795686_3624624044363718_2008565970925823172_n.avif?stp=dst-jpg_tt6&cstp=mx1080x1080&ctp=s1080x1080&_nc_cat=105&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=xg37DWm9rCUQ7kNvwGMqh01&_nc_oc=AdpwE2HCd2XFgW14L1hrV8Sz7dRRwb6ZwrZn6lSwIdu_Hd158V8c_XxSDe_3kq9kp9PHakirJu2zIaPIfYS132Fk&_nc_zt=23&_nc_ht=scontent.fcok2-1.fna&_nc_gid=7piOAvBPEgOP8sJK7dff3g&_nc_ss=7b2a8&oh=00_AQRk3QXIHOfvPA3M6sbYkzAKkg3FUKftJd9ejsxfEHii-Q&oe=6B00D10F", // Paste Akash's profile picture URL here
   },
   {
     name: "Ashwin Sabu",
@@ -78,7 +78,7 @@ const teamMembers: {
   {
     name: "Tins Saiban",
     designation: "Data Management Assistance",
-    image: "https://scontent.ftrv8-2.fna.fbcdn.net/v/t39.30808-1/716170201_2459088451180118_8371955300893870452_n.jpg?stp=dst-jpg_tt6&cstp=mx1440x1440&ctp=s200x200&_nc_cat=106&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=e99d92&_nc_ohc=kqN2YHr1zSoQ7kNvwFKCLn3&_nc_oc=AdoZfH1R7QQItdtWDcDiGZQa9hdyPNsqxwP1CxdDlRxirJsC0IIv_oLjHLJeLssx3-r7hiw0toDqBvH6KzEiZR57&_nc_zt=24&_nc_ht=scontent.ftrv8-2.fna&_nc_gid=IN9A6F8AabAtfskD52KfAw&_nc_ss=7b2a8&oh=00_AQRA1ektdUpZDYPCo1q1OtQw_jvOr601pM5pQpIDusnGjg&oe=6AE9E783", 
+    image: "https://scontent.fcok2-1.fna.fbcdn.net/v/t39.30808-1/716170201_2459088451180118_8371955300893870452_n.jpg?stp=dst-jpg_tt6&cstp=mx1440x1440&ctp=s200x200&_nc_cat=106&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=e99d92&_nc_ohc=UghFSai1QXAQ7kNvwFcFWU-&_nc_oc=AdpzsN0TXmF86VNmQDMq_S-z__szqJW_UTr1y7mcjXwj5hGrdroCY2RuyfMUoF4gmVM_b5xP_v-vd5YaGFQShBgs&_nc_zt=24&_nc_ht=scontent.fcok2-1.fna&_nc_gid=NPlzcBYdyDfP4Ug4fjXydw&_nc_ss=7b2a8&oh=00_AQSX1anbO9WWXoAnlEQ78MQy9Z61nvncUmxFabJkft5DJQ&oe=6B00C183", 
   },
   {
     name: "Sijin Saji",
