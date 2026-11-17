@@ -19,6 +19,7 @@ import JmiFunZoneTransition from "../components/JmiFunZoneTransition";
 import ExclusiveNewsCarousel from "../components/ExclusiveNewsCarousel";
 import JmiBetaWelcome from "../components/JmiBetaWelcome";
 import DailyBoxofficeBanner from "../components/DailyBoxofficeBanner";
+import DoomsdayCountdownBanner from "../components/DoomsdayCountdownBanner";
 
 import JmiSun from "@/app/(public)/components/JmiSun";
 import JmiRain from "@/app/(public)/components/JmiRain";
@@ -46,6 +47,8 @@ export default async function PublicPreview() {
 
   const homepageViews =
     Number(homepageViewCount ?? 0);
+
+
 
   // ============================================================
   // JMI HOMEPAGE BANNERS
@@ -362,6 +365,14 @@ if (exclusiveNewsError) {
         </section>
 
         {/* =====================================================
+            AVENGERS DOOMSDAY COUNTDOWN SPECIAL
+        ===================================================== */}
+
+        <DoomsdayCountdownBanner />
+
+
+
+        {/* =====================================================
             JMI HOMEPAGE BANNERS
         ===================================================== */}
 
@@ -369,10 +380,13 @@ if (exclusiveNewsError) {
           banners={homepageBanners ?? []}
         />
 
+        
+
 
  {/* =====================================================
             DATABASE INTELLIGENCE
         ===================================================== */}
+        
 
         <section className="border-b border-zinc-900">
 
@@ -381,6 +395,7 @@ if (exclusiveNewsError) {
             <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 
               <div>
+                
 
                 <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-pink-400">
                   JMI Database
