@@ -253,7 +253,7 @@ export default function AccountPage() {
   const [errorMessage, setErrorMessage] =
     useState("");
 
-    const [deleting, setDeleting] = useState(false);
+const [requestSubmitting, setRequestSubmitting] = useState(false);
 const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
 
@@ -848,45 +848,58 @@ const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
     router.refresh();
   }
 
-  async function handleDeleteAccount() {
-  if (deleteConfirmationText !== "DELETE") {
-    setErrorMessage('Please type DELETE to confirm account deletion.');
+  async function handleDeletionRequest() {
+  if (!user) return;
+
+  if (deleteConfirmationText !== "REQUEST") {
+    setErrorMessage('Please type REQUEST to confirm your deletion request.');
     return;
   }
 
-  setDeleting(true);
+  setRequestSubmitting(true);
   setErrorMessage("");
+  setMessage("");
 
   try {
-    const response = await fetch("/api/account/delete", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const {
+      data: { user: currentUser },
+      error: authError,
+    } = await supabaseBrowser.auth.getUser();
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        result.error || "Unable to delete your account."
-      );
+    if (authError || !currentUser || currentUser.id !== user.id) {
+      throw new Error("Your session has expired. Please log in again.");
     }
 
-    await supabaseBrowser.auth.signOut();
+    const { error: insertError } = await supabaseBrowser
+      .from("account_deletion_requests")
+      .insert({
+        user_id: currentUser.id,
+        email: currentUser.email,
+        status: "pending",
+        request_source: "website",
+      });
 
-    router.replace("/?accountDeleted=1");
-    router.refresh();
+    if (insertError) {
+      console.error("Deletion request submission error:", insertError);
+      throw new Error("We could not submit your request. Please try again.");
+    }
+
+    setShowDeleteConfirm(false);
+    setDeleteConfirmationText("");
+
+    setMessage(
+      "Your account deletion request has been submitted successfully. It is awaiting JMI administrator review. Your account remains active until the deletion process is completed."
+    );
   } catch (error) {
-    console.error("Account deletion request failed:", error);
+    console.error("Deletion request error:", error);
 
     setErrorMessage(
       error instanceof Error
         ? error.message
-        : "Account deletion failed. Please contact JMI support."
+        : "Unable to submit your request. Please try again."
     );
-
-    setDeleting(false);
+  } finally {
+    setRequestSubmitting(false);
   }
 }
 
@@ -1959,16 +1972,16 @@ const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
 >
   <div>
     <p className="text-xs font-medium text-red-400">
-      Delete Account
-    </p>
-    <p className="mt-0.5 text-[9px] text-zinc-600">
-      Permanently delete your JMI account and associated data.
-    </p>
+  Request Account Deletion
+</p>
+<p className="mt-0.5 text-[9px] text-zinc-600">
+  Submit a request to permanently delete your JMI account.
+</p>
   </div>
 
   <span className="text-[9px] font-semibold text-red-400">
-    Delete →
-  </span>
+  Request →
+</span>
 </button>
 
             </div>
@@ -1984,19 +1997,21 @@ const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
       </div>
 
       <h2 className="text-lg font-semibold text-white">
-        Delete your JMI account?
-      </h2>
+  Request JMI account deletion?
+</h2>
 
-      <p className="mt-2 text-xs leading-6 text-zinc-400">
-        This action is permanent. Your profile, social posts,
-        replies, reactions, ratings, activity records and
-        account-related points and subscription records will
-        be deleted. This cannot be undone.
-      </p>
+<p className="mt-2 text-xs leading-6 text-zinc-400">
+  You are requesting permanent deletion of your JMI account
+  and associated personal data, including your profile,
+  social activity, ratings and account-related records.
+  A JMI administrator will review your request before
+  completing the deletion. Your account will remain active
+  while the request is pending.
+</p>
 
       <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.12em] text-red-400">
-        Type DELETE to confirm
-      </p>
+  Type REQUEST to confirm
+</p>
 
       <input
         type="text"
@@ -2004,35 +2019,39 @@ const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
         onChange={(event) =>
           setDeleteConfirmationText(event.target.value)
         }
-        placeholder="Type DELETE"
-        disabled={deleting}
+        placeholder="Type REQUEST"
+        disabled={requestSubmitting}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-700 focus:border-red-400/40"
       />
 
       <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 
-        <button
-          type="button"
-          disabled={deleting}
-          onClick={() => {
-            setShowDeleteConfirm(false);
-            setDeleteConfirmationText("");
-          }}
-          className="rounded-xl border border-white/10 px-5 py-3 text-xs text-zinc-400 transition hover:bg-white/[0.05] disabled:opacity-40"
-        >
-          Cancel
-        </button>
+      <button
+  type="button"
+  disabled={requestSubmitting}
+  onClick={() => {
+    setShowDeleteConfirm(false);
+    setDeleteConfirmationText("");
+    setErrorMessage("");
+  }}
+  className="rounded-xl border border-white/10 px-5 py-3 text-xs text-zinc-400 transition hover:bg-white/[0.05] disabled:opacity-40"
+>
+  Cancel
+</button>
 
         <button
-          type="button"
-          disabled={
-            deleting || deleteConfirmationText !== "DELETE"
-          }
-          onClick={handleDeleteAccount}
-          className="rounded-xl border border-red-400/30 bg-red-500/10 px-5 py-3 text-xs font-semibold text-red-300 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {deleting ? "Deleting Account..." : "Permanently Delete"}
-        </button>
+  type="button"
+  disabled={
+    requestSubmitting ||
+    deleteConfirmationText !== "REQUEST"
+  }
+  onClick={handleDeletionRequest}
+  className="rounded-xl border border-red-400/30 bg-red-500/10 px-5 py-3 text-xs font-semibold text-red-300 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+>
+  {requestSubmitting ? "Submitting Request..." : "Submit Deletion Request"}
+</button>
+
+        
 
       </div>
     </div>
