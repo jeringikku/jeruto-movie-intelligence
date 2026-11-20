@@ -7,7 +7,8 @@
       "namespace": "android_app",
       "package_name": "com.jeruto.jmi",
       "sha256_cert_fingerprints": [
-        "31:EB:A3:51:37:51:C5:79:A0:C1:65:65:C1:AE:9C:4D:F0:8C:5B:DB:27:AB:44:A0:9F:60:E8:58:00:3A:6D:FE"
+        "31:EB:A3:51:37:51:C5:79:A0:C1:65:65:C1:AE:9C:4D:F0:8C:5B:DB:27:AB:44:A0:9F:60:E8:58:00:3A:6D:FE",
+        "A3:53:B0:9B:E8:97:52:86:16:F4:D1:1B:26:D0:7D:B2:5D:BC:C3:6D:50:69:9D:EF:F4:9F:FF:A3:F7:F5:FB:A5"
       ]
     }
   }
